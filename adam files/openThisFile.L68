@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 25/02/2025 12:28:58
+Created On: 25/02/2025 12:50:33
 
 00000000                             1  ; this file starts the program.
 00000000                             2  ; contains the title screen, includes all other files
@@ -99,7 +99,7 @@ Created On: 25/02/2025 12:28:58
 0000111C  6600 003E                 95      bne paused
 00001120                            96  
 00001120                            97      ; process
-00001120  4EB9 00001A7A             98      jsr increment
+00001120  4EB9 00001A7E             98      jsr increment
 00001126  4EB9 00001844             99      jsr processEnemy
 0000112C  4EB9 00001876            100      jsr enemyColCheck
 00001132  4EB9 00001148            101      jsr collision
@@ -187,8 +187,8 @@ Created On: 25/02/2025 12:28:58
 000011EC                           183      ;beq takeDmg
 000011EC                           184  
 000011EC                           185      ; normal movement buttons [check timer first]
-000011EC  3A39 00001A72            186      move.w playerTime, d5
-000011F2  4EB9 00001A7E            187      jsr checkIncrement
+000011EC  3A39 00001A74            186      move.w playerTime, d5
+000011F2  4EB9 00001A82            187      jsr checkIncrement
 000011F8  6600 0034                188      bne endInput    
 000011FC                           189  
 000011FC  0C39 0057 0000131E       190      cmpi.b #wkey, currentkey ; W:UP
@@ -514,8 +514,8 @@ Created On: 25/02/2025 12:28:58
 000014A6                           510  
 000014A6                           511      ; at this point, player is confirmed in zone 3
 000014A6                           512  
-000014A6  3A39 00001A78            513      move.w healTime, d5
-000014AC  4EB9 00001A7E            514      jsr checkIncrement
+000014A6  3A39 00001A7A            513      move.w healTime, d5
+000014AC  4EB9 00001A82            514      jsr checkIncrement
 000014B2  6600 0008                515      bne endCollision
 000014B6  4EB8 12BC                516      jsr heal
 000014BA                           517      
@@ -905,8 +905,8 @@ Created On: 25/02/2025 12:28:58
 000018BA  4EB9 000019DC            901      jsr endInitEnemy
 000018C0  4E75                     902      rts
 000018C2                           903  processEnemyTop:
-000018C2  3A39 00001A74            904      move.w enemyTime, d5
-000018C8  4EB9 00001A7E            905      jsr checkIncrement
+000018C2  3A39 00001A76            904      move.w enemyTime, d5
+000018C8  4EB9 00001A82            905      jsr checkIncrement
 000018CE  6600 0108                906      bne endProcess
 000018D2                           907  
 000018D2  52B8 17F6                908      add.l #1, enemyY
@@ -928,8 +928,8 @@ Created On: 25/02/2025 12:28:58
 00001902  4EB9 000019DC            924      jsr endInitEnemy
 00001908  4E75                     925      rts
 0000190A                           926  processEnemyLeft:
-0000190A  3A39 00001A74            927      move.w enemyTime, d5
-00001910  4EB9 00001A7E            928      jsr checkIncrement
+0000190A  3A39 00001A76            927      move.w enemyTime, d5
+00001910  4EB9 00001A82            928      jsr checkIncrement
 00001916  6600 00C0                929      bne endProcess
 0000191A                           930  
 0000191A  52B8 17F2                931      add.l #1, enemyX
@@ -955,8 +955,8 @@ Created On: 25/02/2025 12:28:58
 0000194C  4EB9 000019DC            951      jsr endInitEnemy
 00001952  4E75                     952      rts
 00001954                           953  processEnemyRight:
-00001954  3A39 00001A74            954      move.w enemyTime, d5
-0000195A  4EB9 00001A7E            955      jsr checkIncrement
+00001954  3A39 00001A76            954      move.w enemyTime, d5
+0000195A  4EB9 00001A82            955      jsr checkIncrement
 00001960  6600 0076                956      bne endProcess
 00001964                           957  
 00001964  53B8 17F2                958      sub.l #1, enemyX
@@ -982,8 +982,8 @@ Created On: 25/02/2025 12:28:58
 00001996  4EB9 000019DC            978      jsr endInitEnemy
 0000199C  4E75                     979      rts
 0000199E                           980  processEnemyBottom:
-0000199E  3A39 00001A74            981      move.w enemyTime, d5
-000019A4  4EB9 00001A7E            982      jsr checkIncrement
+0000199E  3A39 00001A76            981      move.w enemyTime, d5
+000019A4  4EB9 00001A82            982      jsr checkIncrement
 000019AA  6600 002C                983      bne endProcess
 000019AE                           984  
 000019AE  53B8 17F6                985      sub.l #1, enemyY
@@ -1020,32 +1020,36 @@ Created On: 25/02/2025 12:28:58
 00001A36                          1016  enemiesHp ds.l 10
 00001A5E                          1017  enemiesDir ds.b 10
 00001A68                          1018  enemiesActive ds.b 10
-00001A68                          1019  -------------------- end include --------------------
-00001A72                          1020   include "timings.x68"
-00001A72                          1021  ; this file contains timing stuff
-00001A72                          1022  
-00001A72= 000A                    1023  playerTime dc.w 10
-00001A74= 0032                    1024  enemyTime dc.w 50
-00001A76= 012C                    1025  projTime dc.w 300
-00001A78= 0028                    1026  healTime dc.w 40
-00001A7A                          1027  
-00001A7A                          1028  increment: ; D6 permanently used up
-00001A7A  5246                    1029      add.w #1, d6
-00001A7C  4E75                    1030      rts
+00001A72                          1019  
+00001A72= 0A                      1020  enemyCount dc.b 10
+00001A73= 00                      1021  enemyIndex dc.b 0
+00001A73= 00                      1022  -------------------- end include --------------------
+00001A74                          1023   include "timings.x68"
+00001A74                          1024  ; this file contains timing stuff
+00001A74                          1025  
+00001A74= 000A                    1026  playerTime dc.w 10
+00001A76= 0032                    1027  enemyTime dc.w 50
+00001A78= 012C                    1028  projTime dc.w 300
+00001A7A= 0028                    1029  healTime dc.w 40
+00001A7C= 07D0                    1030  enemySpawnTimer dc.w 2000
 00001A7E                          1031  
-00001A7E                          1032  checkIncrement: ; d5 has been given check value
-00001A7E  3806                    1033      move.w d6, d4 ; dont wanna mess up d6
-00001A80  88C5                    1034      divu d5, d4
-00001A82  383C 0000               1035      move.w #0, d4
-00001A86  4844                    1036      swap d4
-00001A88                          1037      ; d4 low word contains modulo
-00001A88                          1038      ; compare w/ 0
-00001A88  4A44                    1039      tst d4
-00001A8A                          1040      ; thingy contains whether they were equal
-00001A8A  4E75                    1041      rts
-00001A8A  4E75                    1042  -------------------- end include --------------------
-00001A8C                          1043  
-00001A8C                          1044      end start
+00001A7E                          1032  increment: ; D6 permanently used up
+00001A7E  5246                    1033      add.w #1, d6
+00001A80  4E75                    1034      rts
+00001A82                          1035  
+00001A82                          1036  checkIncrement: ; d5 has been given check value
+00001A82  3806                    1037      move.w d6, d4 ; dont wanna mess up d6
+00001A84  88C5                    1038      divu d5, d4
+00001A86  383C 0000               1039      move.w #0, d4
+00001A8A  4844                    1040      swap d4
+00001A8C                          1041      ; d4 low word contains modulo
+00001A8C                          1042      ; compare w/ 0
+00001A8C  4A44                    1043      tst d4
+00001A8E                          1044      ; thingy contains whether they were equal
+00001A8E  4E75                    1045      rts
+00001A8E  4E75                    1046  -------------------- end include --------------------
+00001A90                          1047  
+00001A90                          1048      end start
 
 No errors detected
 No warnings generated
@@ -1066,7 +1070,7 @@ CELLXRADIUS         14FE
 CELLYRADIUS         1502
 CENTERX             1330
 CENTERY             1334
-CHECKINCREMENT      1A7E
+CHECKINCREMENT      1A82
 CLEARSCREEN         116A
 COLLISION           1148
 COLOR1              201808
@@ -1110,6 +1114,7 @@ ENEMYACTIVE         17FF
 ENEMYBOTTOMCOLCHECK  19B6
 ENEMYCOLCHECK       1876
 ENEMYCOLLIDE        19CA
+ENEMYCOUNT          1A72
 ENEMYDAMAGE         1804
 ENEMYDIR            17FE
 ENEMYH              C
@@ -1117,11 +1122,13 @@ ENEMYHALFH          6
 ENEMYHALFW          8
 ENEMYHIT            19D6
 ENEMYHP             17FA
+ENEMYINDEX          1A73
 ENEMYLEFTCOLCHECK   1922
 ENEMYMAXHP          1800
 ENEMYRIGHTCOLCHECK  196C
 ENEMYSETUP          1808
-ENEMYTIME           1A74
+ENEMYSPAWNTIMER     1A7C
+ENEMYTIME           1A76
 ENEMYTOPCOLCHECK    18DA
 ENEMYW              10
 ENEMYX              17F2
@@ -1137,8 +1144,8 @@ HEALTHBRY           17E8
 HEALTHMSG           17D4
 HEALTHTLX           17DC
 HEALTHTLY           17E0
-HEALTIME            1A78
-INCREMENT           1A7A
+HEALTIME            1A7A
+INCREMENT           1A7E
 INIT                10AC
 INITDRAW            1516
 INITENEMY           181A
@@ -1156,7 +1163,7 @@ NOINPUT             11B0
 PAUSED              115C
 PAUSEMSG            17B6
 PLAYERH             8
-PLAYERTIME          1A72
+PLAYERTIME          1A74
 PLAYERW             8
 PLAYERX             1328
 PLAYERY             132C
@@ -1169,7 +1176,7 @@ PROCESSENEMYBOTTOM  199E
 PROCESSENEMYLEFT    190A
 PROCESSENEMYRIGHT   1954
 PROCESSENEMYTOP     18C2
-PROJTIME            1A76
+PROJTIME            1A78
 SCREENH             1346
 SCREENW             1344
 SETCURSOR           179C

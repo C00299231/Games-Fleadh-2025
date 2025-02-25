@@ -191,12 +191,3 @@ endInitEnemy:
     sub.l #enemyHalfW, enemyX
     rts
 
-; ALL ENEMIES
-enemiesX ds.l 10
-enemiesY ds.l 10
-enemiesHp ds.l 10
-enemiesDir ds.b 10
-enemiesActive ds.b 10
-
-enemyCount dc.b 10
-enemyIndex dc.b 0
