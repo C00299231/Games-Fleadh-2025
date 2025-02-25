@@ -3,20 +3,24 @@ increaseDifficulty:
     add.l #10, enemyDamage
     sub.l #10, enemyTime
     sub.w #800, enemySpawnTimer
+    add.b 10, maxSpawns
     rts
 
 initWave1:
     rts
     
 initWave2:
+    jsr increaseDifficulty
     rts
 
 initWave3:
+    jsr increaseDifficulty
     rts
 
 processEnemies:
-    jsr incrementEnemyIndex
 
+    ; for next time, increment enemy
+    jsr incrementEnemyIndex
     rts
 
 manage:
@@ -44,3 +48,7 @@ enemiesActive ds.b 10
 
 enemyCount dc.b 10
 enemyIndex dc.b 0
+
+; how many have been spawned this wave
+enemiesSpawned dc.b 0
+maxSpawns dc.b 15

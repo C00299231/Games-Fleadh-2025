@@ -5,7 +5,7 @@ initDraw:
 
     ;HEIGHT
     move.w screenH, d1
-    sub.l #120, d1
+    sub.l #75, d1
     move.l d1, healthTlY
     add.l #15, d1
     move.l d1, healthBrY
@@ -34,6 +34,7 @@ draw:
     jsr drawEnemy
     jsr drawText
     jsr drawHealth
+    jsr drawWaveOver
     rts
 
 drawHealth:
@@ -61,7 +62,9 @@ drawHealth:
     rts
 
 drawText:
-    ; set fill colour
+    ; set colours
+    move.l #color5, d1
+    jsr setPenColour
     move.l #color1, d1
     jsr setFillColour
     ; PLAYER SCORE MSG
@@ -76,7 +79,7 @@ drawText:
     jsr printNum
 
     ; HEALTH
-    move.w #$0718, d1
+    move.w #$071b, d1
     jsr setCursor
     lea healthMsg, a1
     jsr print
@@ -85,6 +88,34 @@ drawText:
     ; reset cursor
     move.l #0, d1
     jsr setCursor
+    rts
+
+drawWaveOver:
+    ; set colours
+    move.l #color5, d1
+    jsr setPenColour
+    move.l #color1, d1
+    jsr setFillColour
+
+    ; check is wave over
+    move.b isWaveOver, d2
+    tst.b d2
+    beq endDrawWaveOver
+    
+    ; draw text 1
+    move.l #$0805, d1
+    jsr setCursor
+    lea waveOverMsg1, a1
+    jsr print
+    ; draw text 2
+    move.l #$0806, d1
+    jsr setCursor
+    lea waveOverMsg2, a1
+    jsr print
+
+    ; draw apple
+    rts
+endDrawWaveOver:
     rts
 
 drawBg:
@@ -240,6 +271,8 @@ pauseMsg dc.b 'GAME PAUSED', 0
 endMsg dc.b 'GAME OVER', 0
 pointsMsg dc.b 'POINTS:', 0
 healthMsg dc.b 'HEALTH:', 0
+waveOverMsg1 dc.b 'An apple has appeared in the garden!',0
+waveOverMsg2 dc.b 'Press "g" to try grab it, or "i" to ignore.',0
 
 healthTlX ds.l 01
 healthTlY ds.l 01

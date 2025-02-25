@@ -25,6 +25,8 @@ init:
     jsr initEnemy
     jsr initDraw
 
+    move.b #$ff, isWaveOver
+
 	bra loop
 
 loop:
@@ -247,6 +249,8 @@ currentPts dc.l 0
 
 currentHealth dc.l 200
 maxHealth dc.l 200
+
+isWaveOver dc.b 0
 
 screenW        DS.w    01  ; Reserve Space for Screen Width
 screenH        DS.w    01  ; Reserve Space for Screen Height
