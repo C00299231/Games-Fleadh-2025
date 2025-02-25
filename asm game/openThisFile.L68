@@ -1,0 +1,1221 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 25/02/2025 12:28:58
+
+00000000                             1  ; this file starts the program.
+00000000                             2  ; contains the title screen, includes all other files
+00000000                             3  
+00001000                             4      org $1000
+00001000                             5  start:
+00001000  6000 0002                  6      bra firstInit
+00001004                             7  
+00001004                             8  firstInit:
+00001004  103C 0021                  9      MOVE.B  #tcScreen, D0           ; access screen information
+00001008  223C 00000000             10      MOVE.L  #tcScreenSize, D1       ; placing 0 in D1 triggers loading screen size information
+0000100E  4E4F                      11      TRAP    #15                     ; interpret D0 and D1 for screen size
+00001010  33C1 00001346             12      MOVE.W  D1,         screenH     ; place screen height in memory location
+00001016  4841                      13      SWAP    D1                      ; Swap top and bottom word to retrive screen size
+00001018  33C1 00001344             14      MOVE.W  D1,         screenW     ; place screen width in memory location
+0000101E                            15      
+0000101E  13FC 0000 00001326        16      move.b #$00, isPaused
+00001026                            17      
+00001026  303C 0015                 18      move #tcFont, d0
+0000102A  223C 00AFE5D0             19      move.l #color5, d1
+00001030  4E4F                      20      trap #15
+00001032                            21      
+00001032  6000 0002                 22      bra title
+00001036                            23  
+00001036                            24  title:
+00001036  4EB9 0000162A             25      jsr drawBg
+0000103C                            26      
+0000103C  323C 1F0D                 27      move.w #$1f0d, d1
+00001040  4EB9 0000179C             28      jsr setCursor
+00001046  43F9 00001080             29      lea titlemsg, a1
+0000104C  4EB9 00001784             30      jsr print
+00001052                            31      
+00001052  323C 1C0F                 32      move.w #$1c0f, d1
+00001056  4EB9 0000179C             33      jsr setCursor
+0000105C  43F9 00001092             34      lea title2msg, a1
+00001062  4EB9 00001784             35      jsr print
+00001068                            36      
+00001068                            37      
+00001068  6000 0002                 38      bra titleLoop
+0000106C                            39      
+0000106C                            40  titleLoop:
+0000106C                            41      
+0000106C                            42      
+0000106C                            43      ; put "get input" code into d0
+0000106C  223C 0000000D             44      move.l #enterKey, d1
+00001072  103C 0013                 45      move.b #tcinp, d0
+00001076  4E4F                      46      trap #15
+00001078                            47      
+00001078  4A01                      48      tst.b d1
+0000107A  6600 0030                 49      bne init
+0000107E  60EC                      50      bra titleLoop
+00001080                            51  
+00001080                            52  
+00001080= 2D 20 43 45 4C 4C ...     53  titleMsg dc.b '- CELL DEFENDER -',0
+00001092                            54  
+00001092= 50 72 65 73 73 20 ...     55  title2msg dc.b 'Press "enter" to start...',0
+000010AC                            56  
+000010AC                            57  ; include other files 
+000010AC                            58   include "main.x68"
+000010AC                            59  ; this file contains the main game loop
+000010AC                            60  
+000010AC                            61  init:
+000010AC                            62      ; Enable the screen back buffer(see easy 68k help)
+000010AC  103C 005C                 63      MOVE.B  #tcdbl,D0          ; 92 Enables Double Buffer
+000010B0  123C 0011                 64      MOVE.B  #17,        D1          ; Combine Tasks
+000010B4  4E4F                      65      TRAP    #15                     ; Trap (Perform action)
+000010B6                            66      
+000010B6                            67          ; Place the Player at the center of the screen
+000010B6  4281                      68      CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
+000010B8  3239 00001344             69      MOVE.W  screenW,   D1          ; Place Screen width in D1
+000010BE  82FC 0002                 70      DIVU    #02,        D1          ; divide by 2 for center on X Axis
+000010C2  23C1 00001328             71      MOVE.L  D1,         playerX    ; Players X Position
+000010C8  23C1 00001330             72      move.l d1, centerx
+000010CE                            73  
+000010CE  4281                      74      CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
+000010D0  3239 00001346             75      MOVE.W  screenH,   D1          ; Place Screen width in D1
+000010D6  82FC 0002                 76      DIVU    #02,        D1          ; divide by 2 for center on Y Axis
+000010DA  23C1 0000132C             77      MOVE.L  D1,         playerY    ; Players Y Position
+000010E0  23C1 00001334             78      move.l d1, centerY
+000010E6                            79  
+000010E6  4EB9 00001348             80      jsr initializeCell
+000010EC  13FC 0001 000017FE        81      move.b #1, enemyDir
+000010F4  4EB9 00001808             82      jsr enemySetUp
+000010FA  4EB9 0000181A             83      jsr initEnemy
+00001100  4EB9 00001516             84      jsr initDraw
+00001106                            85  
+00001106  6000 0002                 86      bra loop
+0000110A                            87  
+0000110A                            88  loop:
+0000110A                            89      ;jsr clearscreen
+0000110A  4EB9 0000154C             90      jsr draw
+00001110  4EB9 00001180             91      jsr testinput
+00001116                            92      
+00001116                            93      ; test paused
+00001116  4A39 00001326             94      tst.b isPaused
+0000111C  6600 003E                 95      bne paused
+00001120                            96  
+00001120                            97      ; process
+00001120  4EB9 00001A7A             98      jsr increment
+00001126  4EB9 00001844             99      jsr processEnemy
+0000112C  4EB9 00001876            100      jsr enemyColCheck
+00001132  4EB9 00001148            101      jsr collision
+00001138                           102  
+00001138  6000 0002                103      bra endLoop
+0000113C                           104  endLoop:
+0000113C                           105      ;move #$300, d5
+0000113C                           106      ;jsr wasteTime
+0000113C  4A79 0000133C            107      tst currentHealth
+00001142  6600 01BA                108      bne end
+00001146  60C2                     109      bra loop        ; loop
+00001148                           110  
+00001148                           111  collision:
+00001148  4EB9 00001436            112      jsr zone1collision
+0000114E  4EB9 00001460            113      jsr zone2collision
+00001154  4EB9 0000148A            114      jsr zone3collision
+0000115A  4E75                     115      rts
+0000115C                           116  
+0000115C                           117  paused:
+0000115C  43F9 000017B6            118      lea pauseMsg, a1
+00001162  4EB9 00001784            119      jsr print
+00001168  60D2                     120      bra endLoop
+0000116A                           121      
+0000116A                           122  clearscreen:
+0000116A                           123      ; Clear the screen
+0000116A  103C 000B                124      MOVE.B  #tccrs,D0          ; Set Cursor Position
+0000116E  323C FF00                125      MOVE.W  #$FF00,     D1          ; Clear contents
+00001172  4E4F                     126      TRAP    #15
+00001174  4E75                     127      rts
+00001176                           128  
+00001176                           129  wasteTime:
+00001176                           130      ; value put into d5, keep subtracting 1 until d5 contains 0
+00001176                           131      ; takes a lot of time to process
+00001176  5345                     132      sub #1, d5
+00001178  BA7C 0000                133      cmp #0, d5
+0000117C  66F8                     134      bne wasteTime
+0000117E  4E75                     135      rts
+00001180                           136  
+00001180                           137  testinput:
+00001180                           138      ; getting previous key
+00001180  13F9 0000131E 00001322   139      move.b currentkey, lastkey
+0000118A                           140  
+0000118A                           141      ; set d1 to $0000 0000
+0000118A  7200                     142      move.l #0, d1
+0000118C                           143  
+0000118C                           144      ; put "get input" code into d0
+0000118C  103C 0013                145      move.b #tcinp, d0
+00001190  4E4F                     146      trap #15
+00001192  13C1 0000131E            147      move.b d1, currentkey
+00001198  4E4F                     148      trap #15
+0000119A                           149      
+0000119A                           150      ; AT THIS POINT, CURRENT KEY CONTAINS THE CURRENT/LAST KEY PRESSED,
+0000119A                           151      ; AND D1 CONTAINS WHETHER OR NOT IT IS STILL PRESSED
+0000119A                           152      
+0000119A                           153      ; test if no input
+0000119A  0C01 0000                154      cmpi.b #0, d1
+0000119E  6700 0010                155      beq noinput     ; if no input, move to noinput
+000011A2                           156      
+000011A2  4EB9 000011C2            157      jsr yesinput    ; if input, go to yesinput
+000011A8  4EB9 0000122E            158      jsr endinput    ; then, go to endinput
+000011AE                           159      
+000011AE  4E75                     160      rts             ; return to loop
+000011B0                           161  
+000011B0                           162  noinput:
+000011B0                           163      ; go back to loop
+000011B0  13FC 0000 0000131E       164      move.b #0, currentKey
+000011B8  13FC 0000 00001322       165      move.b #0, lastkey
+000011C0  4E75                     166      rts
+000011C2                           167  
+000011C2                           168  yesinput:
+000011C2                           169      ; at this point, keycode in currentkey is pressed
+000011C2                           170  
+000011C2                           171      ; OPTIONS (can input even if paused)
+000011C2  0C39 0020 0000131E       172      cmpi.b #spacekey, currentkey
+000011CA  6700 0064                173      beq spacepressed
+000011CE  0C39 001B 0000131E       174      cmpi.b #escapekey, currentkey
+000011D6  6700 006A                175      beq escapepressed
+000011DA                           176      
+000011DA                           177      ; test paused (cannot input if paused)
+000011DA  4A39 00001326            178      tst.b isPaused
+000011E0  6600 004C                179      bne endInput
+000011E4                           180  
+000011E4                           181      ; TEST - take damage
+000011E4  0C39 000D 0000131E       182      cmpi.b #enterKey, currentKey
+000011EC                           183      ;beq takeDmg
+000011EC                           184  
+000011EC                           185      ; normal movement buttons [check timer first]
+000011EC  3A39 00001A72            186      move.w playerTime, d5
+000011F2  4EB9 00001A7E            187      jsr checkIncrement
+000011F8  6600 0034                188      bne endInput    
+000011FC                           189  
+000011FC  0C39 0057 0000131E       190      cmpi.b #wkey, currentkey ; W:UP
+00001204  6700 0040                191      beq wpressed
+00001208  0C39 0041 0000131E       192      cmpi.b #akey, currentkey ; A:LEFT
+00001210  6700 004E                193      beq apressed
+00001214  0C39 0053 0000131E       194      cmpi.b #skey, currentkey ; S:DOWN
+0000121C  6700 005C                195      beq spressed
+00001220  0C39 0044 0000131E       196      cmpi.b #dkey, currentkey ; D:RIGHT
+00001228  6700 0070                197      beq dpressed
+0000122C                           198  
+0000122C  4E75                     199      rts
+0000122E                           200  
+0000122E                           201  endInput:
+0000122E  4E75                     202      rts
+00001230                           203  
+00001230                           204  ; INPUTS
+00001230                           205  spacepressed:
+00001230  1A39 00001322            206      move.b lastkey, d5
+00001236  BA39 0000131E            207      cmp.b currentKey, d5
+0000123C  6600 00B0                208      bne spaceJustPressed
+00001240                           209      ;jsr takeDmg
+00001240  4E75                     210      rts
+00001242                           211  
+00001242                           212  escapepressed:
+00001242  6000 00BA                213      bra end
+00001246                           214  
+00001246                           215  ; MOVEMENT INPUT: MUST STAY WITHIN CELL BOUNDARIES
+00001246                           216  wpressed:
+00001246  2639 0000132C            217      move.l playerY, d3 ; check boundary with proposed movement
+0000124C  5383                     218      sub.l #1, D3
+0000124E  B6B9 000014C2            219      cmp.l celltlY, d3
+00001254  6700 0064                220      beq endMovement
+00001258                           221  
+00001258  53B9 0000132C            222      sub.l #1, playerY
+0000125E  4E75                     223      rts
+00001260                           224  apressed:
+00001260  2639 00001328            225      move.l playerX, d3 ; check boundary with proposed movement
+00001266  5383                     226      sub.l #1, D3
+00001268  B6B9 000014BE            227      cmp.l celltlX, d3
+0000126E  6700 004A                228      beq endMovement
+00001272                           229  
+00001272  53B9 00001328            230      sub.l #1, playerX
+00001278  4E75                     231      rts
+0000127A                           232  spressed:
+0000127A  2639 0000132C            233      move.l playerY, d3 ; check boundary with proposed movement
+00001280  5283                     234      add.l #1, D3
+00001282  0683 00000008            235      add.l #playerH, d3 ; player size taken into consideration
+00001288  B6B9 000014CA            236      cmp.l cellBrY, d3
+0000128E  6700 002A                237      beq endMovement
+00001292                           238  
+00001292  52B9 0000132C            239      add.l #1, playerY
+00001298  4E75                     240      rts
+0000129A                           241  dpressed:
+0000129A  2639 00001328            242      move.l playerX, d3 ; check boundary with proposed movement
+000012A0  5283                     243      add.l #1, D3
+000012A2  0683 00000008            244      add.l #playerW, d3 ; player size taken into consideration
+000012A8  B6B9 000014C6            245      cmp.l cellBrX, d3
+000012AE  6700 000A                246      beq endMovement
+000012B2                           247  
+000012B2  52B9 00001328            248      add.l #1, playerX
+000012B8  4E75                     249      rts
+000012BA                           250  
+000012BA                           251  endMovement:
+000012BA  4E75                     252      rts
+000012BC                           253  
+000012BC                           254  ; heal up by one hp
+000012BC                           255  heal:
+000012BC  2439 0000133C            256      move.l currentHealth, d2
+000012C2  B4B9 00001340            257      cmp.l maxHealth, d2
+000012C8  6700 000E                258      beq endHeal
+000012CC  5282                     259      add.l #1, d2
+000012CE  23C2 0000133C            260      move.l d2, currentHealth
+000012D4  6000 0002                261      bra endHeal
+000012D8                           262  endHeal:
+000012D8  4E75                     263      rts
+000012DA                           264  
+000012DA                           265  takeDmg:
+000012DA  2239 0000133C            266      move.l currentHealth, d1
+000012E0  92B9 00001804            267      sub.l enemyDamage, d1
+000012E6  23C1 0000133C            268      move.l d1, currentHealth
+000012EC  4E75                     269      rts
+000012EE                           270  
+000012EE                           271  ; INPUTS SPECIAL
+000012EE                           272  
+000012EE                           273  ; runs if space is pressed this frame, but not prev frame
+000012EE                           274  spaceJustPressed:
+000012EE                           275  
+000012EE  1A39 00001326            276      move.b isPaused, d5
+000012F4  4605                     277      not.b d5
+000012F6  13C5 00001326            278      move.b d5, isPaused
+000012FC  4E75                     279      rts
+000012FE                           280  
+000012FE                           281  ; runs if game is cut short w/ ESC key
+000012FE                           282  end:
+000012FE  4EB8 116A                283      jsr clearscreen
+00001302                           284      
+00001302  43F9 000017C2            285      lea endmsg, a1
+00001308  4EB9 00001784            286      jsr print
+0000130E  FFFF FFFF                287      simhalt
+00001312                           288  
+00001312= 74 65 73 74 00           289  testMsg dc.b 'test',0
+00001317                           290  
+00001317                           291  
+00001317= 14 57 41 53 44 00        292  inputkeys dc.b 20,87,65,83,68,0
+0000131D                           293  
+0000131E                           294  currentkey ds.l 01
+00001322                           295  lastkey ds.l 01
+00001326                           296  isPaused ds.b 01
+00001327                           297  
+00001328                           298  playerX ds.l 01
+0000132C                           299  playerY ds.l 01
+00001330                           300  
+00001330                           301  centerX ds.l 01
+00001334                           302  centerY ds.l 01
+00001338                           303  
+00001338= 00000000                 304  currentPts dc.l 0
+0000133C                           305  
+0000133C= 000000C8                 306  currentHealth dc.l 200
+00001340= 000000C8                 307  maxHealth dc.l 200
+00001344                           308  
+00001344                           309  screenW        DS.w    01  ; Reserve Space for Screen Width
+00001346                           310  screenH        DS.w    01  ; Reserve Space for Screen Height
+00001348                           311  
+00001348                           312  
+00001348                           313  -------------------- end include --------------------
+00001348                           314   include "shapeSizes.x68"
+00001348                           315  ; this file contains some const values
+00001348                           316  
+00001348  =00000008                317  playerW equ 08
+00001348  =00000008                318  playerH equ 08
+00001348                           319  
+00001348  =0000000C                320  enemyH equ 12
+00001348  =00000010                321  enemyW equ 16
+00001348  =00000006                322  enemyHalfH equ 6
+00001348  =00000008                323  enemyHalfW equ 8
+00001348                           324  
+00001348  =00000005                325  bulletH equ 05
+00001348  =00000005                326  bulletW equ 05
+00001348                           327  
+00001348  =00000001                328  pointsGain equ 01
+00001348  =00000001                329  -------------------- end include --------------------
+00001348                           330   include "trapCodes.x68"
+00001348                           331  ; traps
+00001348  =0000000B                332  tccrs  EQU 11       ; Trap code cursor position
+00001348  =0000005C                333  tcdbl  EQU 92       ; Double Buffer Screen Trap Code
+00001348  =00000013                334  tcinp equ 19        ; get input trap code
+00001348  =00000021                335  tcScreen EQU 33    ; Screen size information trap code
+00001348  =00000000                336  tcScreenSize EQU 00    ; Places 0 in D1.L to retrieve Screen width and height in D1.L
+00001348                           337                      ; First 16 bit Word is screen Width and Second 16 bits is screen Height
+00001348  =00000015                338  tcFont equ 21       ; change font style/colour
+00001348  =00000050                339  tcPenClr equ 80     ; change pen colour
+00001348  =00000051                340  tcPenFil equ 81     ; change pen fill
+00001348  =00000057                341  tcRect equ 87       ; draw rectangle
+00001348  =00000057                342  -------------------- end include --------------------
+00001348                           343   include "inputKeyCodes.x68"
+00001348                           344  ; this file contains relevant input keycodes
+00001348                           345  
+00001348  =0000001B                346  escapekey equ $1b
+00001348  =00000020                347  spacekey equ $20
+00001348  =0000000D                348  enterKey equ $0d
+00001348                           349  
+00001348  =00000057                350  wkey equ $57
+00001348  =00000041                351  akey equ $41
+00001348  =00000053                352  skey equ $53
+00001348  =00000044                353  dkey equ $44
+00001348  =00000044                354  -------------------- end include --------------------
+00001348                           355   include "colours.x68"
+00001348                           356  ; this file contains relevant color values
+00001348                           357  
+00001348                           358  ; 6ive colours: ranging from dark to light, plus one for contrast
+00001348                           359  ; color1: darkest
+00001348                           360  ; color5: lightest
+00001348                           361  ; colorRed: contrast red colour
+00001348  =00201808                362  color1 equ $00201808
+00001348  =00494320                363  color2 equ $00494320
+00001348  =0056864B                364  color3 equ $0056864b
+00001348  =007AC687                365  color4 equ $007ac687
+00001348  =00AFE5D0                366  color5 equ $00afe5d0
+00001348                           367  
+00001348  =00463EBD                368  colorRed equ $00463ebd
+00001348  =00463EBD                369  -------------------- end include --------------------
+00001348                           370   include "cell.x68"
+00001348                           371  ; this file contains cell data
+00001348                           372  
+00001348                           373  ; cell contains:
+00001348                           374      ; big square boundary
+00001348                           375      ; 2 square attack zones - top corners
+00001348                           376      ; 1 square heal zone - bottom
+00001348                           377  
+00001348                           378  initializeCell: ; initialize values for cell and zones
+00001348                           379  
+00001348                           380      ; this subroutine gathers top-left and bottom-right bounds for the cell,
+00001348                           381      ; as well as each zone
+00001348                           382  
+00001348                           383      ; these bounds are used to draw and process
+00001348                           384  
+00001348                           385      ;--------RECTANGLE TRAP CODE:
+00001348                           386      ; d1: top left X
+00001348                           387      ; d2: top left Y
+00001348                           388  
+00001348                           389      ; d3: bottom right X
+00001348                           390      ; d4: bottom right Y
+00001348                           391      
+00001348                           392  
+00001348                           393      ;--------get cell bounds
+00001348                           394      ; TL
+00001348  2238 1330                395      move.l centerX, d1      ; move centerX to d1
+0000134C  92B9 000014FE            396      sub.l cellXradius, d1     ; add/sub based on cell radius
+00001352  23C1 000014BE            397      move.l d1, celltlX      ; save to relevant location
+00001358                           398  
+00001358  2238 1334                399      move.l centerY, d1
+0000135C  92B9 00001502            400      sub.l cellYradius, d1
+00001362  23C1 000014C2            401      move.l d1, celltlY
+00001368                           402  
+00001368                           403      ; BR
+00001368  2238 1330                404      move.l centerX, d1
+0000136C  D2B9 000014FE            405      add.l cellXradius, d1
+00001372  D2B8 0008                406      add.l playerH, d1
+00001376  23C1 000014C6            407      move.l d1, cellbrX
+0000137C                           408  
+0000137C  2238 1334                409      move.l centerY, d1
+00001380  D2B9 00001502            410      add.l cellYradius, d1
+00001386  23C1 000014CA            411      move.l d1, cellbrY
+0000138C                           412  
+0000138C                           413  
+0000138C                           414      ;--------get zone 1 bounds
+0000138C                           415      ; TL
+0000138C  23F9 000014BE 000014CE   416      move.l celltlX, zone1tlX
+00001396                           417  
+00001396  23F9 000014C2 000014D2   418      move.l celltlY, zone1tlY
+000013A0                           419  
+000013A0                           420      ; BR
+000013A0  2239 000014CE            421      move.l zone1tlX, d1
+000013A6  D2B9 00001506            422      add.l zoneWidth, d1
+000013AC  23C1 000014D6            423      move.l d1, zone1brX
+000013B2                           424  
+000013B2  2239 000014D2            425      move.l zone1tly, d1
+000013B8  D2B9 0000150A            426      add.l zoneHeight, d1
+000013BE  23C1 000014DA            427      move.l d1, zone1brY
+000013C4                           428  
+000013C4                           429  
+000013C4                           430      ;--------get zone 2 bounds
+000013C4                           431      ; TL
+000013C4  2239 000014C6            432      move.l cellbrX, d1
+000013CA  92B9 00001506            433      sub.l zoneWidth, d1
+000013D0  23C1 000014DE            434      move.l d1, zone2tlX
+000013D6                           435  
+000013D6  23F9 000014C2 000014E2   436      move.l celltlY, zone2tlY
+000013E0                           437  
+000013E0                           438      ; BR
+000013E0  23F9 000014C6 000014E6   439      move.l cellbrx, zone2brX
+000013EA                           440  
+000013EA  2239 000014C2            441      move.l celltlY, d1
+000013F0  D2B9 0000150A            442      add.l zoneHeight, d1
+000013F6  23C1 000014EA            443      move.l d1, zone2brY
+000013FC                           444  
+000013FC                           445  
+000013FC                           446      ;--------get zone 3 bounds
+000013FC                           447      ;(ZONE 3 IS ON THE BOTTOM; FULL WIDTH OF CELL, REGULAR ZONE HEIGHT)
+000013FC                           448      ; TL
+000013FC  2239 000014C6            449      move.l cellbrX, d1
+00001402  92B9 00001506            450      sub.l zoneWidth, d1
+00001408  23C1 000014EE            451      move.l d1, zone3tlX
+0000140E                           452  
+0000140E  2239 000014CA            453      move.l cellbrY, d1
+00001414  92B9 0000150A            454      sub.l zoneHeight, d1
+0000141A  23C1 000014F2            455      move.l d1, zone3tlY
+00001420                           456  
+00001420                           457      ; BR
+00001420  23F9 000014C6 000014F6   458      move.l cellbrX, zone3brX
+0000142A                           459  
+0000142A  23F9 000014CA 000014FA   460      move.l cellbrY, zone3brY
+00001434                           461  
+00001434  4E75                     462      rts
+00001436                           463  
+00001436                           464  zone1collision:
+00001436  2438 1328                465      move.l playerX, d2
+0000143A  2638 132C                466      move.l playerY, d3
+0000143E                           467  
+0000143E                           468      ; check x
+0000143E  B4B9 000014D6            469      cmp.l zone1brX, d2
+00001444  6E00 0076                470      bgt endCollision
+00001448                           471      ; check y
+00001448  B6B9 000014DA            472      cmp.l zone1brY, d3
+0000144E  6E00 006C                473      bgt endCollision
+00001452                           474  
+00001452                           475  
+00001452                           476      ; at this point, player is confirmed in zone 1
+00001452  43F9 0000150E            477      lea zoneMsg, a1
+00001458  4EB9 00001784            478      jsr print
+0000145E                           479  
+0000145E  4E75                     480      rts
+00001460                           481  
+00001460                           482  zone2collision:
+00001460  2438 1328                483      move.l playerX, d2
+00001464  2638 132C                484      move.l playerY, d3
+00001468                           485  
+00001468                           486      ; check x
+00001468  B4B9 000014DE            487      cmp.l zone2tlX, d2
+0000146E  6D00 004C                488      blt endCollision
+00001472                           489      ; check y
+00001472  B6B9 000014DA            490      cmp.l zone1brY, d3
+00001478  6E00 0042                491      bgt endCollision
+0000147C                           492  
+0000147C  43F9 0000150E            493      lea zoneMsg, a1
+00001482  4EB9 00001784            494      jsr print
+00001488                           495  
+00001488                           496      ; at this point, player is confirmed in zone 2
+00001488                           497  
+00001488  4E75                     498      rts
+0000148A                           499  
+0000148A                           500  zone3collision:
+0000148A  2438 1328                501      move.l playerX, d2
+0000148E  2638 132C                502      move.l playerY, d3
+00001492                           503  
+00001492                           504      ; check x
+00001492  B4B9 000014EE            505      cmp.l zone3tlX, d2
+00001498  6D00 0022                506      blt endCollision
+0000149C                           507      ; check y
+0000149C  B6B9 000014F2            508      cmp.l zone3tlY, d3
+000014A2  6D00 0018                509      blt endCollision
+000014A6                           510  
+000014A6                           511      ; at this point, player is confirmed in zone 3
+000014A6                           512  
+000014A6  3A39 00001A78            513      move.w healTime, d5
+000014AC  4EB9 00001A7E            514      jsr checkIncrement
+000014B2  6600 0008                515      bne endCollision
+000014B6  4EB8 12BC                516      jsr heal
+000014BA                           517      
+000014BA  4E75                     518      rts
+000014BC                           519  
+000014BC                           520  endCollision:
+000014BC  4E75                     521      rts
+000014BE                           522  
+000014BE                           523  ;---------------cell top-left bounds
+000014BE                           524  celltlX ds.l 01
+000014C2                           525  celltlY ds.l 01
+000014C6                           526  ; cell bottom-right bounds
+000014C6                           527  cellbrX ds.l 01
+000014CA                           528  cellbrY ds.l 01
+000014CE                           529  
+000014CE                           530  ;---------------zone 1 top-left bounds
+000014CE                           531  zone1tlX ds.l 01
+000014D2                           532  zone1tlY ds.l 01
+000014D6                           533  ; zone 1 bottom-right bounds
+000014D6                           534  zone1brX ds.l 01
+000014DA                           535  zone1brY ds.l 01
+000014DE                           536  
+000014DE                           537  ;---------------zone 2 top-left bounds
+000014DE                           538  zone2tlX ds.l 01
+000014E2                           539  zone2tlY ds.l 01
+000014E6                           540  ; zone 2 bottom-right bounds
+000014E6                           541  zone2brX ds.l 01
+000014EA                           542  zone2brY ds.l 01
+000014EE                           543  
+000014EE                           544  ;---------------zone 3 top-left bounds
+000014EE                           545  zone3tlX ds.l 01
+000014F2                           546  zone3tlY ds.l 01
+000014F6                           547  ; zone 3 bottom-right bounds
+000014F6                           548  zone3brX ds.l 01
+000014FA                           549  zone3brY ds.l 01
+000014FE                           550  
+000014FE                           551  ; horizontal and vertical radius of main cell (half width)
+000014FE= 00000050                 552  cellXradius dc.l 80
+00001502= 00000046                 553  cellYradius dc.l 70
+00001506                           554  
+00001506                           555  ; width of zone
+00001506= 00000032                 556  zoneWidth dc.l 50
+0000150A= 00000023                 557  zoneHeight dc.l 35
+0000150E                           558  
+0000150E= 49 4E 20 5A 4F 4E ...    559  zoneMsg dc.b 'IN ZONE',0
+00001516                           560  
+00001516                           561  
+00001516                           562  -------------------- end include --------------------
+00001516                           563   include "draw.x68"
+00001516                           564  ; this file contains all draw functions
+00001516                           565  
+00001516                           566  initDraw:
+00001516                           567      ; get health rectangle bounds
+00001516                           568  
+00001516                           569      ;HEIGHT
+00001516  3238 1346                570      move.w screenH, d1
+0000151A  0481 00000078            571      sub.l #120, d1
+00001520  23C1 000017E0            572      move.l d1, healthTlY
+00001526  0681 0000000F            573      add.l #15, d1
+0000152C  23C1 000017E8            574      move.l d1, healthBrY
+00001532                           575  
+00001532                           576      ;WIDTH
+00001532  2238 1330                577      move.l centerX, d1
+00001536                           578      ;move.l maxHealth, d2
+00001536                           579      ;divu #2, d2
+00001536  92B8 1340                580      sub.l maxHealth, d1
+0000153A  23C1 000017DC            581      move.l d1, healthTlX
+00001540                           582  
+00001540  D2B8 1340                583      add.l maxhealth, d1
+00001544  23C1 000017E4            584      move.l d1, healthBrX
+0000154A                           585      
+0000154A  4E75                     586      rts
+0000154C                           587  
+0000154C                           588  
+0000154C                           589  draw:
+0000154C                           590       ; Enable back buffer
+0000154C  103C 005E                591      MOVE.B  #94,        D0
+00001550  4E4F                     592      TRAP    #15
+00001552                           593  
+00001552  4EB9 0000162A            594      jsr drawBg
+00001558  4EB9 000016DC            595      jsr drawCell
+0000155E  4EB9 0000165A            596      jsr drawPlayer
+00001564  4EB9 0000168E            597      jsr drawEnemy
+0000156A  4EB9 000015D2            598      jsr drawText
+00001570  4EB9 00001578            599      jsr drawHealth
+00001576  4E75                     600      rts
+00001578                           601  
+00001578                           602  drawHealth:
+00001578  223C 0056864B            603      move.l #color3, d1
+0000157E  4EB9 00001774            604      jsr setPenColour
+00001584  223C 00494320            605      move.l #color2, d1
+0000158A  4EB9 0000177C            606      jsr setFillColour
+00001590                           607  
+00001590  2239 000017DC            608      move.l healthTlX, d1
+00001596  2439 000017E0            609      move.l healthTlY, d2
+0000159C                           610  
+0000159C  2639 000017E4            611      move.l healthBrX, d3
+000015A2  2839 000017E8            612      move.l healthBrY, d4
+000015A8  4EB9 00001794            613      jsr drawRect
+000015AE                           614  
+000015AE                           615      ; DRAW FULL PART OF HP BAR
+000015AE  2639 000017DC            616      move.l healthtlX, d3
+000015B4  D6B8 133C                617      add.l currentHealth, d3
+000015B8                           618  
+000015B8  223C 0056864B            619      move.l #color3, d1 ; change colour
+000015BE  4EB9 0000177C            620      jsr setFillColour
+000015C4                           621  
+000015C4  2239 000017DC            622      move.l healthTlX, d1 ; set value in d1 back to what its supposed to be
+000015CA  4EB9 00001794            623      jsr drawRect
+000015D0  4E75                     624      rts
+000015D2                           625  
+000015D2                           626  drawText:
+000015D2                           627      ; set fill colour
+000015D2  223C 00201808            628      move.l #color1, d1
+000015D8  4EB9 0000177C            629      jsr setFillColour
+000015DE                           630      ; PLAYER SCORE MSG
+000015DE  323C 0201                631      move.w #$0201, d1
+000015E2  4EB9 0000179C            632      jsr setCursor
+000015E8  43F9 000017CC            633      lea pointsMsg, a1
+000015EE  4EB9 00001784            634      jsr print
+000015F4                           635      ; PLAYER SCORE
+000015F4  223C 00000E01            636      move.l #$e01, d1
+000015FA  4EB9 0000179C            637      jsr setCursor
+00001600  2238 1338                638      move.l currentPts, d1
+00001604  4EB9 0000178C            639      jsr printNum
+0000160A                           640  
+0000160A                           641      ; HEALTH
+0000160A  323C 0718                642      move.w #$0718, d1
+0000160E  4EB9 0000179C            643      jsr setCursor
+00001614  43F9 000017D4            644      lea healthMsg, a1
+0000161A  4EB9 00001784            645      jsr print
+00001620                           646  
+00001620                           647  
+00001620                           648      ; reset cursor
+00001620  7200                     649      move.l #0, d1
+00001622  4EB9 0000179C            650      jsr setCursor
+00001628  4E75                     651      rts
+0000162A                           652  
+0000162A                           653  drawBg:
+0000162A                           654      ; set colours
+0000162A  223C 00494320            655      move.l #color2, d1
+00001630  4EB9 00001774            656      jsr setPenColour
+00001636  223C 00201808            657      move.l #color1, d1
+0000163C  4EB9 0000177C            658      jsr setFillColour
+00001642                           659  
+00001642                           660      ; clear d3 and d4 (screen W and H are words)
+00001642  4283                     661      clr.l d3
+00001644  4284                     662      clr.l d4
+00001646                           663  
+00001646                           664      ; put the stuff in the registers, draw rect
+00001646  7200                     665      move.l #0, d1
+00001648  7400                     666      move.l #0, d2
+0000164A  3638 1344                667      move.w screenW, d3
+0000164E  3838 1346                668      move.w screenH, d4
+00001652  4EB9 00001794            669      jsr drawRect
+00001658  4E75                     670      rts
+0000165A                           671  
+0000165A                           672  drawPlayer:
+0000165A                           673      ; Set white
+0000165A  223C 00AFE5D0            674      MOVE.L #color5, d1
+00001660  4EB9 00001774            675      jsr setPenColour
+00001666  223C 00201808            676      move.l #color1, d1
+0000166C  4EB9 0000177C            677      jsr setFillColour
+00001672                           678      
+00001672                           679      ; Set X, Y, Width and Height
+00001672  2238 1328                680      MOVE.L  playerX,   D1          ; X
+00001676  2438 132C                681      MOVE.L  playerY,   D2          ; Y
+0000167A  2638 1328                682      MOVE.L  playerX,   D3
+0000167E  5083                     683      ADD.L   #playerW,   D3      ; Width
+00001680  2838 132C                684      MOVE.L  playerY,   D4 
+00001684  5084                     685      ADD.L   #playerH,   D4      ; Height
+00001686                           686      
+00001686                           687      ; Draw Player
+00001686  4EB9 00001794            688      jsr drawRect
+0000168C  4E75                     689      RTS
+0000168E                           690  
+0000168E                           691  drawEnemy:
+0000168E  4A39 000017FF            692      tst.b enemyActive
+00001694  6700 00DC                693      beq endDraw
+00001698                           694      ; set colour
+00001698  223C 00AFE5D0            695      move.l #color5, d1
+0000169E  4EB9 00001774            696      jsr setPenColour
+000016A4  223C 00463EBD            697      move.l #colorRed, d1
+000016AA  4EB9 0000177C            698      jsr setFillColour
+000016B0                           699  
+000016B0                           700      ; set rect values
+000016B0  2239 000017F2            701      move.l enemyX, d1
+000016B6  2439 000017F6            702      move.l enemyY, d2
+000016BC  2639 000017F2            703      move.l enemyX, d3
+000016C2  2839 000017F6            704      move.l enemyY, d4
+000016C8  0683 00000010            705      add.l #enemyW, d3
+000016CE  0684 0000000C            706      add.l #enemyH, d4
+000016D4                           707  
+000016D4  4EB9 00001794            708      jsr drawRect
+000016DA  4E75                     709      rts
+000016DC                           710  
+000016DC                           711  drawCell:
+000016DC                           712      ;---------------draw main cell
+000016DC                           713      ; change colours
+000016DC  223C 007AC687            714      move.l #color4, d1
+000016E2  4EB9 00001774            715      jsr setPenColour
+000016E8  223C 00494320            716      move.l #color2, d1
+000016EE  4EB9 0000177C            717      jsr setFillColour
+000016F4                           718  
+000016F4  2238 14BE                719      move.l celltlX, d1
+000016F8  2438 14C2                720      move.l celltlY, d2
+000016FC  2638 14C6                721      move.l cellbrX, d3
+00001700  2838 14CA                722      move.l cellbrY, d4
+00001704  4EB9 00001794            723      jsr drawRect
+0000170A                           724  
+0000170A                           725      ;---------------draw zone 1
+0000170A                           726      ; change colours
+0000170A  223C 007AC687            727      move.l #color4, d1
+00001710  4EB9 00001774            728      jsr setPenColour
+00001716  223C 0056864B            729      move.l #color3, d1
+0000171C  4EB9 0000177C            730      jsr setFillColour
+00001722                           731  
+00001722  2238 14CE                732      move.l zone1tlX, d1
+00001726  2438 14D2                733      move.l zone1tlY, d2
+0000172A  2638 14D6                734      move.l zone1brX, d3
+0000172E  2838 14DA                735      move.l zone1brY, d4
+00001732  4EB9 00001794            736      jsr drawRect
+00001738                           737  
+00001738                           738      ;---------------draw zone 2
+00001738  2238 14DE                739      move.l zone2tlX, d1
+0000173C  2438 14E2                740      move.l zone2tlY, d2
+00001740  2638 14E6                741      move.l zone2brX, d3
+00001744  2838 14EA                742      move.l zone2brY, d4
+00001748  4EB9 00001794            743      jsr drawRect
+0000174E                           744      
+0000174E                           745  
+0000174E                           746      ;---------------draw zone 3
+0000174E                           747      ; change colours
+0000174E  223C 007AC687            748      move.l #color4, d1
+00001754  4EB9 0000177C            749      jsr setFillColour
+0000175A                           750  
+0000175A  2238 14EE                751      move.l zone3tlX, d1
+0000175E  2438 14F2                752      move.l zone3tlY, d2
+00001762  2638 14F6                753      move.l zone3brX, d3
+00001766  2838 14FA                754      move.l zone3brY, d4
+0000176A  4EB9 00001794            755      jsr drawRect
+00001770                           756  
+00001770                           757      ; done
+00001770  4E75                     758      rts
+00001772                           759  
+00001772                           760  endDraw:
+00001772  4E75                     761      rts
+00001774                           762  
+00001774                           763  setPenColour:
+00001774  103C 0050                764      move.b #tcPenClr, d0
+00001778  4E4F                     765      trap #15
+0000177A  4E75                     766      rts
+0000177C                           767  
+0000177C                           768  setFillColour:
+0000177C  103C 0051                769      move.b #tcPenFil, d0
+00001780  4E4F                     770      trap #15
+00001782  4E75                     771      rts
+00001784                           772  
+00001784                           773  print:
+00001784  303C 000D                774      move #13, d0
+00001788  4E4F                     775      trap #15
+0000178A  4E75                     776      rts
+0000178C                           777  
+0000178C                           778  printNum:
+0000178C  303C 0003                779      move #3, d0
+00001790  4E4F                     780      trap #15
+00001792  4E75                     781      rts
+00001794                           782  
+00001794                           783  drawRect:
+00001794  103C 0057                784      MOVE.B  #tcRect, d0
+00001798  4E4F                     785      TRAP    #15
+0000179A  4E75                     786      rts
+0000179C                           787  
+0000179C                           788  setCursor:
+0000179C  103C 000B                789      MOVE.B  #tcCrs, d0
+000017A0  4E4F                     790      TRAP    #15
+000017A2  4E75                     791      rts
+000017A4                           792  
+000017A4                           793  ; INSTANT NEW LINE
+000017A4                           794  crlf:
+000017A4  303C 0006                795      move #6, d0
+000017A8  323C 000D                796      move #13, d1
+000017AC  4E4F                     797      trap #15
+000017AE  323C 000A                798      move #10, d1
+000017B2  4E4F                     799      trap #15
+000017B4  4E75                     800      rts
+000017B6                           801  
+000017B6= 47 41 4D 45 20 50 ...    802  pauseMsg dc.b 'GAME PAUSED', 0
+000017C2= 47 41 4D 45 20 4F ...    803  endMsg dc.b 'GAME OVER', 0
+000017CC= 50 4F 49 4E 54 53 ...    804  pointsMsg dc.b 'POINTS:', 0
+000017D4= 48 45 41 4C 54 48 ...    805  healthMsg dc.b 'HEALTH:', 0
+000017DC                           806  
+000017DC                           807  healthTlX ds.l 01
+000017E0                           808  healthTlY ds.l 01
+000017E4                           809  healthBrX ds.l 01
+000017E8                           810  healthBrY ds.l 01
+000017EC                           811  
+000017EC                           812  currentHpX ds.l 01
+000017F0                           813  
+000017F0= C8                       814  healthBarOffset dc.b 200
+000017F1                           815  
+000017F1                           816  
+000017F1                           817  
+000017F1                           818  -------------------- end include --------------------
+000017F1                           819   include "enemies.x68"
+000017F1                           820  ; this file contains enemy data
+000017F1                           821  
+000017F1                           822  ; variable data for current enemy
+000017F2                           823  enemyX ds.l 01
+000017F6                           824  enemyY ds.l 01
+000017FA                           825  enemyHp ds.l 01
+000017FE                           826  
+000017FE                           827  enemyDir ds.b 01
+000017FF                           828  enemyActive ds.b 01
+00001800                           829  
+00001800                           830  enemyMaxHp ds.l 01
+00001804                           831  enemyDamage ds.l 01
+00001808                           832  
+00001808                           833  enemySetUp:
+00001808  21FC 00000014 1800       834      move.l #20, enemyMaxHp
+00001810  21FC 00000014 1804       835      move.l #20, enemyDamage
+00001818  4E75                     836      rts
+0000181A                           837  
+0000181A                           838  ; enemy initialization: set position, health
+0000181A                           839  ; 3 longs require 3 mem locations
+0000181A                           840  ; call srts, then take values outside them
+0000181A                           841  
+0000181A                           842  ; GENERAL INIT/PROCESS
+0000181A                           843  ; before these srts are called, enemyDir is given a value
+0000181A                           844  ; 0: top
+0000181A                           845  ; 1: left
+0000181A                           846  ; 2: right
+0000181A                           847  ; 3: bottom
+0000181A                           848  
+0000181A                           849  initEnemy:
+0000181A                           850      ; init based on which direction
+0000181A  4A38 17FE                851      tst.b enemyDir
+0000181E  6700 0086                852      beq initEnemyTop
+00001822  0C38 0001 17FE           853      cmpi.b #1, enemyDir
+00001828  6700 00C4                854      beq initEnemyLeft
+0000182C  0C38 0002 17FE           855      cmpi.b #2, enemyDir
+00001832  6700 0102                856      beq initEnemyRight
+00001836  0C38 0003 17FE           857      cmpi.b #3, enemyDir
+0000183C  6700 0142                858      beq initEnemyBottom
+00001840                           859  
+00001840                           860      ; no valid direction placed. just put enemy at the top
+00001840  6000 0064                861      bra initEnemyTop
+00001844                           862  
+00001844                           863  processEnemy:
+00001844  4A38 17FF                864      tst.b enemyActive
+00001848  6700 018E                865      beq endProcess
+0000184C                           866      ; process based on direction
+0000184C  4A38 17FE                867      tst.b enemyDir
+00001850  6700 0070                868      beq processEnemyTop
+00001854  0C38 0001 17FE           869      cmpi.b #1, enemyDir
+0000185A  6700 00AE                870      beq processEnemyLeft
+0000185E  0C38 0002 17FE           871      cmpi.b #2, enemyDir
+00001864  6700 00EE                872      beq processEnemyRight
+00001868  0C38 0003 17FE           873      cmpi.b #3, enemyDir
+0000186E  6700 012E                874      beq processEnemyBottom
+00001872                           875  
+00001872                           876      ; no valid direction placed. just put enemy at the top
+00001872  6000 004E                877      bra processEnemyTop
+00001876                           878  
+00001876                           879  enemyColCheck:
+00001876  4A38 17FF                880      tst.b enemyActive
+0000187A  6700 015E                881      beq endCollide
+0000187E                           882  
+0000187E                           883      ; colCheck based on direction
+0000187E  4A38 17FE                884      tst.b enemyDir
+00001882  6700 0056                885      beq enemyTopColCheck
+00001886  0C38 0001 17FE           886      cmpi.b #1, enemyDir
+0000188C  6700 0094                887      beq enemyLeftColCheck
+00001890  0C38 0002 17FE           888      cmpi.b #2, enemyDir
+00001896  6700 00D4                889      beq enemyRightColCheck
+0000189A  0C38 0003 17FE           890      cmpi.b #3, enemyDir
+000018A0  6700 0114                891      beq enemyBottomColCheck
+000018A4                           892  
+000018A4                           893      ; no valid direction. nothing we can do atp
+000018A4  4E75                     894      rts
+000018A6                           895  
+000018A6                           896  ;-------------------------------ENEMY TOP
+000018A6                           897  initEnemyTop:
+000018A6  21FC 00000000 17F6       898      move.l #0, enemyY
+000018AE  21F8 1330 17F2           899      move.l centerX, enemyX
+000018B4  21F8 1800 17FA           900      move.l enemyMaxHp, enemyHp
+000018BA  4EB9 000019DC            901      jsr endInitEnemy
+000018C0  4E75                     902      rts
+000018C2                           903  processEnemyTop:
+000018C2  3A39 00001A74            904      move.w enemyTime, d5
+000018C8  4EB9 00001A7E            905      jsr checkIncrement
+000018CE  6600 0108                906      bne endProcess
+000018D2                           907  
+000018D2  52B8 17F6                908      add.l #1, enemyY
+000018D6                           909  
+000018D6  6000 0100                910      bra endProcess
+000018DA                           911  
+000018DA                           912  enemyTopColCheck:
+000018DA  2438 14C2                913      move.l celltlY, d2
+000018DE  0482 0000000C            914      sub.l #enemyH, d2
+000018E4  B4B8 17F6                915      cmp.l enemyY, d2
+000018E8  6700 00E0                916      beq enemyCollide
+000018EC  4E75                     917      rts
+000018EE                           918  
+000018EE                           919  ;-------------------------------ENEMY LEFT
+000018EE                           920  initEnemyLeft:
+000018EE  21FC 00000000 17F2       921      move.l #0, enemyX
+000018F6  21F8 1334 17F6           922      move.l centerY, enemyY
+000018FC  21F8 1800 17FA           923      move.l enemyMaxHp, enemyHp
+00001902  4EB9 000019DC            924      jsr endInitEnemy
+00001908  4E75                     925      rts
+0000190A                           926  processEnemyLeft:
+0000190A  3A39 00001A74            927      move.w enemyTime, d5
+00001910  4EB9 00001A7E            928      jsr checkIncrement
+00001916  6600 00C0                929      bne endProcess
+0000191A                           930  
+0000191A  52B8 17F2                931      add.l #1, enemyX
+0000191E                           932  
+0000191E  6000 00B8                933      bra endProcess
+00001922                           934  
+00001922                           935  enemyLeftColCheck:
+00001922  2438 14BE                936      move.l celltlX, d2
+00001926  0482 00000010            937      sub.l #enemyW, d2
+0000192C  B4B8 17F2                938      cmp.l enemyX, d2
+00001930  6700 0098                939      beq enemyCollide
+00001934  4E75                     940      rts
+00001936                           941  
+00001936                           942  ;-------------------------------ENEMY RIGHT
+00001936                           943  initEnemyRight:
+00001936  4282                     944      clr.l d2
+00001938  3438 1344                945      move.w screenW, d2
+0000193C  21C2 17F2                946      move.l d2, enemyX
+00001940                           947  
+00001940  21F8 1334 17F6           948      move.l centerY, enemyY
+00001946  21F8 1800 17FA           949      move.l enemyMaxHp, enemyHp
+0000194C                           950  
+0000194C  4EB9 000019DC            951      jsr endInitEnemy
+00001952  4E75                     952      rts
+00001954                           953  processEnemyRight:
+00001954  3A39 00001A74            954      move.w enemyTime, d5
+0000195A  4EB9 00001A7E            955      jsr checkIncrement
+00001960  6600 0076                956      bne endProcess
+00001964                           957  
+00001964  53B8 17F2                958      sub.l #1, enemyX
+00001968                           959  
+00001968  6000 006E                960      bra endProcess
+0000196C                           961  
+0000196C                           962  enemyRightColCheck:
+0000196C  2438 14BE                963      move.l celltlx, d2
+00001970  0482 00000010            964      sub.l #enemyw, d2
+00001976  B4B8 17F2                965      cmp.l enemyX, d2
+0000197A  6700 004E                966      beq enemyCollide
+0000197E  4E75                     967      rts
+00001980                           968  
+00001980                           969  ;-------------------------------ENEMY BOTTOM
+00001980                           970  initEnemyBottom:
+00001980  4282                     971      clr.l d2
+00001982  3438 1346                972      move.w screenH, d2
+00001986  21C2 17F6                973      move.l d2, enemyY
+0000198A                           974  
+0000198A  21F8 1330 17F2           975      move.l centerX, enemyX
+00001990  21F8 1800 17FA           976      move.l enemyMaxHp, enemyHp
+00001996                           977  
+00001996  4EB9 000019DC            978      jsr endInitEnemy
+0000199C  4E75                     979      rts
+0000199E                           980  processEnemyBottom:
+0000199E  3A39 00001A74            981      move.w enemyTime, d5
+000019A4  4EB9 00001A7E            982      jsr checkIncrement
+000019AA  6600 002C                983      bne endProcess
+000019AE                           984  
+000019AE  53B8 17F6                985      sub.l #1, enemyY
+000019B2                           986  
+000019B2  6000 0024                987      bra endProcess
+000019B6                           988  
+000019B6                           989  enemyBottomColCheck:
+000019B6  2438 14C2                990      move.l celltlY, d2
+000019BA  0482 0000000C            991      sub.l #enemyH, d2
+000019C0  B4B8 17F6                992      cmp.l enemyY, d2
+000019C4  6700 0004                993      beq enemyCollide
+000019C8  4E75                     994      rts
+000019CA                           995  
+000019CA                           996  ;---------------OTHER STUFF
+000019CA                           997  enemyCollide: ; enemy successfully reached the base
+000019CA  4EB8 12DA                998      jsr takeDmg
+000019CE  11FC 0000 17FF           999      move.b #0, enemyActive
+000019D4  4E75                    1000      rts
+000019D6                          1001  enemyHit: ; enemy hit by a projectile
+000019D6  4E75                    1002      rts
+000019D8                          1003  
+000019D8                          1004  endProcess:
+000019D8  4E75                    1005      rts
+000019DA                          1006  endCollide:
+000019DA  4E75                    1007      rts
+000019DC                          1008  endInitEnemy:
+000019DC  5DB8 17F6               1009      sub.l #enemyHalfH, enemyY
+000019E0  51B8 17F2               1010      sub.l #enemyHalfW, enemyX
+000019E4  4E75                    1011      rts
+000019E6                          1012  
+000019E6                          1013  ; ALL ENEMIES
+000019E6                          1014  enemiesX ds.l 10
+00001A0E                          1015  enemiesY ds.l 10
+00001A36                          1016  enemiesHp ds.l 10
+00001A5E                          1017  enemiesDir ds.b 10
+00001A68                          1018  enemiesActive ds.b 10
+00001A68                          1019  -------------------- end include --------------------
+00001A72                          1020   include "timings.x68"
+00001A72                          1021  ; this file contains timing stuff
+00001A72                          1022  
+00001A72= 000A                    1023  playerTime dc.w 10
+00001A74= 0032                    1024  enemyTime dc.w 50
+00001A76= 012C                    1025  projTime dc.w 300
+00001A78= 0028                    1026  healTime dc.w 40
+00001A7A                          1027  
+00001A7A                          1028  increment: ; D6 permanently used up
+00001A7A  5246                    1029      add.w #1, d6
+00001A7C  4E75                    1030      rts
+00001A7E                          1031  
+00001A7E                          1032  checkIncrement: ; d5 has been given check value
+00001A7E  3806                    1033      move.w d6, d4 ; dont wanna mess up d6
+00001A80  88C5                    1034      divu d5, d4
+00001A82  383C 0000               1035      move.w #0, d4
+00001A86  4844                    1036      swap d4
+00001A88                          1037      ; d4 low word contains modulo
+00001A88                          1038      ; compare w/ 0
+00001A88  4A44                    1039      tst d4
+00001A8A                          1040      ; thingy contains whether they were equal
+00001A8A  4E75                    1041      rts
+00001A8A  4E75                    1042  -------------------- end include --------------------
+00001A8C                          1043  
+00001A8C                          1044      end start
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+AKEY                41
+APRESSED            1260
+BULLETH             5
+BULLETW             5
+CELLBRX             14C6
+CELLBRY             14CA
+CELLTLX             14BE
+CELLTLY             14C2
+CELLXRADIUS         14FE
+CELLYRADIUS         1502
+CENTERX             1330
+CENTERY             1334
+CHECKINCREMENT      1A7E
+CLEARSCREEN         116A
+COLLISION           1148
+COLOR1              201808
+COLOR2              494320
+COLOR3              56864B
+COLOR4              7AC687
+COLOR5              AFE5D0
+COLORRED            463EBD
+CRLF                17A4
+CURRENTHEALTH       133C
+CURRENTHPX          17EC
+CURRENTKEY          131E
+CURRENTPTS          1338
+DKEY                44
+DPRESSED            129A
+DRAW                154C
+DRAWBG              162A
+DRAWCELL            16DC
+DRAWENEMY           168E
+DRAWHEALTH          1578
+DRAWPLAYER          165A
+DRAWRECT            1794
+DRAWTEXT            15D2
+END                 12FE
+ENDCOLLIDE          19DA
+ENDCOLLISION        14BC
+ENDDRAW             1772
+ENDHEAL             12D8
+ENDINITENEMY        19DC
+ENDINPUT            122E
+ENDLOOP             113C
+ENDMOVEMENT         12BA
+ENDMSG              17C2
+ENDPROCESS          19D8
+ENEMIESACTIVE       1A68
+ENEMIESDIR          1A5E
+ENEMIESHP           1A36
+ENEMIESX            19E6
+ENEMIESY            1A0E
+ENEMYACTIVE         17FF
+ENEMYBOTTOMCOLCHECK  19B6
+ENEMYCOLCHECK       1876
+ENEMYCOLLIDE        19CA
+ENEMYDAMAGE         1804
+ENEMYDIR            17FE
+ENEMYH              C
+ENEMYHALFH          6
+ENEMYHALFW          8
+ENEMYHIT            19D6
+ENEMYHP             17FA
+ENEMYLEFTCOLCHECK   1922
+ENEMYMAXHP          1800
+ENEMYRIGHTCOLCHECK  196C
+ENEMYSETUP          1808
+ENEMYTIME           1A74
+ENEMYTOPCOLCHECK    18DA
+ENEMYW              10
+ENEMYX              17F2
+ENEMYY              17F6
+ENTERKEY            D
+ESCAPEKEY           1B
+ESCAPEPRESSED       1242
+FIRSTINIT           1004
+HEAL                12BC
+HEALTHBAROFFSET     17F0
+HEALTHBRX           17E4
+HEALTHBRY           17E8
+HEALTHMSG           17D4
+HEALTHTLX           17DC
+HEALTHTLY           17E0
+HEALTIME            1A78
+INCREMENT           1A7A
+INIT                10AC
+INITDRAW            1516
+INITENEMY           181A
+INITENEMYBOTTOM     1980
+INITENEMYLEFT       18EE
+INITENEMYRIGHT      1936
+INITENEMYTOP        18A6
+INITIALIZECELL      1348
+INPUTKEYS           1317
+ISPAUSED            1326
+LASTKEY             1322
+LOOP                110A
+MAXHEALTH           1340
+NOINPUT             11B0
+PAUSED              115C
+PAUSEMSG            17B6
+PLAYERH             8
+PLAYERTIME          1A72
+PLAYERW             8
+PLAYERX             1328
+PLAYERY             132C
+POINTSGAIN          1
+POINTSMSG           17CC
+PRINT               1784
+PRINTNUM            178C
+PROCESSENEMY        1844
+PROCESSENEMYBOTTOM  199E
+PROCESSENEMYLEFT    190A
+PROCESSENEMYRIGHT   1954
+PROCESSENEMYTOP     18C2
+PROJTIME            1A76
+SCREENH             1346
+SCREENW             1344
+SETCURSOR           179C
+SETFILLCOLOUR       177C
+SETPENCOLOUR        1774
+SKEY                53
+SPACEJUSTPRESSED    12EE
+SPACEKEY            20
+SPACEPRESSED        1230
+SPRESSED            127A
+START               1000
+TAKEDMG             12DA
+TCCRS               B
+TCDBL               5C
+TCFONT              15
+TCINP               13
+TCPENCLR            50
+TCPENFIL            51
+TCRECT              57
+TCSCREEN            21
+TCSCREENSIZE        0
+TESTINPUT           1180
+TESTMSG             1312
+TITLE               1036
+TITLE2MSG           1092
+TITLELOOP           106C
+TITLEMSG            1080
+WASTETIME           1176
+WKEY                57
+WPRESSED            1246
+YESINPUT            11C2
+ZONE1BRX            14D6
+ZONE1BRY            14DA
+ZONE1COLLISION      1436
+ZONE1TLX            14CE
+ZONE1TLY            14D2
+ZONE2BRX            14E6
+ZONE2BRY            14EA
+ZONE2COLLISION      1460
+ZONE2TLX            14DE
+ZONE2TLY            14E2
+ZONE3BRX            14F6
+ZONE3BRY            14FA
+ZONE3COLLISION      148A
+ZONE3TLX            14EE
+ZONE3TLY            14F2
+ZONEHEIGHT          150A
+ZONEMSG             150E
+ZONEWIDTH           1506
