@@ -79,6 +79,8 @@ title2msg dc.b 'Press "enter" to start...',0
  include "map/input.x68"
 
  include "battle/battleView.x68"
+ 
+ include "score.x68"
 
 	end start
 

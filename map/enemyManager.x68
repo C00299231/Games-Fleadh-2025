@@ -18,6 +18,8 @@ currentSpawnX ds.l 01
 currentSpawnY ds.l 01
 
 initAllEnemies:
+    move.w lvlIndex, enemyDir
+
     clr.l enemy1x
     clr.l enemy1y
 
@@ -242,9 +244,6 @@ saveEnemy4:
     move.l enemyy, enemy4Y
     rts
 
-; current enemy dir
-enemyDir dc.w 0003
-
 ; ENEMY START POINTS
 enemy1offset equ 0
 enemy2offset equ 50
@@ -253,3 +252,5 @@ enemy4offset equ 150
 
 enemyXmove equ 2
 enemyYmove equ 1
+
+enemyDir dc.w 0

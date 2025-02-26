@@ -1,7 +1,9 @@
-; this file contains the main game loop
+; this file contains the map game loop, and some other stuff
 
+; first init for map
 mapInit:
     move.w #1, lvlType
+    move.w #0, lvlIndex
 	
 	    ; Place the Player at the center of the screen
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
@@ -13,14 +15,30 @@ mapInit:
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  screenH,   D1          ; Place Screen width in D1
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
-    MOVE.L  D1,         playerY    ; Players Y Position
     move.l d1, centerY
+    ;add.l cellYoffset, d1
+    MOVE.L  D1,         playerY    ; Players Y Position
+    
+
+    
 
     jsr initializeCell
     jsr initDraw
     jsr initAllEnemies
 
 	bra loop
+
+; subsequent inits for map
+mapNotFirstInit:
+    move.w #1, lvlType
+    add.w #1, lvlIndex
+    move.l centerX, playerX
+    move.l centerY, playerY
+    ;add.l cellYoffset, playerY
+
+    jsr initAllEnemies
+
+    bra loop
 
 loop:
     ;jsr clearscreen
@@ -130,6 +148,12 @@ maxHealth dc.l 200
 
 screenW        DS.w    01  ; Reserve Space for Screen Width
 screenH        DS.w    01  ; Reserve Space for Screen Height
+
+lvlIndex dc.w 0
+
+
+
+
 
 
 *~Font name~Courier New~

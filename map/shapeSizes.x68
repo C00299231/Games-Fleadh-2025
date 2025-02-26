@@ -4,7 +4,7 @@ playerW equ 08
 playerH equ 08
 
 enemyH equ 12
-enemyW equ 16
+enemyW equ 6
 enemyHalfH equ 6
 enemyHalfW equ 8
 

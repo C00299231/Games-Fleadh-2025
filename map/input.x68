@@ -9,6 +9,8 @@ testinput:
     ; getting previous key
     move.b currentkey, lastkey
 
+    
+
     ; set d1 to $0000 0000
     move.l #0, d1
 
@@ -86,7 +88,8 @@ mapinput:
     cmpi.b #enterKey, currentKey
     beq collision
 
-    bra mapMoveInput
+    ; movement input
+    bsr mapMoveInput
 
     ;cmpi.b #wkey, currentkey ; W:UP
     ;beq wpressed
@@ -125,6 +128,8 @@ mapMoveInput:
     IF <NE> THEN
         BSR    dPressed
     ENDI
+
+    rts
 
 pausedInput:
     cmpi.b #key1, currentkey

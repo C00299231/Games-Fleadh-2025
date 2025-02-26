@@ -197,14 +197,60 @@ drawEnemy:
     jsr setFillColour
 
     ; set rect values
-    move.l enemyX, d1
-    move.l enemyY, d2
-    move.l enemyX, d3
-    move.l enemyY, d4
+    jsr prepareEnemyDraw
     add.l #enemyW, d3
     add.l #enemyH, d4
 
     jsr drawRect
+
+    jsr prepareEnemyDraw
+    
+
+    ; DRAW LINES
+
+    ; left lines
+    sub.l #3, d3
+    sub.l #7, d4
+    jsr drawLine
+
+    add.l #5, D2
+    sub.l #3, d3
+    add.l #12, d4
+    jsr drawLine
+
+    add.l #7, D2
+    add.l #3, d3
+    add.l #14, d4
+    jsr drawLine
+
+    ; prepare for right lines
+    jsr prepareEnemyDraw
+    add.l #enemyW, d1
+    add.l #enemyW, d3
+
+    ; right lines
+    add.l #3, d3
+    sub.l #7, d4
+    jsr drawLine
+
+    add.l #5, D2
+    add.l #3, d3
+    add.l #12, d4
+    jsr drawLine
+
+    add.l #7, D2
+    sub.l #3, d3
+    add.l #14, d4
+    jsr drawLine
+
+
+    rts
+
+prepareEnemyDraw:
+    move.l enemyX, d1
+    move.l enemyY, d2
+    move.l enemyX, d3
+    move.l enemyY, d4
     rts
 
 drawCell:
@@ -285,6 +331,42 @@ printNum:
     trap #15
     rts
 
+drawLine:
+    ; if not follow, draw like normal
+    tst.w isFollow
+    beq drawUiLine
+
+    ; offset by camera
+    sub.l cameraX, d1
+    sub.l cameraY, d2
+    sub.l cameraX, d3
+    sub.l cameraY, d4
+    ; zoom by camera
+    mulu cameraZoom, d1
+    mulu cameraZoom, d2
+    mulu cameraZoom, d3
+    mulu cameraZoom, d4
+
+    move.b #tcline, d0
+    trap #15
+
+    ; UN-zoom by camera
+    divu cameraZoom, d1
+    divu cameraZoom, d2
+    divu cameraZoom, d3
+    divu cameraZoom, d4
+    ; UN-offset by camera
+    add.l cameraX, d1
+    add.l cameraY, d2
+    add.l cameraX, d3
+    add.l cameraY, d4
+    rts
+
+drawUiLine:
+    move.b #tcLine, d0
+    trap #15
+    rts
+
 drawRect:
     ; if not follow, draw like normal
     tst.w isFollow
@@ -301,10 +383,7 @@ drawRect:
     mulu cameraZoom, d3
     mulu cameraZoom, d4
 
-    ; draw rect function
-    MOVE.B  #tcRect, d0
-    TRAP    #15
-    rts
+    bra drawUiRect
 
 drawUiRect:
     MOVE.B  #tcRect, d0
