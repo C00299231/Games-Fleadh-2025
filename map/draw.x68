@@ -47,6 +47,10 @@ drawPause:
     move.l #color1, d1
     jsr setFillColour
 
+    ; make sure font is current
+    move.l #color5, d1
+    eor.l d2,d2                 ;clear d2 for no font styling 
+    jsr setFontColour
     ; get rect bounds
 
     move.l centerX, d1
@@ -263,6 +267,11 @@ setPenColour:
 
 setFillColour:
     move.b #tcPenFil, d0
+    trap #15
+    rts
+
+setFontColour:
+    move.b #tcFont, d0
     trap #15
     rts
 
