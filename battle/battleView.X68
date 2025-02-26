@@ -251,6 +251,7 @@ DELAY:
     BNE         DELAY               ; branch back to DELAY if the previous compare was not equal
 
     BSR     BATTLEINPUT                   ; Check Keyboard Input
+    BSR     checkPaused
     BSR     UPDATE                  ; Update positions and points
     BSR     IS_PLAYER_ON_GND        ; Check if player is on ground
     BSR     CHECK_COLLISIONS        ; Check for Collisions
@@ -263,11 +264,14 @@ DELAY:
 * Description   : Process Keyboard Input
 *-----------------------------------------------------------
 BATTLEINPUT:
+    move.l CURRENT_KEY, D0
+    move.b D0,lastkey 
+
     MOVE.B  #TC_KEYCODE, D0          ; Check for pressed keys
-    ;MOVE.L  #$41444C20, D1          ; Check for A, D and Spacebar
-    MOVE.L  #runActionKeys, D1          ; Check for A, D and Spacebar
-    TRAP    #15                     ; Trap (Perform action)
-    MOVE.L  D1,         CURRENT_KEY ; Put Current Key in Memory
+    ;MOVE.L  #$41444C20, D1          
+    MOVE.L  #runActionKeys, D1          ; Check for A, D, L, and Spacebar
+    TRAP    #15                         ; Trap (Perform action)
+    MOVE.L  D1,         CURRENT_KEY     ; Put Current Key in Memory
 
     BTST.L  #24,D1
     IF <NE> THEN
@@ -293,13 +297,16 @@ BATTLEINPUT:
     ENDI
 
     MOVE.B  #TC_KEYCODE, D0          ; Check for pressed keys
-    MOVE.L  #$4B, D1          ; Check for A, D and Spacebar
+    MOVE.L  #$1B4B, D1                 ; check K and escape
     TRAP    #15                     ; Trap (Perform action)
-    
+    MOVE.L  D1,         CURRENT_KEY     ; Put Current Key in Memory
+
+    MOVE.L  CURRENT_KEY, D1
     BTST.L  #0,D1
     IF <NE> THEN
         BSR    PERFORM_THROW
     ENDI
+
 
 
     ; Process Input
@@ -323,7 +330,8 @@ PROCESS_INPUT:
     MOVE.L  D2,         CURRENT_KEY ; Put Current Key in Memory
 
 ; pause
-    CMP.L   #ESCAPE,    CURRENT_KEY ; Is Current Key Escape
+    move.b  d2,         currentKey
+    CMP.b   #escapekey,    currentKey ; Is Current Key Escape
     BEQ     escapePressed
 
     tst.b isPaused
@@ -338,6 +346,16 @@ PROCESS_RESTART:
     CMP.L   #Rkey,  CURRENT_KEY ; Is Current Key R
     BEQ     INITrun
     RTS                             ; Return to subroutine
+
+*----------
+checkPaused:
+    TST.B  isPaused
+    BNE    stillPaused
+    RTS
+
+stillPaused:
+    BSR    DRAWBATTLE
+    BRA    GAMELOOP
 *-----------------------------------------------------------
 * Subroutine    : Update
 * Description   : Main update loop update Player and Enemies
@@ -426,6 +444,11 @@ ATTACK_COOLDOWN_SUB:
     RTS                            
 
 MOVE_PLAYER_LEFT:
+    TST.B  isPaused
+    IF <NE> THEN
+        RTS
+    ENDI
+
     MOVE.B  #LOOKLEFT,        PLAYER_DIR
     MOVE.L  PLAYER_X,   D1          ; Fetch Player X Position
     SUB.L   #02,        D1          ; Move Player Left
@@ -434,6 +457,10 @@ MOVE_PLAYER_LEFT:
     RTS                             ; Return to subroutine    
 
 MOVE_PLAYER_RIGHT:
+    TST.B  isPaused
+    IF <NE> THEN
+        RTS
+    ENDI
     MOVE.B  #LOOKRIGHT,        PLAYER_DIR
     MOVE.L  PLAYER_X,   D1          ; Fetch Player X Position
     ADD.L   #02,        D1          ; Move Player Right
@@ -530,6 +557,10 @@ CONTINUE:
     RTS
 
 PERFORM_ATTACK:
+    TST.B  isPaused
+    IF <NE> THEN
+        RTS
+    ENDI
     TST.W    ATTACK_COOLDOWN
     BNE      CONTINUE
     
@@ -543,6 +574,10 @@ PERFORM_ATTACK:
     RTS
 
 PERFORM_THROW:
+    TST.B  isPaused
+    IF <NE> THEN
+        RTS
+    ENDI
     TST.B    CURRENTLYTHROWING
     BNE      CONTINUE
     
@@ -573,8 +608,6 @@ DRAWBATTLE:
     MOVE.B  #93,D0
     TRAP    #15
 
-    jsr drawPause
-
     BSR     DRAW_BACKGROUND        
     BSR     DRAW_HILL 
     BSR     DRAW_PLYR_DATA          ; Draw Draw Score, HUD, Player X and Y
@@ -583,6 +616,7 @@ DRAWBATTLE:
     BSR     DRAW_FLYENEMY
     BSR     DRAW_HEALTHPACK
     BSR     DRAW_FLOOR              ; Draw Floor
+    BSR     drawPause
     RTS                             ; Return to subroutine
 
 
@@ -909,6 +943,10 @@ SET_OFF_GROUND:
 * Description   : Perform a Jump
 *-----------------------------------------------------------
 JUMP:
+    TST.B  isPaused
+    IF <NE> THEN
+        RTS
+    ENDI
     CMP.L   #GND_TRUE,PLYR_ON_GND   ; Player is on the Ground ?
     BEQ     PERFORM_JUMP            ; Do Jump
     BRA     JUMP_DONE               ;
