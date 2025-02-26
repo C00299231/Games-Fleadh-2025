@@ -78,9 +78,11 @@ title2msg dc.b 'Press "enter" to start...',0
  include "map/camera.x68"
  include "map/input.x68"
 
- include "Running/RUNtestMelee2.x68"
+ include "Running/battleView.x68"
 
 	end start
+
+
 
 
 

@@ -38,7 +38,7 @@ testinput:
     endi
     cmp.w #2, lvlType
     IF <EQ> THEN
-        BSR runInput ; happens in run
+        BSR battleInput ; happens in run
     ENDI
     
     rts             ; return to loop
@@ -212,3 +212,7 @@ dpressed:
 
 endMovement:
     rts
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~

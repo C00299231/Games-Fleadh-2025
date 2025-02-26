@@ -1,0 +1,304 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 26/02/2025 18:55:10
+
+00000000= 0000                       1  lvlType dc.w 0
+00000002                             2  
+00000002                             3  ; types:
+00000002                             4  ; 0: menu
+00000002                             5  ; 1: map
+00000002                             6  ; 2: run
+00000002                             7  
+00000002                             8  testinput:
+00000002                             9      ; getting previous key
+Line 10 ERROR: Undefined symbol
+00000002  13F9 004DBD16 005455B8    10      move.b currentkey, lastkey
+0000000C                            11  
+0000000C                            12      ; set d1 to $0000 0000
+0000000C  7200                      13      move.l #0, d1
+0000000E                            14  
+0000000E                            15      ; put "get input" code into d0
+Line 16 ERROR: Undefined symbol
+0000000E  103C 0016                 16      move.b #tcinp, d0
+00000012  4E4F                      17      trap #15
+Line 18 ERROR: Undefined symbol
+00000014  13C1 005455B8             18      move.b d1, currentkey
+0000001A  4E4F                      19      trap #15
+0000001C                            20      
+0000001C                            21      ; AT THIS POINT, CURRENT KEY CONTAINS THE CURRENT/LAST KEY PRESSED,
+0000001C                            22      ; AND D1 CONTAINS WHETHER OR NOT IT IS STILL PRESSED
+0000001C                            23      
+0000001C                            24      ; test if no input
+0000001C  0C01 0000                 25      cmpi.b #0, d1
+00000020  6700 0032                 26      beq noinput     ; if no input, move to noinput
+00000024                            27      
+00000024  4EB9 00000068             28      jsr commonInput ; happens in any level
+0000002A                            29  
+0000002A                            30  
+0000002A  4A78 0000                 31      TST.w lvlType
+0000002E                            32      IF <EQ> THEN
+00000032  6100 0058                 33          BSR menuInput ; happens in menu
+00000036                            34      endi
+00000036  0C78 0001 0000            35      cmp.w #1, lvlType
+0000003C                            36      IF <EQ> THEN
+00000040  6100 0058                 37          BSR mapInput ; happens in map
+00000044                            38      endi
+00000044  0C78 0002 0000            39      cmp.w #2, lvlType
+0000004A                            40      IF <EQ> THEN
+Line 41 ERROR: Undefined symbol
+0000004E  6100 BCC6                 41          BSR battleInput ; happens in run
+00000052                            42      ENDI
+00000052                            43      
+00000052  4E75                      44      rts             ; return to loop
+00000054                            45  
+00000054                            46  noinput:
+00000054                            47      ; go back to loop
+Line 48 ERROR: Undefined symbol
+00000054  13FC 0000 005455B8        48      move.b #0, currentKey
+Line 49 ERROR: Undefined symbol
+0000005C  13FC 0000 005455B8        49      move.b #0, lastkey
+00000064  4E75                      50      rts
+00000066                            51  
+00000066= 0001                      52  inputType dc.w 1
+00000068                            53  
+00000068                            54  commonInput:
+00000068                            55      ; at this point, keycode in currentkey is pressed
+00000068                            56  
+00000068                            57      ; OPTIONS
+Line 58 ERROR: Undefined symbol
+00000068  0C39 0016 005455C0        58      cmpi.b #escapeKey, currentkey ; pause
+00000070  6700 00AE                 59      beq escapepressed
+Line 60 ERROR: Undefined symbol
+00000074  0C39 0016 005455C0        60      cmpi.b #key0, currentKey ; fullscreen
+0000007C  6700 00BC                 61      beq key0pressed
+00000080                            62  
+Line 63 ERROR: Undefined symbol
+00000080  4A39 004DBD16             63      tst.b isPaused
+00000086  6600 007C                 64      bne pausedInput
+0000008A  4E75                      65      RTS
+0000008C                            66  
+0000008C                            67  menuInput:
+Line 68 ERROR: Undefined symbol
+0000008C  0C39 0016 005455B8        68      cmpi.b #enterKey, currentKey
+Line 69 ERROR: Undefined symbol
+00000094  6700 BC80                 69      beq mapInit
+00000098  4E75                      70      rts
+0000009A                            71  
+0000009A                            72  mapinput:
+0000009A                            73      ; at this point, keycode in currentkey is pressed
+0000009A                            74  
+0000009A                            75      ; map buttons
+Line 76 ERROR: Undefined symbol
+0000009A  0C39 0016 005455B8        76      cmpi.b #zKey, currentKey
+000000A2  6700 00B0                 77      beq zPressed
+000000A6                            78  
+000000A6                            79      ; only move player if correct time
+Line 80 ERROR: Undefined symbol
+000000A6  3A39 004DBD16             80      move.w playerTime, d5
+Line 81 ERROR: Undefined symbol
+000000AC  4EB9 004DBD16             81      jsr checkIncrement
+000000B2  6600 006A                 82      bne endInput
+000000B6                            83  
+000000B6                            84      ; only when not paused
+000000B6                            85  
+Line 86 ERROR: Undefined symbol
+000000B6  0C39 0016 005455B8        86      cmpi.b #enterKey, currentKey
+Line 87 ERROR: Undefined symbol
+000000BE  6700 BC56                 87      beq collision
+000000C2                            88  
+000000C2  6000 0004                 89      bra mapMoveInput
+000000C6                            90  
+000000C6                            91      ;cmpi.b #wkey, currentkey ; W:UP
+000000C6                            92      ;beq wpressed
+000000C6                            93      ;cmpi.b #akey, currentkey ; A:LEFT
+000000C6                            94      ;beq apressed
+000000C6                            95      ;cmpi.b #skey, currentkey ; S:DOWN
+000000C6                            96      ;beq spressed
+000000C6                            97      ;cmpi.b #dkey, currentkey ; D:RIGHT
+000000C6                            98      ;beq dpressed
+000000C6  4E75                      99      RTS
+000000C8                           100  
+000000C8                           101  mapMoveInput:
+Line 102 ERROR: Undefined symbol
+000000C8  223C 004DBD16            102      move.l #wasdKeys, d1
+Line 103 ERROR: Undefined symbol
+000000CE  103C 0016                103      move.b #tcinp, d0
+000000D2  4E4F                     104      trap #15
+000000D4                           105  
+000000D4  0801 0018                106      BTST.L  #24,D1
+000000D8                           107      IF <NE> THEN
+000000DC  6100 00A2                108          BSR    wPressed
+000000E0                           109      ENDI
+000000E0                           110  
+000000E0                           111      ;MOVE.L  CURRENT_KEY, D1
+000000E0  0801 0010                112      BTST.L  #16,D1
+000000E4                           113      IF <NE> THEN
+000000E8  6100 00B0                114          BSR    aPressed
+000000EC                           115      ENDI
+000000EC                           116  
+000000EC                           117      ;MOVE.L  CURRENT_KEY, D1
+000000EC  0801 0008                118      BTST.L  #8,D1
+000000F0                           119      IF <NE> THEN
+000000F4  6100 00BE                120          BSR    sPressed
+000000F8                           121      ENDI
+000000F8                           122  
+000000F8                           123      ;MOVE.L  CURRENT_KEY, D1
+000000F8  0801 0000                124      BTST.L  #0,D1
+000000FC                           125      IF <NE> THEN
+00000100  6100 00D2                126          BSR    dPressed
+00000104                           127      ENDI
+00000104                           128  
+00000104                           129  pausedInput:
+Line 130 ERROR: Undefined symbol
+00000104  0C39 0016 005455B8       130      cmpi.b #key1, currentkey
+0000010C  6700 0058                131      beq key1pressed
+00000110                           132  
+Line 133 ERROR: Undefined symbol
+00000110  0C39 0016 005455B8       133      cmpi.b #key2, currentkey
+00000118  6700 0056                134      beq key2pressed
+0000011C                           135  
+0000011C                           136      ;cmpi.b #key3, currentkey
+0000011C                           137      ;beq key3pressed
+0000011C                           138  
+0000011C  4E75                     139      rts
+0000011E                           140  
+0000011E                           141  endInput:
+0000011E  4E75                     142      rts
+00000120                           143  
+00000120                           144  ; INPUTS
+00000120                           145  escapePressed:
+Line 146 ERROR: Undefined symbol
+00000120  1A39 004DBD16            146      move.b lastkey, d5
+Line 147 ERROR: Undefined symbol
+00000126  BA39 004DBD16            147      cmp.b currentKey, d5
+0000012C  6600 0004                148      bne escapeJustPressed
+00000130  4E75                     149      rts
+00000132                           150  escapeJustPressed:
+Line 151 ERROR: Undefined symbol
+00000132  4EB9 004DBD16            151      jsr togglePause
+00000138  4E75                     152      rts
+0000013A                           153  
+0000013A                           154  key0pressed:
+Line 155 ERROR: Undefined symbol
+0000013A  1A39 004DBD16            155      move.b lastkey, d5
+Line 156 ERROR: Undefined symbol
+00000140  BA39 004DBD16            156      cmp.b currentKey, d5
+00000146  6600 0004                157      bne key0justPressed
+0000014A  4E75                     158      rts
+0000014C                           159  key0justPressed:
+Line 160 ERROR: Undefined symbol
+0000014C  4EB9 004DBD16            160      jsr toggleFullScreen
+00000152  4E75                     161      rts
+00000154                           162  
+00000154                           163  zPressed:
+Line 164 ERROR: Undefined symbol
+00000154  1A39 004DBD16            164      move.b lastkey, d5
+Line 165 ERROR: Undefined symbol
+0000015A  BA39 004DBD16            165      cmp.b currentKey, d5
+Line 166 ERROR: Undefined symbol
+00000160  6600 BBB4                166      bne toggleFollow ; z just pressed
+00000164  4E75                     167      rts
+00000166                           168  
+00000166                           169  key1pressed: ; quit
+Line 170 ERROR: Undefined symbol
+00000166  4EB9 004DBD16            170      jsr togglePause
+Line 171 ERROR: Undefined symbol
+0000016C  6000 BBA8                171      bra end
+00000170                           172  key2pressed: ; main menu
+Line 173 ERROR: Undefined symbol
+00000170  4EB9 004DBD16            173      jsr togglePause
+Line 174 ERROR: Undefined symbol
+00000176  4EB9 004DBD16            174      jsr clearscreen
+Line 175 ERROR: Undefined symbol
+0000017C  6000 BB98                175      bra start
+00000180                           176  
+00000180                           177  ; MOVEMENT INPUT: MUST STAY WITHIN CELL BOUNDARIES
+00000180                           178  wpressed:
+Line 179 ERROR: Undefined symbol
+00000180  2639 004DBD16            179      move.l playerY, d3 ; check boundary with proposed movement
+00000186  5383                     180      sub.l #1, D3
+Line 181 ERROR: Undefined symbol
+00000188  B6B9 004DBD16            181      cmp.l celltlY, d3
+0000018E  6700 0064                182      beq endMovement
+00000192                           183  
+Line 184 ERROR: Undefined symbol
+00000192  53B9 005455B8            184      sub.l #1, playerY
+00000198  4E75                     185      rts
+0000019A                           186  apressed:
+Line 187 ERROR: Undefined symbol
+0000019A  2639 004DBD16            187      move.l playerX, d3 ; check boundary with proposed movement
+000001A0  5383                     188      sub.l #1, D3
+Line 189 ERROR: Undefined symbol
+000001A2  B6B9 004DBD16            189      cmp.l celltlX, d3
+000001A8  6700 004A                190      beq endMovement
+000001AC                           191  
+Line 192 ERROR: Undefined symbol
+000001AC  53B9 005455B8            192      sub.l #1, playerX
+000001B2  4E75                     193      rts
+000001B4                           194  spressed:
+Line 195 ERROR: Undefined symbol
+000001B4  2639 004DBD16            195      move.l playerY, d3 ; check boundary with proposed movement
+000001BA  5283                     196      add.l #1, D3
+Line 197 ERROR: Undefined symbol
+000001BC  0683 004DBD16            197      add.l #playerH, d3 ; player size taken into consideration
+Line 198 ERROR: Undefined symbol
+000001C2  B6B9 004DBD16            198      cmp.l cellBrY, d3
+000001C8  6700 002A                199      beq endMovement
+000001CC                           200  
+Line 201 ERROR: Undefined symbol
+000001CC  52B9 005455B8            201      add.l #1, playerY
+000001D2  4E75                     202      rts
+000001D4                           203  dpressed:
+Line 204 ERROR: Undefined symbol
+000001D4  2639 004DBD16            204      move.l playerX, d3 ; check boundary with proposed movement
+000001DA  5283                     205      add.l #1, D3
+Line 206 ERROR: Undefined symbol
+000001DC  0683 004DBD16            206      add.l #playerW, d3 ; player size taken into consideration
+Line 207 ERROR: Undefined symbol
+000001E2  B6B9 004DBD16            207      cmp.l cellBrX, d3
+000001E8  6700 000A                208      beq endMovement
+000001EC                           209  
+Line 210 ERROR: Undefined symbol
+000001EC  52B9 005455B8            210      add.l #1, playerX
+000001F2  4E75                     211      rts
+000001F4                           212  
+000001F4                           213  endMovement:
+000001F4  4E75                     214      rts
+Line 215 WARNING: END directive missing, starting address not set
+
+48 errors detected
+1 warning generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+APRESSED            19A
+COMMONINPUT         68
+DPRESSED            1D4
+ENDINPUT            11E
+ENDMOVEMENT         1F4
+ESCAPEJUSTPRESSED   132
+ESCAPEPRESSED       120
+INPUTTYPE           66
+KEY0JUSTPRESSED     14C
+KEY0PRESSED         13A
+KEY1PRESSED         166
+KEY2PRESSED         170
+LVLTYPE             0
+MAPINPUT            9A
+MAPMOVEINPUT        C8
+MENUINPUT           8C
+NOINPUT             54
+PAUSEDINPUT         104
+SPRESSED            1B4
+TESTINPUT           2
+WPRESSED            180
+ZPRESSED            154
+_00000000           36
+_00000001           44
+_00000002           52
+_00000003           E0
+_00000004           EC
+_00000005           F8
+_00000006           104

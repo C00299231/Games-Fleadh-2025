@@ -1,9 +1,10 @@
 *-----------------------------------------------------------
 * Title      : Game Starter Kit
-* Written by : Philip Bourke
+* Written by : Oliwier Jakubiec
 * Date       : 05/02/2025
 * Description: Project Starter Kit
 *-----------------------------------------------------------
+
 
 *-----------------------------------------------------------
 * Section       : Trap Codes
@@ -32,6 +33,13 @@ PLYR_DFLT_V EQU         00          ; Default Player Velocity
 PLYR_JUMP_V EQU         -19          ; Player Jump Velocity
 PLYR_DFLT_G EQU         01          ; Player Default Gravity
 
+THRW_W_INIT EQU         15          ; Players initial Width
+THRW_H_INIT EQU         15          ; Players initial Height
+
+THRW_DFLT_V EQU         00          ; Default Player Velocity
+THRW_JUMP_V EQU         -16          ; Player Jump Velocity
+THRW_DFLT_G EQU         01          ; Player Default Gravity
+
 GND_TRUE    EQU         01          ; Player on Ground True
 GND_FALSE   EQU         00          ; Player on Ground False
 
@@ -40,6 +48,7 @@ JMP_INDEX   EQU             01          ; Player Jump Sound Index
 HITHURT_INDEX  EQU          02          ; Player Opps Sound Index
 POWERUP_INDEX  EQU          03          ; Player Opps Sound Index
 LEVELCHANGE_INDEX  EQU      04          ; Player Opps Sound Index
+HIT_INDEX  EQU              05  
 
 ENMY_W_INIT EQU         12          ; Enemy initial Width
 ENMY_H_INIT EQU         12          ; Enemy initial Height
@@ -64,8 +73,9 @@ BLUE            EQU     $00FF0000
 GREEN           EQU     $00566D19
 LIFEGREEN       EQU     $0044FF44
 BROWN           EQU     $0019506D         ; Brown   
+DIRT           EQU      $00004FAD         ; Brown   
 SKY             EQU     $00FFE2B0         ; Sky Blue
-
+;ad4f00
 *-----------------------------------------------------------
 * Section       : Keyboard Keys
 * Description   : Spacebar and Escape or two functioning keys
@@ -78,6 +88,7 @@ Akey           EQU         $41         ; A ASCII Keycode
 Skey           EQU         $53         ; S ASCII Keycode
 Dkey           EQU         $44         ; D ASCII Keycode
 Lkey           EQU         $4C         ; L ASCII Keycode
+Kkey           EQU         $4B         ; K ASCII Keycode
 
 *-----------------------------------------------------------
 * Subroutine    : Initialise
@@ -86,13 +97,13 @@ Lkey           EQU         $4C         ; L ASCII Keycode
 *-----------------------------------------------------------
 INITRUN:
     move.w #2, lvlType
-
     ; Initialise Sounds
     BSR     JUMP_LOAD               ; Load Jump Sound into Memory
     BSR     GAMEOVER_LOAD                ; Load Run Sound into Memory
     BSR     HITHURT_LOAD               ; Load Opps (Collision) Sound into Memory
     BSR     POWERUP_LOAD               ; Load Opps (Collision) Sound into Memory
     BSR     LVLCHANGE_LOAD               ; Load Opps (Collision) Sound into Memory
+    BSR     HIT_LOAD
 
     ; Screen Size
     MOVE.B  #TC_SCREEN, D0          ; access screen information
@@ -136,6 +147,16 @@ INITRUN:
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.L  #PLYR_DFLT_G,D1         ; Init Player Gravity
     MOVE.L  D1,         PLYR_GRAVITY
+    
+    ; Initialise Player Velocity
+    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.B  #THRW_DFLT_V,D1         ; Init Player Velocity
+    MOVE.L  D1,         THROW_VELOCITY
+
+    ; Initialise Player Gravity
+    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.L  #THRW_DFLT_G,D1         ; Init Player Gravity
+    MOVE.L  D1,         THROW_GRAVITY
 
     ; Initialize Player on Ground
     MOVE.L  #GND_TRUE,  PLYR_ON_GND ; Init Player on Ground
@@ -189,18 +210,15 @@ INITRUN:
     MOVE.W  #4,         SCALER   
     MOVE.W  #-80,       WIDTH     
 
-    CLR.L   D1
-    ; load tree 
-    MOVE.L  #50,D0
-    TRAP    #15
-    LEA     titleBmp,A1
-    MOVE.L  #51,D0
-    TRAP    #15
+    MOVE.L  #0,         ATTACK_X
+    MOVE.L  #0,         ATTACK_Y
+    MOVE.L  #-1,        THROW_X
+    MOVE.L  #-1,        THROW_Y
     
-    LEA     SPRITE_DATA,A1
-    MOVE.L  #1974,D2
-    MOVE.L  #53,D0
-    TRAP #15
+    MOVE.B  #00,        CURRENTLYATTACKING
+    MOVE.B  #00,        CURRENTLYTHROWING
+
+    CLR.L   D1
 
 
     ; Enable the screen back buffer(see easy 68k help)
@@ -213,7 +231,6 @@ INITRUN:
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
     TRAP	#15                     ; Trap (Perform action)
 
-
     bra gameloop
 
 *-----------------------------------------------------------
@@ -224,16 +241,6 @@ INITRUN:
 *-----------------------------------------------------------
 GAME:
    
-STARTSCREEN:
-         
-    ;MOVE.L     #$01090000,D2
-    ;MOVE.L     #$00FFFFFF,D1
-    ;MOVE.B     #21,D0
-    ;TRAP       #15
-     
-     ;INCLUDE    "ROTATINGSQUARE.X68"
-     ;MOVE.B     #04,D0
-     ;TRAP       #15
     
 GAMELOOP:
     ; Main Gameloop
@@ -243,11 +250,11 @@ DELAY:
     TST.L       timer            ; compare 0 to the value of timer
     BNE         DELAY               ; branch back to DELAY if the previous compare was not equal
 
-    BSR     runINPUT                   ; Check Keyboard Input
+    BSR     BATTLEINPUT                   ; Check Keyboard Input
     BSR     UPDATE                  ; Update positions and points
     BSR     IS_PLAYER_ON_GND        ; Check if player is on ground
     BSR     CHECK_COLLISIONS        ; Check for Collisions
-    BSR     DRAWrun                    ; Draw the Scene
+    BSR     DRAWBATTLE                  ; Draw the Scene
                 ; Loop back to GameLoop
     BRA     GAMELOOP    
     
@@ -255,9 +262,10 @@ DELAY:
 * Subroutine    : Input
 * Description   : Process Keyboard Input
 *-----------------------------------------------------------
-RunINPUT:
+BATTLEINPUT:
     MOVE.B  #TC_KEYCODE, D0          ; Check for pressed keys
-    MOVE.L  #runActionKeys, D1          ; Check for A, D, L and Spacebar
+    ;MOVE.L  #$41444C20, D1          ; Check for A, D and Spacebar
+    MOVE.L  #runActionKeys, D1          ; Check for A, D and Spacebar
     TRAP    #15                     ; Trap (Perform action)
     MOVE.L  D1,         CURRENT_KEY ; Put Current Key in Memory
 
@@ -283,7 +291,16 @@ RunINPUT:
     IF <NE> THEN
         BSR    JUMP
     ENDI
-    rts
+
+    MOVE.B  #TC_KEYCODE, D0          ; Check for pressed keys
+    MOVE.L  #$4B, D1          ; Check for A, D and Spacebar
+    TRAP    #15                     ; Trap (Perform action)
+    
+    BTST.L  #0,D1
+    IF <NE> THEN
+        BSR    PERFORM_THROW
+    ENDI
+
 
     ; Process Input
     CLR.L   D1                      ; Clear Data Register
@@ -311,7 +328,7 @@ PROCESS_INPUT:
 
     tst.b isPaused
     bne pausedInput
-
+    
     TST.B   LIVES
     BEQ     PROCESS_RESTART
     BRA     IDLE                    ; Or Idle
@@ -336,6 +353,7 @@ UPDATE:
     MOVE.L  D1,         PLAYER_Y    ; Update Players Y Position
     MOVE.L  D1,         ATTACK_Y 
 
+    BSR     MOVE_THROW
 
     ; Move the Enemy
     CLR.L   D1                      ; Clear the contents of D0
@@ -368,6 +386,32 @@ UPDATE:
     MOVE.L  #480,        ATTACK_Y
 
     RTS                             ; Return to subroutine  
+
+MOVE_THROW:
+       ; Update the Players Positon based on Velocity and Gravity
+    EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.L  THROW_VELOCITY, D1       ; Fetch Player Velocity
+    MOVE.L  THROW_GRAVITY, D2        ; Fetch Player Gravity
+    ADD.L   D2,         D1          ; Add Gravity to Velocity
+    MOVE.L  D1,         THROW_VELOCITY ; Update Player Velocity
+    ADD.L   THROW_Y,   D1          ; Add Velocity to Player
+    MOVE.L  D1,         THROW_Y    ; Update Players Y Position
+
+    ADDI.L   #4,        THROW_X
+    BSR     CHECK_THROW_DONE
+    
+    RTS
+
+CHECK_THROW_DONE:
+    CMP.L    #300, THROW_Y
+    BGT      RESET_THROW
+    RTS
+
+RESET_THROW:
+    MOVE.B   #00, CURRENTLYTHROWING
+    MOVE.L   #-1, THROW_X
+    MOVE.L   #-1, THROW_Y
+    RTS
 
 CHECK_ATTACK_COOLDOWN:
     CMP.W   #0, ATTACK_COOLDOWN
@@ -496,12 +540,26 @@ PERFORM_ATTACK:
     MOVE.L   PLAYER_X,ATTACK_X
     ADDI.L   #PLYR_W_INIT,ATTACK_X
     MOVE.L   PLAYER_Y,ATTACK_Y
-    ;SUBI.L   #PLYR_H_INIT-20,ATTACK_Y
+    RTS
+
+PERFORM_THROW:
+    TST.B    CURRENTLYTHROWING
+    BNE      CONTINUE
+    
+    MOVE.B   #01,CURRENTLYTHROWING
+    MOVE.L   PLAYER_X,THROW_X
+    ADDI.L   #PLYR_W_INIT,THROW_X
+    MOVE.L   PLAYER_Y,THROW_Y
+    SUBI.L   #PLYR_H_INIT,THROW_Y
+
+    BSR     PERFORM_THROW_ARC
+    RTS
+
 *-----------------------------------------------------------
 * Subroutine    : Draw
 * Description   : Draw Screen
 *-----------------------------------------------------------
-DRAWRun: 
+DRAWBATTLE: 
     ; Enable back buffer
     MOVE.B  #TC_REDRAW,        D0
     TRAP    #15
@@ -518,6 +576,7 @@ DRAWRun:
     jsr drawPause
 
     BSR     DRAW_BACKGROUND         
+    BSR     DRAW_HILL 
     BSR     DRAW_PLYR_DATA          ; Draw Draw Score, HUD, Player X and Y
     BSR     DRAW_PLAYER             ; Draw Player
     BSR     DRAW_ENEMY              ; Draw Enemy
@@ -526,6 +585,75 @@ DRAWRun:
     BSR     DRAW_FLOOR              ; Draw Floor
     RTS                             ; Return to subroutine
 
+
+DRAW_HILL:
+
+; Set Pixel Colors
+    MOVE.L  #DIRT,     D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  #DIRT,     D1
+    MOVE.B  #81,        D0
+    TRAP    #15
+
+    ; Set X, Y, X2, and Y2
+    MOVE.L  #0,   D1          ; X
+    MOVE.L  #241,  D2          ; Y
+    MOVE.L  #30,   D3           
+    MOVE.L  #120,   D4     
+    
+    MOVE.B  #87,        D0          ; Draw Line
+    TRAP    #15                     ; Trap (Perform action)
+    
+     ; Set X, Y, X2, and Y2
+    MOVE.L  #0,   D1          ; X
+    MOVE.L  #241,  D2          ; Y
+    MOVE.L  #60,   D3           
+    MOVE.L  #135,   D4 
+    
+    
+    MOVE.B  #87,        D0          ; Draw Line
+    TRAP    #15                     ; Trap (Perform action)
+
+     ; Set X, Y, X2, and Y2
+    MOVE.L  #0,   D1          ; X
+    MOVE.L  #241,  D2          ; Y
+    MOVE.L  #80,   D3           
+    MOVE.L  #150,   D4 
+    
+    
+    MOVE.B  #87,        D0          ; Draw Line
+    TRAP    #15                     ; Trap (Perform action)
+
+     ; Set X, Y, X2, and Y2
+    MOVE.L  #0,   D1          ; X
+    MOVE.L  #241,  D2          ; Y
+    MOVE.L  #100,   D3           
+    MOVE.L  #200,   D4 
+    
+    
+    MOVE.B  #87,        D0          ; Draw Line
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  #BLACK,     D1
+    MOVE.B  #81,        D0
+    TRAP    #15
+    MOVE.L  #BLACK,     D1
+    MOVE.B  #80,        D0
+    TRAP    #15
+
+    ; Set X, Y, X2, and Y2
+    MOVE.L  #5,   D1          ; X
+    MOVE.L  #130,  D2          ; Y
+    MOVE.L  #25,   D3           
+    MOVE.L  #120,   D4     
+
+    
+    MOVE.B  #87,        D0          ; Draw Line
+    TRAP    #15                     ; Trap (Perform action)
+
+    RTS
 
 DRAW_BACKGROUND:
     CLR.L       D1
@@ -792,6 +920,21 @@ JUMP_DONE:
     RTS                             ; Return to subroutine
 
 *-----------------------------------------------------------
+* Subroutine    : Throw
+* Description   : Perform a Throw
+*-----------------------------------------------------------
+THROW_ARC:
+    CMP.L   #GND_TRUE,PLYR_ON_GND   ; Player is on the Ground ?
+    BEQ     PERFORM_THROW_ARC    ; Do Jump
+    BRA     ARC_DONE               ;
+PERFORM_THROW_ARC:
+    ;BSR     PLAY_JUMP               ; Play jump sound
+    MOVE.L  #THRW_JUMP_V,THROW_VELOCITY ; Set the players velocity to true
+    RTS                             ; Return to subroutine
+ARC_DONE:
+    RTS                             ; Return to subroutine
+
+*-----------------------------------------------------------
 * Subroutine    : Idle
 * Description   : Perform a Idle
 *----------------------------------------------------------- 
@@ -868,6 +1011,19 @@ PLAY_LVLCHANGE:
     TRAP    #15                     ; Trap (Perform action)
     RTS                             ; Return to subroutine
 
+HIT_LOAD:
+    LEA     HIT_WAV,   A1          ; Load Wav File into A1
+    MOVE    #HIT_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+PLAY_HIT:
+    MOVE    #HIT_INDEX,D1          ; Load Sound INDEX
+    MOVE    #75,        D0          ; Play Sound
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
 *-----------------------------------------------------------
 * Subroutine    : Draw Player
 * Description   : Draw Player Square
@@ -896,10 +1052,15 @@ DRAW_PLAYER:
     ; Draw Player
     MOVE.B  #87,        D0          ; Draw Player
     TRAP    #15                     ; Trap (Perform action)
-    TST.B   CURRENTLYATTACKING
-    BNE     DRAW_ATTACK
+    BSR     IS_ATTACKING
+    BSR     IS_THROWING
+
     RTS                             ; Return to subroutine
 
+IS_ATTACKING:
+    TST.B   CURRENTLYATTACKING
+    BNE     DRAW_ATTACK
+    RTS
 DRAW_ATTACK:
 
     ; Set Pixel Colors
@@ -920,6 +1081,34 @@ DRAW_ATTACK:
     SUB.L   #ATTACK_HEIGHT,   D4      ; Height          ; Y
     
     ; Draw Player
+    MOVE.B  #87,        D0          ; Draw Player
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+IS_THROWING:
+    TST.B   CURRENTLYTHROWING
+    BNE     DRAW_THROW
+    RTS
+DRAW_THROW:
+
+    ; Set Pixel Colors
+    MOVE.L  #BROWN,     D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+    ; Reset Pixel Colors
+    MOVE.L  #BROWN,     D1          ; Set Background color
+    MOVE.B  #81,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  THROW_X,   D1          ; X
+    MOVE.L  THROW_Y,   D2
+    
+    MOVE.L  THROW_X,   D3
+    ADD.L   #THRW_W_INIT,   D3      ; Width
+    MOVE.L  THROW_Y,   D4 
+    SUB.L   #THRW_H_INIT,   D4      ; Height          ; Y
+    
+    ; Draw Acorn
     MOVE.B  #87,        D0          ; Draw Player
     TRAP    #15                     ; Trap (Perform action)
     RTS                             ; Return to subroutine
@@ -1170,7 +1359,7 @@ PLAYER_Y_PLUS_H_LTE_TO_ENEMY_Y:     ; Less than or Equal ?
     ADD.B   PLYR_H_INIT,D1          ; Add Player Height to D1
     MOVE.L  ENEMY_Y,    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
-    BGE     COLLISIONRun             ; Collision !
+    BGE     ENEMYCOLLISION               ; Collision !
     BRA     CHECK_FLYENEMY_COLLISIONS
 
 *--------------------Checking for flying enemy collision---------------------
@@ -1205,7 +1394,7 @@ PLY_PLUS_H_LTE_TO_FLYENEMY_Y:     ; Less than or Equal ?
     ADD.B   PLAYER_HEIGHT,D1          ; Add Player Height to D1
     MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     COLLISIONrun               ; Collision !
+    BLE     ENEMYCOLLISION               ; Collision !
     BRA     CHECK_HEALTH_COLLISIONS
 
 *--------------------Checking for Health collision---------------------
@@ -1271,7 +1460,7 @@ ATK_LTE_TO_ENEMY_Y_PLUS_H:
     BRA     CHECK_ATTACK_FLY_COLLISIONS
 
 ATK_PLUS_H_LTE_TO_ATTACK_Y:     ; Less than or Equal ?
-    ADD.L   #ATTACK_Y,D1          ; Add Player Height to D1
+    ADD.L   #ATTACK_HEIGHT,D1          ; Add Player Height to D1
     MOVE.L  ENEMY_Y,    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
     BLE     ATTACK_COLLISION               ; Collision !
@@ -1287,7 +1476,7 @@ ATK_X_LTE_TO_FLYENEMY_X_PLUS_W:
     MOVE.L  FLYINGENEMY_X,    D2                    ; Move Enemy X to D2
     CMP.L   D1,         D2                          ; Do the Overlap ?
     BLE     ATTACK_PLUS_W_LTE_TO_FLYENMY_X     ; Less than or Equal ?
-    BRA     COLLISION_CHECK_DONE
+    BRA     CHECK_THROW_COLLISION
 
 ATTACK_PLUS_W_LTE_TO_FLYENMY_X:           ; Check player is not  
     MOVE.L  ATTACK_X,   D1
@@ -1295,7 +1484,7 @@ ATTACK_PLUS_W_LTE_TO_FLYENMY_X:           ; Check player is not
     ADD.W   FLYENEMY_WIDTH,  D2                    ; Set Enemy width X + Width
     CMP.L   D1,         D2                  ; Do they OverLap ?
     BGE     ATK_LTE_TO_FLYENEMY_Y_PLUS_H  ; Less than or Equal
-    BRA     COLLISION_CHECK_DONE
+    BRA     CHECK_THROW_COLLISION
 
 ATK_LTE_TO_FLYENEMY_Y_PLUS_H:     
     MOVE.L  ATTACK_Y,   D1          ; Move Player Y to D1
@@ -1303,24 +1492,101 @@ ATK_LTE_TO_FLYENEMY_Y_PLUS_H:
     ADD.W   FLYENEMY_HEIGHT,D2          ; Set Enemy Height to D2
     CMP.L   D1,         D2          ; Do they Overlap ?
     BGE     ATK_PLUS_H_LTE_TO_FLYENEMY_Y  ; Less than or Equal
-    BRA     COLLISION_CHECK_DONE
+    BRA     CHECK_THROW_COLLISION
 
 ATK_PLUS_H_LTE_TO_FLYENEMY_Y:     ; Less than or Equal ?
-    ADD.L   #ATTACK_Y,D1          ; Add Player Height to D1
+    ADD.L   #ATTACK_HEIGHT,D1          ; Add Player Height to D1
+    MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Height to D2  
+    CMP.L   D1,         D2          ; Do they OverLap ?
+    BLE     ATTACK_FLY_COLLISION               ; Collision !
+    BRA     CHECK_THROW_COLLISION
+
+*--------------------Checking for THROW collision---------------------
+CHECK_THROW_COLLISION:
+    CLR.L   D1                      ; Clear D1
+    CLR.L   D2                      ; Clear D2
+THROW_X_LTE_TO_ENEMY_X_PLUS_W:
+    MOVE.L  THROW_X,   D1
+    ADD.L   #THROW_WIDTH,D1          ; Move Player Width to D1
+    MOVE.L  ENEMY_X,    D2                    ; Move Enemy X to D2
+    CMP.L   D1,         D2                          ; Do the Overlap ?
+    BLE     THROW_PLUS_W_LTE_TO_ENMY_X      ; Less than or Equal ?
+    BRA     CHECK_THROW_FLY_COLLISIONS
+
+THROW_PLUS_W_LTE_TO_ENMY_X:           ; Check player is not  
+    MOVE.L  THROW_X,   D1
+    MOVE.L  ENEMY_X,    D2            ; Move Enemy X to D2
+    ADD.W   ENEMY_WIDTH,  D2                    ; Set Enemy width X + Width
+    CMP.L   D1,         D2                  ; Do they OverLap ?
+    BGE     TRW_LTE_TO_ENEMY_Y_PLUS_H  ; Less than or Equal
+    BRA     CHECK_THROW_FLY_COLLISIONS
+
+TRW_LTE_TO_ENEMY_Y_PLUS_H:     
+    MOVE.L  THROW_Y,   D1          ; Move Player Y to D1
+    MOVE.L  ENEMY_Y,    D2          ; Move Enemy Y to D2
+    ADD.W   ENEMY_HEIGHT,D2          ; Set Enemy Height to D2
+    CMP.L   D1,         D2          ; Do they Overlap ?
+    BGE     TRW_PLUS_H_LTE_TO_THROW_Y  ; Less than or Equal
+    BRA     CHECK_THROW_FLY_COLLISIONS
+
+TRW_PLUS_H_LTE_TO_THROW_Y:     ; Less than or Equal ?
+    ADD.L   #THRW_H_INIT,D1          ; Add Player Height to D1
+    MOVE.L  ENEMY_Y,    D2          ; Move Enemy Height to D2  
+    CMP.L   D1,         D2          ; Do they OverLap ?
+    BLE     ATTACK_COLLISION               ; Collision !
+    BRA     CHECK_THROW_FLY_COLLISIONS
+
+*--------------------Checking for THROW FLYING collision---------------------
+CHECK_THROW_FLY_COLLISIONS:
+    CLR.L   D1                      ; Clear D1
+    CLR.L   D2                      ; Clear D2
+THROW_X_LTE_TO_FLYENEMY_X_PLUS_W:
+    MOVE.L  THROW_X,   D1
+    ADD.L   #THRW_W_INIT,D1          ; Move Player Width to D1
+    MOVE.L  FLYINGENEMY_X,    D2                    ; Move Enemy X to D2
+    CMP.L   D1,         D2                          ; Do the Overlap ?
+    BLE     THROW_PLUS_W_LTE_TO_FLYENMY_X     ; Less than or Equal ?
+    BRA     COLLISION_CHECK_DONE
+
+THROW_PLUS_W_LTE_TO_FLYENMY_X:           ; Check player is not  
+    MOVE.L  THROW_X,   D1
+    MOVE.L  FLYINGENEMY_X,    D2            ; Move Enemy X to D2
+    ADD.W   FLYENEMY_WIDTH,  D2                    ; Set Enemy width X + Width
+    CMP.L   D1,         D2                  ; Do they OverLap ?
+    BGE     TRW_LTE_TO_FLYENEMY_Y_PLUS_H  ; Less than or Equal
+    BRA     COLLISION_CHECK_DONE
+
+TRW_LTE_TO_FLYENEMY_Y_PLUS_H:     
+    MOVE.L  THROW_Y,   D1          ; Move Player Y to D1
+    MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Y to D2
+    ADD.W   FLYENEMY_HEIGHT,D2          ; Set Enemy Height to D2
+    CMP.L   D1,         D2          ; Do they Overlap ?
+    BGE     TRW_PLUS_H_LTE_TO_FLYENEMY_Y  ; Less than or Equal
+    BRA     COLLISION_CHECK_DONE
+
+TRW_PLUS_H_LTE_TO_FLYENEMY_Y:     ; Less than or Equal ?
+    ADD.L   #THRW_H_INIT,D1          ; Add Player Height to D1
     MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
     BLE     ATTACK_FLY_COLLISION               ; Collision !
     BRA     COLLISION_CHECK_DONE
 
+
 ;---
 
 ATTACK_COLLISION:
+    TST.B   ENEMY_HIT
+    BNE     STILL_COLLIDED
+    BSR     PLAY_HIT
     MOVE.L  #400, ENEMY_Y
     MOVE.B  #01,  ENEMY_HIT
     ADDI.B  #1,   ENEMIES_DEFEATED
     RTS
 
 ATTACK_FLY_COLLISION:
+    TST.B   FLYENEMY_HIT
+    BNE     STILL_COLLIDED
+    BSR     PLAY_HIT
     MOVE.L  #400, FLYINGENEMY_Y
     MOVE.B  #01,  FLYENEMY_HIT
     ADDI.B  #1,   ENEMIES_DEFEATED
@@ -1336,7 +1602,7 @@ COLLISION_CHECK_DONE:               ; No Collision Update points
     RTS                             ; Return to subroutine
 
 
-COLLISIONrun:
+ENEMYCOLLISION:
     CMP.B     #$01, IN_ENEMY
     BEQ     STILL_COLLIDED
     CMP.B   #01, DRAW_HEALTHPACKS
@@ -1435,7 +1701,7 @@ GAME_OVER:
     TRAP    #15
 
 INPUTLOOP:
-    BSR     runINPUT
+    BSR     BATTLEINPUT
     BRA     INPUTLOOP
 
 EXIT:
@@ -1543,6 +1809,16 @@ ATTACK_Y             DC.L    00
 ATTACK_HEIGHT        EQU     20
 ATTACK_WIDTH         EQU     35 
 
+CURRENTLYTHROWING   DC.B    00
+THROW_COOLDOWN      DC.W    00
+THROW_TIME          DC.W    00
+THROW_X             DC.L    00
+THROW_Y             DC.L    00
+THROW_HEIGHT        EQU     20
+THROW_WIDTH         EQU     35 
+THROW_VELOCITY   DS.L    01  ; Reserve Space for Player Velocity
+THROW_GRAVITY    DS.L    01  ; Reserve Space for Player Gravity
+
 ENEMIES_DEFEATED     DC.B    00
 ENEMY_HIT           DC.B    00
 FLYENEMY_HIT        DC.B    00
@@ -1569,6 +1845,7 @@ FLYENEMY_HEIGHT   DC.W        12
 JUMP_WAV        DC.B    'jump.wav',0        ; Jump Sound
 GAMEOVER_WAV         DC.B    'gameOver.wav',0         ; Run Sound
 HITHURT_WAV        DC.B    'hitHurt.wav',0        ; Collision Opps
+HIT_WAV        DC.B    'hit.wav',0        ; Collision Opps
 POWERUP_WAV        DC.B    'powerUP.wav',0        ; Collision Opps
 LEVELCHANGE_WAV        DC.B    'levelChange.wav',0        ; Collision Opps
 
@@ -1581,26 +1858,10 @@ SCALER DC.W  4
 ROWC    EQU    16
 WIDTH   DC.W    $FFB0
 
-titleBmp
-	dc.b	'tree2.bmp',0
-list
-	dc.b	'*.bmp',0				* file type list
-	ds.w	0					* ensure even
-
-
 timer           DC.L    0
-SPRITE_DATA:
+
     END    START        ; last line of source
 
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
 
 
 
