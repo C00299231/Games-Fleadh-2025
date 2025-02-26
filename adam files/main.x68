@@ -1,10 +1,7 @@
 ; this file contains the main game loop
 
 init:
-    ; Enable the screen back buffer(see easy 68k help)
-	MOVE.B  #tcdbl,D0          ; 92 Enables Double Buffer
-    MOVE.B  #17,        D1          ; Combine Tasks
-	TRAP	#15                     ; Trap (Perform action)
+    
 	
 	    ; Place the Player at the center of the screen
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
@@ -20,17 +17,24 @@ init:
     move.l d1, centerY
 
     jsr initializeCell
-    move.b #1, enemyDir
-    jsr enemySetUp
-    jsr initEnemy
+    ;move.w #1, enemyDir
     jsr initDraw
-
-    move.b #$ff, isWaveOver
+    jsr initAllEnemies
 
 	bra loop
 
 loop:
     ;jsr clearscreen
+    jsr map ; if in map, do map stuff
+    ; if in battle, do battle stuff
+
+    bra endLoop
+endLoop:
+    tst currentHealth
+    bne end
+    bra loop        ; loop
+
+map:
     jsr draw
     jsr testinput
     
@@ -40,27 +44,22 @@ loop:
 
     ; process
     jsr increment
-    jsr processEnemy
-    jsr enemyColCheck
+    jsr processEnemies
+    ;jsr enemyColCheck
     jsr collision
+    rts
 
-    bra endLoop
-endLoop:
-    ;move #$300, d5
-    ;jsr wasteTime
-    tst currentHealth
-    bne end
-    bra loop        ; loop
+battle:
+    rts
 
 collision:
     jsr zone1collision
     jsr zone2collision
     jsr zone3collision
+    jsr zone4collision
     rts
 
 paused:
-    lea pauseMsg, a1
-    jsr print
     bra endLoop
     
 clearscreen:
@@ -112,24 +111,24 @@ noinput:
 yesinput:
     ; at this point, keycode in currentkey is pressed
 
-    ; OPTIONS (can input even if paused)
-    cmpi.b #spacekey, currentkey
-    beq spacepressed
-    cmpi.b #escapekey, currentkey
+    cmpi.b #escapeKey, currentkey
     beq escapepressed
+    cmpi.b #key0, currentKey
+    beq key0pressed
     
-    ; test paused (cannot input if paused)
+    ; test paused (pause has different inputs)
     tst.b isPaused
-    bne endInput
+    bne pausedInput
 
     ; TEST - take damage
-    cmpi.b #enterKey, currentKey
+    cmpi.b #zKey, currentKey
+    beq zPressed
     ;beq takeDmg
 
     ; normal movement buttons [check timer first]
     move.w playerTime, d5
     jsr checkIncrement
-    bne endInput    
+    bne endInput
 
     cmpi.b #wkey, currentkey ; W:UP
     beq wpressed
@@ -140,21 +139,66 @@ yesinput:
     cmpi.b #dkey, currentkey ; D:RIGHT
     beq dpressed
 
+    RTS
+
+pausedInput:
+    cmpi.b #key1, currentkey
+    beq key1pressed
+
+    cmpi.b #key2, currentkey
+    beq key2pressed
+
+    cmpi.b #key3, currentkey
+    beq key3pressed
+
     rts
 
 endInput:
     rts
 
 ; INPUTS
-spacepressed:
+escapePressed:
     move.b lastkey, d5
     cmp.b currentKey, d5
-    bne spaceJustPressed
-    ;jsr takeDmg
+    bne escapeJustPressed
+    rts
+; runs if escape is pressed this frame, but not prev frame
+escapeJustPressed:
+    jsr togglePause
     rts
 
-escapepressed:
+key0pressed:
+    move.b lastkey, d5
+    cmp.b currentKey, d5
+    bne key0justPressed
+    rts
+key0justPressed:
+    jsr toggleFullScreen
+    rts
+
+togglePause:
+    move.b isPaused, d5
+    not.b d5
+    move.b d5, isPaused
+    rts
+
+
+zPressed:
+    move.b lastkey, d5
+    cmp.b currentKey, d5
+    bne toggleFollow ; z just pressed
+    rts
+
+key1pressed: ; restart
+    jsr togglePause
+    bra init
+key2pressed: ; quit
+    jsr togglePause
     bra end
+key3pressed: ; main menu
+    jsr togglePause
+    jsr clearscreen
+    bra start
 
 ; MOVEMENT INPUT: MUST STAY WITHIN CELL BOUNDARIES
 wpressed:
@@ -208,19 +252,11 @@ endHeal:
 
 takeDmg:
     move.l currentHealth, d1
-    sub.l enemyDamage, d1
+    sub.l #1, d1
     move.l d1, currentHealth
     rts
 
-; INPUTS SPECIAL
 
-; runs if space is pressed this frame, but not prev frame
-spaceJustPressed:
-
-    move.b isPaused, d5
-    not.b d5
-    move.b d5, isPaused
-    rts
 
 ; runs if game is cut short w/ ESC key
 end:
@@ -249,8 +285,6 @@ currentPts dc.l 0
 
 currentHealth dc.l 200
 maxHealth dc.l 200
-
-isWaveOver dc.b 0
 
 screenW        DS.w    01  ; Reserve Space for Screen Width
 screenH        DS.w    01  ; Reserve Space for Screen Height

@@ -4,17 +4,17 @@ initDraw:
     ; get health rectangle bounds
 
     ;HEIGHT
-    move.w screenH, d1
-    sub.l #75, d1
+    move.w healthBarLocY, d1
     move.l d1, healthTlY
     add.l #15, d1
     move.l d1, healthBrY
 
     ;WIDTH
-    move.l centerX, d1
+    clr.l d1
+    move.w healthBarOffsetX, d1
     ;move.l maxHealth, d2
     ;divu #2, d2
-    sub.l maxHealth, d1
+    ;add.l maxHealth, d1
     move.l d1, healthTlX
 
     add.l maxhealth, d1
@@ -28,17 +28,51 @@ draw:
     MOVE.B  #94,        D0
     TRAP    #15
 
+    jsr followCam
     jsr drawBg
+    jsr drawEnemies
     jsr drawCell
     jsr drawPlayer
-    jsr drawEnemy
     jsr drawText
     jsr drawHealth
-    jsr drawWaveOver
+    jsr drawPause
+    rts
+
+drawPause:
+    tst.b isPaused
+    beq endDrawPause
+
+    move.l #color5, d1
+    jsr setPenColour
+    move.l #color1, d1
+    jsr setFillColour
+
+    ; get rect bounds
+
+    move.l centerX, d1
+    move.l centerY, d2
+    sub.l pauseHalfWidth, d1
+    sub.l pauseHalfHeight, d2
+
+    move.l centerX, d3
+    move.l centerY, d4
+    add.l pauseHalfWidth, d3
+    add.l pauseHalfHeight, d4
+
+    jsr drawUiRect
+
+    ; draw text
+    move.w #$2208, d1
+    jsr setCursor
+    lea pauseMsg, a1
+    jsr print
+
+    rts
+endDrawPause:
     rts
 
 drawHealth:
-    move.l #color3, d1
+    move.l #color4, d1
     jsr setPenColour
     move.l #color2, d1
     jsr setFillColour
@@ -48,7 +82,7 @@ drawHealth:
 
     move.l healthBrX, d3
     move.l healthBrY, d4
-    jsr drawRect
+    jsr drawUiRect
 
     ; DRAW FULL PART OF HP BAR
     move.l healthtlX, d3
@@ -58,7 +92,7 @@ drawHealth:
     jsr setFillColour
 
     move.l healthTlX, d1 ; set value in d1 back to what its supposed to be
-    jsr drawRect
+    jsr drawUiRect
     rts
 
 drawText:
@@ -68,54 +102,39 @@ drawText:
     move.l #color1, d1
     jsr setFillColour
     ; PLAYER SCORE MSG
-    move.w #$0201, d1
+    move.w #$200, d1
+    add.b pointsRow, d1
     jsr setCursor
     lea pointsMsg, a1
     jsr print
     ; PLAYER SCORE
-    move.l #$e01, d1
+    move.l #$a00, d1
+    add.b pointsRow, d1
     jsr setCursor
     move.l currentPts, d1
     jsr printNum
 
     ; HEALTH
-    move.w #$071b, d1
+    move.w #$200, d1
+    add.b healthRow, d1
     jsr setCursor
     lea healthMsg, a1
+    jsr print
+
+    ; ANTHILL
+    move.w #$1005, d1
+    jsr setCursor
+    lea attackMsg1, a1
+    jsr print
+    add.w #1, d1
+    jsr setCursor
+    lea attackMsg2, a1
     jsr print
 
 
     ; reset cursor
     move.l #0, d1
     jsr setCursor
-    rts
-
-drawWaveOver:
-    ; set colours
-    move.l #color5, d1
-    jsr setPenColour
-    move.l #color1, d1
-    jsr setFillColour
-
-    ; check is wave over
-    move.b isWaveOver, d2
-    tst.b d2
-    beq endDrawWaveOver
-    
-    ; draw text 1
-    move.l #$0805, d1
-    jsr setCursor
-    lea waveOverMsg1, a1
-    jsr print
-    ; draw text 2
-    move.l #$0806, d1
-    jsr setCursor
-    lea waveOverMsg2, a1
-    jsr print
-
-    ; draw apple
-    rts
-endDrawWaveOver:
     rts
 
 drawBg:
@@ -134,7 +153,7 @@ drawBg:
     move.l #0, d2
     move.w screenW, d3
     move.w screenH, d4
-    jsr drawRect
+    jsr drawUiRect
     rts
 
 drawPlayer:
@@ -156,9 +175,17 @@ drawPlayer:
     jsr drawRect
     RTS
 
+drawEnemies:
+    jsr getEnemy1
+    jsr drawEnemy
+    jsr getEnemy2
+    jsr drawEnemy
+    jsr getEnemy3
+    jsr drawEnemy
+    jsr getEnemy4
+    jsr drawEnemy
+
 drawEnemy:
-    tst.b enemyActive
-    beq endDraw
     ; set colour
     move.l #color5, d1
     jsr setPenColour
@@ -190,13 +217,12 @@ drawCell:
     move.l cellbrY, d4
     jsr drawRect
 
-    ;---------------draw zone 1
     ; change colours
     move.l #color4, d1
     jsr setPenColour
     move.l #color3, d1
     jsr setFillColour
-
+    ;---------------draw zone 1
     move.l zone1tlX, d1
     move.l zone1tlY, d2
     move.l zone1brX, d3
@@ -210,16 +236,18 @@ drawCell:
     move.l zone2brY, d4
     jsr drawRect
     
-
     ;---------------draw zone 3
-    ; change colours
-    move.l #color4, d1
-    jsr setFillColour
-
     move.l zone3tlX, d1
     move.l zone3tlY, d2
     move.l zone3brX, d3
     move.l zone3brY, d4
+    jsr drawRect
+
+    ;---------------draw zone 4
+    move.l zone4tlX, d1
+    move.l zone4tlY, d2
+    move.l zone4brX, d3
+    move.l zone4brY, d4
     jsr drawRect
 
     ; done
@@ -249,6 +277,27 @@ printNum:
     rts
 
 drawRect:
+    ; if not follow, draw like normal
+    tst.w isFollow
+    beq drawUiRect
+
+    ; offset by camera
+    sub.l cameraX, d1
+    sub.l cameraY, d2
+    sub.l cameraX, d3
+    sub.l cameraY, d4
+    ; zoom by camera
+    mulu cameraZoom, d1
+    mulu cameraZoom, d2
+    mulu cameraZoom, d3
+    mulu cameraZoom, d4
+
+    ; draw rect function
+    MOVE.B  #tcRect, d0
+    TRAP    #15
+    rts
+
+drawUiRect:
     MOVE.B  #tcRect, d0
     TRAP    #15
     rts
@@ -256,6 +305,29 @@ drawRect:
 setCursor:
     MOVE.B  #tcCrs, d0
     TRAP    #15
+    rts
+
+toggleFullScreen:
+    clr.l d1
+    move.w isFullScreen, d1
+    cmpi.b #1, d1
+    beq goFullScreen
+
+    ; go windowed
+    move.l #1, d1
+    jsr setFullScreen
+
+    bra endToggleFullScreen
+goFullScreen:
+    add.b #1, d1
+    jsr setFullScreen
+    bra endToggleFullScreen
+endToggleFullScreen:
+    move.w d1, isFullScreen
+
+setFullScreen:
+    move #tcFullScreen, d0
+    trap #15
     rts
 
 ; INSTANT NEW LINE
@@ -267,12 +339,11 @@ crlf:
     trap #15
     rts
 
-pauseMsg dc.b 'GAME PAUSED', 0
+isFullScreen dc.w 1
+
 endMsg dc.b 'GAME OVER', 0
 pointsMsg dc.b 'POINTS:', 0
 healthMsg dc.b 'HEALTH:', 0
-waveOverMsg1 dc.b 'An apple has appeared in the garden!',0
-waveOverMsg2 dc.b 'Press "g" to try grab it, or "i" to ignore.',0
 
 healthTlX ds.l 01
 healthTlY ds.l 01
@@ -281,9 +352,21 @@ healthBrY ds.l 01
 
 currentHpX ds.l 01
 
-healthBarOffset dc.b 200
+; health stuff
+healthBarOffsetX dc.w 80
+healthBarLocY dc.w 16
 
+healthRow dc.b 01
+pointsRow dc.b 03
 
+; pause stuff
+pauseHalfWidth dc.l 110
+pauseHalfHeight dc.l 130
+pauseMsg dc.b 'GAME PAUSED!', 0
+
+; move to level stuff
+attackMsg1 dc.b 'AN ANTHILL IS UNDER ATTACK!',0
+attackMsg2 dc.b 'MOVE TOWARD IT AND PRESS "ENTER" TO DEFEND IT!',0
 
 *~Font name~Courier New~
 *~Font size~10~

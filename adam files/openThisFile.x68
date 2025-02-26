@@ -6,6 +6,11 @@ start:
     bra firstInit
 
 firstInit:
+    ; Enable the screen back buffer(see easy 68k help)
+	MOVE.B  #tcdbl,D0          ; 92 Enables Double Buffer
+    MOVE.B  #17,        D1          ; Combine Tasks
+	TRAP	#15                     ; Trap (Perform action)
+	
     MOVE.B  #tcScreen, D0           ; access screen information
     MOVE.L  #tcScreenSize, D1       ; placing 0 in D1 triggers loading screen size information
     TRAP    #15                     ; interpret D0 and D1 for screen size
@@ -15,6 +20,7 @@ firstInit:
     
 	move.b #$00, isPaused
 	
+	clr.l d2
 	move #tcFont, d0
     move.l #color5, d1
     trap #15
@@ -38,6 +44,9 @@ title:
     bra titleLoop
     
 titleLoop:
+     ; Enable back buffer
+    MOVE.B  #94,        D0
+    TRAP    #15
     
     
     ; put "get input" code into d0
@@ -64,8 +73,11 @@ title2msg dc.b 'Press "enter" to start...',0
  include "draw.x68"
  include "enemies.x68"
  include "timings.x68"
+ include "enemyManager.x68"
+ include "camera.x68"
 
 	end start
+
 
 
 

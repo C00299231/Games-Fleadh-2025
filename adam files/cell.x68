@@ -27,6 +27,7 @@ initializeCell: ; initialize values for cell and zones
     move.l d1, celltlX      ; save to relevant location
 
     move.l centerY, d1
+    add.l cellYoffset, d1
     sub.l cellYradius, d1
     move.l d1, celltlY
 
@@ -37,6 +38,7 @@ initializeCell: ; initialize values for cell and zones
     move.l d1, cellbrX
 
     move.l centerY, d1
+    add.l cellYoffset, d1
     add.l cellYradius, d1
     move.l d1, cellbrY
 
@@ -74,7 +76,6 @@ initializeCell: ; initialize values for cell and zones
 
 
     ;--------get zone 3 bounds
-    ;(ZONE 3 IS ON THE BOTTOM; FULL WIDTH OF CELL, REGULAR ZONE HEIGHT)
     ; TL
     move.l cellbrX, d1
     sub.l zoneWidth, d1
@@ -88,6 +89,23 @@ initializeCell: ; initialize values for cell and zones
     move.l cellbrX, zone3brX
 
     move.l cellbrY, zone3brY
+
+    ;--------get zone 4 bounds
+    ; TL
+    move.l celltlX, d1
+    move.l d1, zone4tlX
+
+    move.l cellbrY, d1
+    sub.l zoneHeight, d1
+    move.l d1, zone4tlY
+
+    ; BR
+    move.l celltlX, d1
+    add.l zoneWidth, d1
+    move.l d1, zone4brX
+
+    move.l cellbrY, d1
+    move.l d1, zone4brY
 
     rts
 
@@ -140,11 +158,26 @@ zone3collision:
 
     ; at this point, player is confirmed in zone 3
 
-    move.w healTime, d5
-    jsr checkIncrement
-    bne endCollision
-    jsr heal
+    lea zoneMsg, a1
+    jsr print
     
+    rts
+
+zone4collision:
+    move.l playerX, d2
+    move.l playerY, d3
+
+    ; check x
+    cmp.l zone4brX, d2
+    bgt endCollision
+    ; check y
+    cmp.l zone4tlY, d3
+    blt endCollision
+
+    ; at this point, player is confirmed in zone 4
+
+    lea zoneMsg, a1
+    jsr print
     rts
 
 endCollision:
@@ -178,13 +211,23 @@ zone3tlY ds.l 01
 zone3brX ds.l 01
 zone3brY ds.l 01
 
+;---------------zone 4 top-left bounds
+zone4tlX ds.l 01
+zone4tlY ds.l 01
+; zone 4 bottom-right bounds
+zone4brX ds.l 01
+zone4brY ds.l 01
+
 ; horizontal and vertical radius of main cell (half width)
-cellXradius dc.l 80
-cellYradius dc.l 70
+cellXradius dc.l 100
+cellYradius dc.l 80
+
+; how lower from center it is
+cellYoffset dc.l 60
 
 ; width of zone
-zoneWidth dc.l 50
-zoneHeight dc.l 35
+zoneWidth dc.l 55
+zoneHeight dc.l 45
 
 zoneMsg dc.b 'IN ZONE',0
 

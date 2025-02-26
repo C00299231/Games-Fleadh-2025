@@ -3,18 +3,6 @@
 ; variable data for current enemy
 enemyX ds.l 01
 enemyY ds.l 01
-enemyHp ds.l 01
-
-enemyDir ds.b 01
-enemyActive ds.b 01
-
-enemyMaxHp ds.l 01
-enemyDamage ds.l 01
-
-enemySetUp:
-    move.l #20, enemyMaxHp
-    move.l #20, enemyDamage
-    rts
 
 ; enemy initialization: set position, health
 ; 3 longs require 3 mem locations
@@ -22,164 +10,161 @@ enemySetUp:
 
 ; GENERAL INIT/PROCESS
 ; before these srts are called, enemyDir is given a value
-; 0: top
-; 1: left
-; 2: right
-; 3: bottom
+; 0: tl
+; 1: tr
+; 2: br
+; 3: bl
 
 initEnemy:
     ; init based on which direction
-    tst.b enemyDir
-    beq initEnemyTop
-    cmpi.b #1, enemyDir
-    beq initEnemyLeft
-    cmpi.b #2, enemyDir
-    beq initEnemyRight
-    cmpi.b #3, enemyDir
-    beq initEnemyBottom
+    tst enemyDir
+    beq initEnemytl
+
+    cmpi #1, enemyDir
+    beq initEnemytr
+
+    cmpi #2, enemyDir
+    beq initEnemybr
+
+    cmpi #3, enemyDir
+    beq initEnemyBl
 
     ; no valid direction placed. just put enemy at the top
-    bra initEnemyTop
+    bra initEnemyTl
 
 processEnemy:
-    tst.b enemyActive
-    beq endProcess
+
     ; process based on direction
-    tst.b enemyDir
-    beq processEnemyTop
-    cmpi.b #1, enemyDir
-    beq processEnemyLeft
-    cmpi.b #2, enemyDir
-    beq processEnemyRight
-    cmpi.b #3, enemyDir
-    beq processEnemyBottom
+    tst enemyDir
+    beq processEnemyTl
+    cmpi #1, enemyDir
+    beq processEnemytr
+    cmpi #2, enemyDir
+    beq processEnemybr
+    cmpi #3, enemyDir
+    beq processEnemyBl
 
     ; no valid direction placed. just put enemy at the top
-    bra processEnemyTop
+    bra processEnemyTl
 
 enemyColCheck:
-    tst.b enemyActive
-    beq endCollide
-
+    move.w enemyDir, d2
     ; colCheck based on direction
-    tst.b enemyDir
-    beq enemyTopColCheck
-    cmpi.b #1, enemyDir
+    cmpi #0, enemyDir
     beq enemyLeftColCheck
-    cmpi.b #2, enemyDir
+
+    cmpi #1, enemyDir
+    beq enemyLeftColCheck
+
+    cmpi #2, enemyDir
     beq enemyRightColCheck
-    cmpi.b #3, enemyDir
-    beq enemyBottomColCheck
+
+    cmpi #3, enemyDir
+    beq enemyRightColCheck
 
     ; no valid direction. nothing we can do atp
     rts
 
 ;-------------------------------ENEMY TOP
-initEnemyTop:
+initEnemytl:
     move.l #0, enemyY
-    move.l centerX, enemyX
-    move.l enemyMaxHp, enemyHp
+    move.l #0, enemyX
     jsr endInitEnemy
     rts
-processEnemyTop:
+processEnemyTl:
     move.w enemyTime, d5
     jsr checkIncrement
     bne endProcess
 
     add.l #1, enemyY
+    add.l #1, enemyX
+
+    jsr enemyColCheck
 
     bra endProcess
 
-enemyTopColCheck:
-    move.l celltlY, d2
-    sub.l #enemyH, d2
-    cmp.l enemyY, d2
-    beq enemyCollide
-    rts
-
 ;-------------------------------ENEMY LEFT
-initEnemyLeft:
-    move.l #0, enemyX
-    move.l centerY, enemyY
-    move.l enemyMaxHp, enemyHp
+initEnemytr:
+    move.l screenW, enemyX
+    move.l #0, enemyY
     jsr endInitEnemy
     rts
-processEnemyLeft:
+processEnemytr:
     move.w enemyTime, d5
     jsr checkIncrement
     bne endProcess
 
-    add.l #1, enemyX
+    add.l #1, enemyY
+    sub.l #1, enemyX
+
+    jsr enemyColCheck
 
     bra endProcess
 
-enemyLeftColCheck:
-    move.l celltlX, d2
-    sub.l #enemyW, d2
-    cmp.l enemyX, d2
-    beq enemyCollide
-    rts
+
 
 ;-------------------------------ENEMY RIGHT
-initEnemyRight:
+initEnemybr:
     clr.l d2
     move.w screenW, d2
     move.l d2, enemyX
 
-    move.l centerY, enemyY
-    move.l enemyMaxHp, enemyHp
+    move.l screenH, enemyY
 
     jsr endInitEnemy
     rts
-processEnemyRight:
-    move.w enemyTime, d5
-    jsr checkIncrement
-    bne endProcess
-
-    sub.l #1, enemyX
-
-    bra endProcess
-
-enemyRightColCheck:
-    move.l celltlx, d2
-    sub.l #enemyw, d2
-    cmp.l enemyX, d2
-    beq enemyCollide
-    rts
-
-;-------------------------------ENEMY BOTTOM
-initEnemyBottom:
-    clr.l d2
-    move.w screenH, d2
-    move.l d2, enemyY
-
-    move.l centerX, enemyX
-    move.l enemyMaxHp, enemyHp
-
-    jsr endInitEnemy
-    rts
-processEnemyBottom:
+processEnemybr:
     move.w enemyTime, d5
     jsr checkIncrement
     bne endProcess
 
     sub.l #1, enemyY
+    sub.l #1, enemyX
+
+    jsr enemyColCheck
 
     bra endProcess
 
-enemyBottomColCheck:
-    move.l celltlY, d2
-    sub.l #enemyH, d2
-    cmp.l enemyY, d2
+;-------------------------------ENEMY BOTTOM
+initEnemyBl:
+    clr.l d2
+    move.w screenH, d2
+    move.l d2, enemyY
+
+    move.l #0, enemyX
+
+    jsr endInitEnemy
+    rts
+processEnemyBl:
+    move.w enemyTime, d5
+    jsr checkIncrement
+    bne endProcess
+
+    sub.l #1, enemyY
+    add.l #1, enemyX
+
+    jsr enemyColCheck
+
+    bra endProcess
+
+;----------COLLISION
+enemyLeftColCheck:
+    move.l celltlX, d2
+    ;sub.l #enemyW, d2
+    cmp.l enemyX, d2
+    beq enemyCollide
+    rts
+
+enemyRightColCheck:
+    move.l cellbrx, d2
+    sub.l #enemyw, d2
+    cmp.l enemyX, d2
     beq enemyCollide
     rts
 
 ;---------------OTHER STUFF
 enemyCollide: ; enemy successfully reached the base
-    jsr takeDmg
-    move.b #0, enemyActive
-    rts
-enemyHit: ; enemy hit by a projectile
+    jsr initEnemy
     rts
 
 endProcess:

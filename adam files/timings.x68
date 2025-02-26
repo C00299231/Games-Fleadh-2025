@@ -1,8 +1,7 @@
 ; this file contains timing stuff
 
 playerTime dc.w 10
-enemyTime dc.w 50
-projTime dc.w 300
+enemyTime dc.w 30
 healTime dc.w 40
 enemySpawnTimer dc.w 2000
 

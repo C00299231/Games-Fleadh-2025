@@ -9,3 +9,5 @@ tcFont equ 21       ; change font style/colour
 tcPenClr equ 80     ; change pen colour
 tcPenFil equ 81     ; change pen fill
 tcRect equ 87       ; draw rectangle
+
+tcFullScreen equ 33
