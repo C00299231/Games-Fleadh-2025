@@ -1,15 +1,12 @@
 ;ENEMY 1
 enemy1x dc.l 00
 enemy1y dc.l 00
-
 ;ENEMY 2
 enemy2x dc.l 50
 enemy2y dc.l 50
-
 ;ENEMY 3
 enemy3x dc.l 100
 enemy3y dc.l 100
-
 ;ENEMY 4
 enemy4x dc.l 150
 enemy4y dc.l 150
@@ -21,17 +18,145 @@ currentSpawnX ds.l 01
 currentSpawnY ds.l 01
 
 initAllEnemies:
-    move.l #0, enemy1x
-    move.l #0, enemy1y
+    clr.l enemy1x
+    clr.l enemy1y
 
-    move.l #50, enemy2x
-    move.l #50, enemy2y
+    clr.l enemy2x
+    clr.l enemy2y
 
-    move.l #100, enemy3x
-    move.l #100, enemy3y
+    clr.l enemy3x
+    clr.l enemy3y
 
-    move.l #150, enemy4x
-    move.l #150, enemy4y
+    clr.l enemy4x
+    clr.l enemy4y
+
+    clr.l d2 ; put screenw here
+    clr.l d3 ; put screenh here
+    move.w screenW, d2
+    move.w screenH, d3
+
+    cmpi.w #0, enemyDir
+    beq initAlltl
+    cmpi.w #1, enemyDir
+    beq initAlltr
+    cmpi.w #2, enemyDir
+    beq initAllbr
+    cmpi.w #3, enemyDir
+    beq initAllbl
+    rts
+
+initAlltl: ; top left enemies
+    ; no need to clear values
+
+    ; add values
+    add.l #enemy1offset, enemy1x
+    add.l #enemy1offset, enemy1y
+
+    add.l #enemy2offset, enemy2x
+    add.l #enemy2offset, enemy2y
+
+    add.l #enemy3offset, enemy3x
+    add.l #enemy3offset, enemy3y
+
+    add.l #enemy4offset, enemy4x
+    add.l #enemy4offset, enemy4y
+    rts
+initAlltr:
+    move.l d2, enemy1x
+    ;clr.l enemy1y
+
+    move.l d2, enemy2x
+    ;clr.l enemy2y
+
+    move.l d2, enemy3x
+    ;clr.l enemy3y
+
+    move.l d2, enemy4x
+    ;clr.l enemy4y
+
+    ; add values
+    sub.l #enemy1offset, enemy1x
+    add.l #enemy1offset, enemy1y
+
+    sub.l #enemy2offset, enemy2x
+    add.l #enemy2offset, enemy2y
+
+    sub.l #enemy3offset, enemy3x
+    add.l #enemy3offset, enemy3y
+
+    sub.l #enemy4offset, enemy4x
+    add.l #enemy4offset, enemy4y
+    rts
+initAllbr: ; enemies on the bottom need different offsets
+    move.l d2, enemy1x
+    move.l d3, enemy1y
+
+    move.l d2, enemy2x
+    move.l d3, enemy2y
+
+    move.l d2, enemy3x
+    move.l d3, enemy3y
+
+    move.l d2, enemy4x
+    move.l d3, enemy4y
+
+    ; move yOffsets into d2, and half it
+
+    ; add values
+    move.l #enemy1offset, d2
+    divu #2, d2
+    sub.l #enemy1offset, enemy1x
+    sub.l d2, enemy1y
+
+    move.l #enemy2offset, d2
+    divu #2, d2
+    sub.l #enemy2offset, enemy2x
+    sub.l d2, enemy2y
+
+    move.l #enemy3offset, d2
+    divu #2, d2
+    sub.l #enemy3offset, enemy3x
+    sub.l d2, enemy3y
+
+    move.l #enemy4offset, d2
+    divu #2, d2
+    sub.l #enemy4offset, enemy4x
+    sub.l d2, enemy4y
+    rts
+initAllBl:
+    ;clr.l enemy1x
+    move.l d3, enemy1y
+
+    ;clr.l enemy2x
+    move.l d3, enemy2y
+
+    ;clr.l enemy3x
+    move.l d3, enemy3y
+
+    ;clr.l enemy4x
+    move.l d3, enemy4y
+
+    ; add values
+    move.l #enemy1offset, d2
+    divu #2, d2
+    add.l #enemy1offset, enemy1x
+    sub.l d2, enemy1y
+
+    move.l #enemy2offset, d2
+    divu #2, d2
+    add.l #enemy2offset, enemy2x
+    sub.l d2, enemy2y
+
+    move.l #enemy3offset, d2
+    divu #2, d2
+    add.l #enemy3offset, enemy3x
+    sub.l d2, enemy3y
+
+    move.l #enemy4offset, d2
+    divu #2, d2
+    add.l #enemy4offset, enemy4x
+    sub.l d2, enemy4y
+    rts
 
 processEnemies:
     move.w #1, enemyIndex
@@ -118,4 +243,13 @@ saveEnemy4:
     rts
 
 ; current enemy dir
-enemyDir dc.w 0000
+enemyDir dc.w 0003
+
+; ENEMY START POINTS
+enemy1offset equ 0
+enemy2offset equ 50
+enemy3offset equ 100
+enemy4offset equ 150
+
+enemyXmove equ 2
+enemyYmove equ 1
