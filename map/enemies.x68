@@ -16,6 +16,12 @@ enemyY ds.l 01
 ; 3: bl
 
 initEnemy:
+    ; move screen w and h into regs
+    clr.l d2 ; put screenw here
+    clr.l d3 ; put screenh here
+    move.w screenW, d2
+    move.w screenH, d3
+
     ; init based on which direction
     tst enemyDir
     beq initEnemytl
@@ -54,13 +60,13 @@ enemyColCheck:
     beq enemyLeftColCheck
 
     cmpi #1, enemyDir
-    beq enemyLeftColCheck
+    beq enemyRightColCheck
 
     cmpi #2, enemyDir
     beq enemyRightColCheck
 
     cmpi #3, enemyDir
-    beq enemyRightColCheck
+    beq enemyLeftColCheck
 
     ; no valid direction. nothing we can do atp
     rts
@@ -76,7 +82,7 @@ processEnemyTl:
     jsr checkIncrement
     bne endProcess
 
-    add.l #1, enemyY
+    add.l #enemyYmove, enemyY
     add.l #1, enemyX
 
     jsr enemyColCheck
@@ -85,7 +91,7 @@ processEnemyTl:
 
 ;-------------------------------ENEMY LEFT
 initEnemytr:
-    move.l screenW, enemyX
+    move.l d2, enemyX
     move.l #0, enemyY
     jsr endInitEnemy
     rts
@@ -94,7 +100,7 @@ processEnemytr:
     jsr checkIncrement
     bne endProcess
 
-    add.l #1, enemyY
+    add.l #enemyYmove, enemyY
     sub.l #1, enemyX
 
     jsr enemyColCheck
@@ -105,11 +111,9 @@ processEnemytr:
 
 ;-------------------------------ENEMY RIGHT
 initEnemybr:
-    clr.l d2
-    move.w screenW, d2
     move.l d2, enemyX
 
-    move.l screenH, enemyY
+    move.l d3, enemyY
 
     jsr endInitEnemy
     rts
@@ -118,8 +122,8 @@ processEnemybr:
     jsr checkIncrement
     bne endProcess
 
-    sub.l #1, enemyY
-    sub.l #1, enemyX
+    sub.l #enemyYmove, enemyY
+    sub.l #enemyXmove, enemyX
 
     jsr enemyColCheck
 
@@ -127,9 +131,7 @@ processEnemybr:
 
 ;-------------------------------ENEMY BOTTOM
 initEnemyBl:
-    clr.l d2
-    move.w screenH, d2
-    move.l d2, enemyY
+    move.l d3, enemyY
 
     move.l #0, enemyX
 
@@ -140,8 +142,8 @@ processEnemyBl:
     jsr checkIncrement
     bne endProcess
 
-    sub.l #1, enemyY
-    add.l #1, enemyX
+    sub.l #enemyYmove, enemyY
+    add.l #enemyXmove, enemyX
 
     jsr enemyColCheck
 
@@ -152,14 +154,14 @@ enemyLeftColCheck:
     move.l celltlX, d2
     ;sub.l #enemyW, d2
     cmp.l enemyX, d2
-    beq enemyCollide
+    ble enemyCollide
     rts
 
 enemyRightColCheck:
     move.l cellbrx, d2
     sub.l #enemyw, d2
     cmp.l enemyX, d2
-    beq enemyCollide
+    bge enemyCollide
     rts
 
 ;---------------OTHER STUFF

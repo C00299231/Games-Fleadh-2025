@@ -1860,7 +1860,7 @@ WIDTH   DC.W    $FFB0
 
 timer           DC.L    0
 
-    END    START        ; last line of source
+;    END    START        ; last line of source
 
 
 
