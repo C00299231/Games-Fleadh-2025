@@ -200,9 +200,10 @@ INITRUN:
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     MOVE.L  D1,         HEALTH_Y     ; Enemy Y Position
 
+    MOVE.B     #10,    hillHP
 
     LEA    LEVELS,      A2
-    MOVE.B  #05,        LIVES
+    MOVE.B  #03,        antHealth
     MOVE.B  #02,        POINTS
     MOVE.B  #00,        DRAW_HEALTHPACKS
     MOVE.B  #00,        SPAWN_HEALTHPACKS
@@ -212,11 +213,14 @@ INITRUN:
 
     MOVE.L  #0,         ATTACK_X
     MOVE.L  #0,         ATTACK_Y
-    MOVE.L  #-1,        THROW_X
-    MOVE.L  #-1,        THROW_Y
+    MOVE.L  #-100,        THROW_X
+    MOVE.L  #-100,        THROW_Y
     
     MOVE.B  #00,        CURRENTLYATTACKING
     MOVE.B  #00,        CURRENTLYTHROWING
+    
+    MOVE.B  #00,        ENEMY_HIT
+    MOVE.B  #00,        FLYENEMY_HIT
 
     CLR.L   D1
  
@@ -337,14 +341,23 @@ PROCESS_INPUT:
     tst.b isPaused
     bne pausedInput
 
-    TST.B   LIVES
-    BEQ     PROCESS_RESTART
-    BRA     IDLE                    ; Or Idle
+    CMP.B   #0,hillHP
+    BLE     PROCESS_RESTART
     RTS                             ; Return to subroutine
 
 PROCESS_RESTART:
     CMP.L   #Rkey,  CURRENT_KEY ; Is Current Key R
-    BEQ     INITrun
+    IF <EQ> THEN
+        move.w #1, lvlType
+
+        MOVE.L    #color5,D1
+        MOVE.L  #00090000,D2
+        MOVE.B  #tcFont,D0
+        TRAP    #15
+        
+        BRA     loop
+    ENDI
+
     RTS                             ; Return to subroutine
 
 *----------
@@ -421,14 +434,14 @@ MOVE_THROW:
     RTS
 
 CHECK_THROW_DONE:
-    CMP.L    #300, THROW_Y
+    CMP.L    #350, THROW_Y
     BGT      RESET_THROW
     RTS
 
 RESET_THROW:
     MOVE.B   #00, CURRENTLYTHROWING
-    MOVE.L   #-1, THROW_X
-    MOVE.L   #-1, THROW_Y
+    MOVE.L   #-100, THROW_X
+    MOVE.L   #-100, THROW_Y
     RTS
 
 CHECK_ATTACK_COOLDOWN:
@@ -526,11 +539,17 @@ RESET_ENEMY_POSITION:
     MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     MOVE.L  D1,         ENEMY_Y     ; Enemy Y Position
-    MOVE.B  #0,         ENEMY_HIT
 
     EOR.L  D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
     MOVE.L  D1,         ENEMY_X     ; Enemy X Position
+
+    TST.B     ENEMY_HIT
+    IF <EQ> THEN        ; enemy has not been hit
+        BSR   damage_hill
+    ENDI
+    MOVE.B  #0,         ENEMY_HIT
+
     RTS
 
 RESET_FLYENEMY_POSITION:
@@ -539,11 +558,17 @@ RESET_FLYENEMY_POSITION:
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     SUB.W   #60,        D1
     MOVE.L  D1,         FLYINGENEMY_Y     ; Enemy Y Position
-    MOVE.B  #0,         FLYENEMY_HIT
 
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
     MOVE.L  D1,         FLYINGENEMY_X     ; FLY Enemy X Position
+
+    TST.B     FLYENEMY_HIT
+    IF <EQ> THEN        ; enemy has not been hit
+        BSR   damage_hill
+    ENDI
+    MOVE.B  #0,         FLYENEMY_HIT
+
     RTS
     
 RESET_HEALTH_POSITION:
@@ -551,6 +576,12 @@ RESET_HEALTH_POSITION:
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
     MOVE.L  D1,         HEALTH_X     ; healthpack X Position
+    RTS
+
+damage_hill:
+    subq.b  #5,hillHP
+    CMP.b   #0,hillHP
+    BLE     GAME_OVER
     RTS
 
 CONTINUE:
@@ -815,37 +846,21 @@ DRAW_PLYR_DATA:
     MOVE.L  FLYINGENEMY_Y,   D1          ; Move X to D1.L
     TRAP    #15                     ; Trap (Perform action) 
 
-    ; Player Velocity Message
+    ; Player 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$0203,     D1          ; Col 02, Row 03
     TRAP    #15                     ; Trap (Perform action)
-    LEA     V_MSG,      A1          ; Velocity Message
+    LEA     antsRem_MSG,      A1          ; Velocity Message
     MOVE    #13,        D0          ; No Line feed
     TRAP    #15                     ; Trap (Perform action)
     
     ; Player Velocity
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0503,     D1          ; Col 05, Row 03
+    MOVE.W  #$1303,     D1          ; Col 05, Row 03
     TRAP    #15                     ; Trap (Perform action)
     MOVE.B  #03,        D0          ; Display number at D1.L
-    MOVE.L  PLYR_VELOCITY,D1        ; Move X to D1.L
-    TRAP    #15                     ; Trap (Perform action)
-    
-    ; Player Gravity Message
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1003,     D1          ; Col 10, Row 03
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     VARMSG,      A1          ; G Message
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)
-    
-    ; Player Gravity
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1903,     D1          ; Col 12, Row 03
-    TRAP    #15                     ; Trap (Perform action)
-    MOVE.B  #03,        D0          ; Display number at D1.L
-    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.B  ATTACK_COOLDOWN,D1         ; Move Gravity to D1.L
+    EOR.L   D1,D1
+    MOVE.B  antsRemaining,D1        ; Move X to D1.L
     TRAP    #15                     ; Trap (Perform action)
 
     ; Player On Ground Message
@@ -881,20 +896,37 @@ DRAW_PLYR_DATA:
     MOVE.B  #03,        D0          ; Display the contents of D1
     TRAP    #15                     ; Trap (Perform action)
 
-    ; Show Lives msg
+    ; Show hill msg
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0207,     D1          ; Col 02, Row 06
+    MOVE.W  #$0206,     D1          ; Col 02, Row 06
     TRAP    #15                     ; Trap (Perform action)
-    LEA     LIVES_MSG,   A1          ; Draw
+    LEA     hillHP_MSG,   A1          ; Draw
     MOVE    #13,        D0          ; No Line feed
     TRAP    #15                     ; Trap (Perform action)  
     
-    ; Show Lives msg
+    ; Show hill msg
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$0E06,     D1          ; Col 30, Row 1
+    TRAP    #15                     ; Trap (Perform action)   
+    EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.B  hillHP,      D1          ; Move Key Pressed to D1
+    MOVE.B  #03,        D0          ; Display the contents of D1
+    TRAP    #15                     ; Trap (Perform action)
+    
+    ; Show antHealth msg
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$0207,     D1          ; Col 02, Row 06
+    TRAP    #15                     ; Trap (Perform action)
+    LEA     antHealth_MSG,   A1          ; Draw
+    MOVE    #13,        D0          ; No Line feed
+    TRAP    #15                     ; Trap (Perform action)  
+    
+    ; Show antHealth msg
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$0A07,     D1          ; Col 30, Row 1
     TRAP    #15                     ; Trap (Perform action)   
     EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.B  LIVES,      D1          ; Move Key Pressed to D1
+    MOVE.B  antHealth,      D1          ; Move Key Pressed to D1
     MOVE.B  #03,        D0          ; Display the contents of D1
     TRAP    #15                     ; Trap (Perform action)
 
@@ -1366,304 +1398,7 @@ DRAWDIRT:
 * PLAYER_H + PLAYER_Y >= ENEMY_Y
 *-----------------------------------------------------------
 CHECK_COLLISIONS:
-
-    CLR.L   D1                      ; Clear D1
-    CLR.L   D2                      ; Clear D2
-PLAYER_X_LTE_TO_ENEMY_X_PLUS_W:
-    MOVE.L  PLAYER_X,   D1          ; Move Player X to D1
-    ADD.B   PLAYER_WIDTH,D1          ; Move Player Width to D1
-    MOVE.L  ENEMY_X,    D2          ; Move Enemy X to D2
-    CMP.L   D1,         D2          ; Do the Overlap ?
-    BLE     PLAYER_X_PLUS_W_LTE_TO_ENEMY_X  ; Less than or Equal ?
-    BRA     CHECK_FLYENEMY_COLLISIONS
-
-PLAYER_X_PLUS_W_LTE_TO_ENEMY_X:     ; Check player is not  
-    MOVE.L  PLAYER_X,   D1          ; Move Player X to D1
-    MOVE.L  ENEMY_X,    D2          ; Move Enemy X to D2
-    ADD.W   ENEMY_WIDTH,D2          ; Set Enemy width X + Width
-    CMP.L   D1,         D2          ; Do they OverLap ?
-    BGE     PLAYER_Y_LTE_TO_ENEMY_Y_PLUS_H  ; Less than or Equal
-    BRA     CHECK_FLYENEMY_COLLISIONS  
-
-PLAYER_Y_LTE_TO_ENEMY_Y_PLUS_H:     
-    MOVE.L  PLAYER_Y,   D1          ; Move Player Y to D1
-    MOVE.L  ENEMY_Y,    D2          ; Move Enemy Y to D2
-    ADD.W   ENMY_H_INIT,D2          ; Set Enemy Height to D2
-    CMP.L   D1,         D2          ; Do they Overlap ?
-    BLE     PLAYER_Y_PLUS_H_LTE_TO_ENEMY_Y  ; Less than or Equal
-    BRA     CHECK_FLYENEMY_COLLISIONS
-
-PLAYER_Y_PLUS_H_LTE_TO_ENEMY_Y:     ; Less than or Equal ?
-    ADD.B   PLYR_H_INIT,D1          ; Add Player Height to D1
-    MOVE.L  ENEMY_Y,    D2          ; Move Enemy Height to D2  
-    CMP.L   D1,         D2          ; Do they OverLap ?
-    BGE     ENEMYCOLLISION               ; Collision !
-    BRA     CHECK_FLYENEMY_COLLISIONS
-
-*--------------------Checking for flying enemy collision---------------------
-CHECK_FLYENEMY_COLLISIONS:
-    CLR.L   D1                      ; Clear D1
-    CLR.L   D2                      ; Clear D2
-PLX_LTE_TO_FLYENEMY_X_PLUS_W:
-    MOVE.L  PLAYER_X,   D1
-    ADD.B   PLAYER_WIDTH,D1          ; Move Player Width to D1
-    MOVE.L  FLYINGENEMY_X,    D2                    ; Move Enemy X to D2
-    CMP.L   D1,         D2                          ; Do the Overlap ?
-    BLE     PLX_PLUS_W_LTE_TO_FLYENEMY_X      ; Less than or Equal ?
-    BRA     CHECK_HEALTH_COLLISIONS
-
-PLX_PLUS_W_LTE_TO_FLYENEMY_X:           ; Check player is not  
-    MOVE.L  PLAYER_X,   D1
-    MOVE.L  FLYINGENEMY_X,    D2            ; Move Enemy X to D2
-    ADD.W   FLYENEMY_WIDTH,  D2                    ; Set Enemy width X + Width
-    CMP.L   D1,         D2                  ; Do they OverLap ?
-    BGE     PLY_LTE_TO_FLYENEMY_Y_PLUS_H  ; Less than or Equal
-    BRA     CHECK_HEALTH_COLLISIONS
-
-PLY_LTE_TO_FLYENEMY_Y_PLUS_H:     
-    MOVE.L  PLAYER_Y,   D1          ; Move Player Y to D1
-    MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Y to D2
-    ADD.W   FLYENEMY_HEIGHT,D2          ; Set Enemy Height to D2
-    CMP.L   D1,         D2          ; Do they Overlap ?
-    BGE     PLY_PLUS_H_LTE_TO_FLYENEMY_Y  ; Less than or Equal
-    BRA     CHECK_HEALTH_COLLISIONS
-
-PLY_PLUS_H_LTE_TO_FLYENEMY_Y:     ; Less than or Equal ?
-    ADD.B   PLAYER_HEIGHT,D1          ; Add Player Height to D1
-    MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Height to D2  
-    CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     ENEMYCOLLISION               ; Collision !
-    BRA     CHECK_HEALTH_COLLISIONS
-
-*--------------------Checking for Health collision---------------------
-CHECK_HEALTH_COLLISIONS:
-    CLR.L   D1                      ; Clear D1
-    CLR.L   D2                      ; Clear D2
-PLX_LTE_TO_HEALTH_X_PLUS_W:
-    MOVE.L  PLAYER_X,   D1
-    ADD.B   PLAYER_WIDTH,D1          ; Move Player Width to D1
-    MOVE.L  HEALTH_X,    D2                    ; Move Enemy X to D2
-    CMP.L   D1,         D2                          ; Do the Overlap ?
-    BLE     PLX_PLUS_W_LTE_TO_HEALTH_X      ; Less than or Equal ?
-    BRA     CHECK_ATTACK_COLLISIONS
-
-PLX_PLUS_W_LTE_TO_HEALTH_X:           ; Check player is not  
-    MOVE.L  PLAYER_X,   D1
-    MOVE.L  HEALTH_X,    D2            ; Move Enemy X to D2
-    ADD.L   #HEALTH_PACK_W,  D2                    ; Set Enemy width X + Width
-    CMP.L   D1,         D2                  ; Do they OverLap ?
-    BGE     PLY_LTE_TO_HEALTH_Y_PLUS_H  ; Less than or Equal
-    BRA     CHECK_ATTACK_COLLISIONS
-PLY_LTE_TO_HEALTH_Y_PLUS_H:     
-    MOVE.L  PLAYER_Y,   D1          ; Move Player Y to D1
-    MOVE.L  HEALTH_Y,    D2          ; Move Enemy Y to D2
-    ADD.L   #HEALTH_PACK_H,D2          ; Set Enemy Height to D2
-    CMP.L   D1,         D2          ; Do they Overlap ?
-    BGE     PLY_PLUS_H_LTE_TO_HEALTH_Y  ; Less than or Equal
-    BRA     CHECK_ATTACK_COLLISIONS
-
-PLY_PLUS_H_LTE_TO_HEALTH_Y:     ; Less than or Equal ?
-    ADD.B   PLAYER_HEIGHT,D1          ; Add Player Height to D1
-    MOVE.L  HEALTH_Y,    D2          ; Move Enemy Height to D2  
-    CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     HEALTH_COLLISION               ; Collision !
-    BRA     CHECK_ATTACK_COLLISIONS
-
-*--------------------Checking for ATTACK collision---------------------
-CHECK_ATTACK_COLLISIONS:
-    CLR.L   D1                      ; Clear D1
-    CLR.L   D2                      ; Clear D2
-ATTACK_X_LTE_TO_ENEMY_X_PLUS_W:
-    MOVE.L  ATTACK_X,   D1
-    ADD.L   #ATTACK_WIDTH,D1          ; Move Player Width to D1
-    MOVE.L  ENEMY_X,    D2                    ; Move Enemy X to D2
-    CMP.L   D1,         D2                          ; Do the Overlap ?
-    BLE     ATTACK_PLUS_W_LTE_TO_ENMY_X      ; Less than or Equal ?
-    BRA     CHECK_ATTACK_FLY_COLLISIONS
-
-ATTACK_PLUS_W_LTE_TO_ENMY_X:           ; Check player is not  
-    MOVE.L  ATTACK_X,   D1
-    MOVE.L  ENEMY_X,    D2            ; Move Enemy X to D2
-    ADD.W   ENEMY_WIDTH,  D2                    ; Set Enemy width X + Width
-    CMP.L   D1,         D2                  ; Do they OverLap ?
-    BGE     ATK_LTE_TO_ENEMY_Y_PLUS_H  ; Less than or Equal
-    BRA     CHECK_ATTACK_FLY_COLLISIONS
-
-ATK_LTE_TO_ENEMY_Y_PLUS_H:     
-    MOVE.L  ATTACK_Y,   D1          ; Move Player Y to D1
-    MOVE.L  ENEMY_Y,    D2          ; Move Enemy Y to D2
-    ADD.W   ENEMY_HEIGHT,D2          ; Set Enemy Height to D2
-    CMP.L   D1,         D2          ; Do they Overlap ?
-    BGE     ATK_PLUS_H_LTE_TO_ATTACK_Y  ; Less than or Equal
-    BRA     CHECK_ATTACK_FLY_COLLISIONS
-
-ATK_PLUS_H_LTE_TO_ATTACK_Y:     ; Less than or Equal ?
-    ADD.L   #ATTACK_HEIGHT,D1          ; Add Player Height to D1
-    MOVE.L  ENEMY_Y,    D2          ; Move Enemy Height to D2  
-    CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     ATTACK_COLLISION               ; Collision !
-    BRA     CHECK_ATTACK_FLY_COLLISIONS
-
-*--------------------Checking for ATTACK FLYING collision---------------------
-CHECK_ATTACK_FLY_COLLISIONS:
-    CLR.L   D1                      ; Clear D1
-    CLR.L   D2                      ; Clear D2
-ATK_X_LTE_TO_FLYENEMY_X_PLUS_W:
-    MOVE.L  ATTACK_X,   D1
-    ADD.L   #ATTACK_WIDTH,D1          ; Move Player Width to D1
-    MOVE.L  FLYINGENEMY_X,    D2                    ; Move Enemy X to D2
-    CMP.L   D1,         D2                          ; Do the Overlap ?
-    BLE     ATTACK_PLUS_W_LTE_TO_FLYENMY_X     ; Less than or Equal ?
-    BRA     CHECK_THROW_COLLISION
-
-ATTACK_PLUS_W_LTE_TO_FLYENMY_X:           ; Check player is not  
-    MOVE.L  ATTACK_X,   D1
-    MOVE.L  FLYINGENEMY_X,    D2            ; Move Enemy X to D2
-    ADD.W   FLYENEMY_WIDTH,  D2                    ; Set Enemy width X + Width
-    CMP.L   D1,         D2                  ; Do they OverLap ?
-    BGE     ATK_LTE_TO_FLYENEMY_Y_PLUS_H  ; Less than or Equal
-    BRA     CHECK_THROW_COLLISION
-
-ATK_LTE_TO_FLYENEMY_Y_PLUS_H:     
-    MOVE.L  ATTACK_Y,   D1          ; Move Player Y to D1
-    MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Y to D2
-    ADD.W   FLYENEMY_HEIGHT,D2          ; Set Enemy Height to D2
-    CMP.L   D1,         D2          ; Do they Overlap ?
-    BGE     ATK_PLUS_H_LTE_TO_FLYENEMY_Y  ; Less than or Equal
-    BRA     CHECK_THROW_COLLISION
-
-ATK_PLUS_H_LTE_TO_FLYENEMY_Y:     ; Less than or Equal ?
-    ADD.L   #ATTACK_HEIGHT,D1          ; Add Player Height to D1
-    MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Height to D2  
-    CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     ATTACK_FLY_COLLISION               ; Collision !
-    BRA     CHECK_THROW_COLLISION
-
-*--------------------Checking for THROW collision---------------------
-CHECK_THROW_COLLISION:
-    CLR.L   D1                      ; Clear D1
-    CLR.L   D2                      ; Clear D2
-THROW_X_LTE_TO_ENEMY_X_PLUS_W:
-    MOVE.L  THROW_X,   D1
-    ADD.L   #THROW_WIDTH,D1          ; Move Player Width to D1
-    MOVE.L  ENEMY_X,    D2                    ; Move Enemy X to D2
-    CMP.L   D1,         D2                          ; Do the Overlap ?
-    BLE     THROW_PLUS_W_LTE_TO_ENMY_X      ; Less than or Equal ?
-    BRA     CHECK_THROW_FLY_COLLISIONS
-
-THROW_PLUS_W_LTE_TO_ENMY_X:           ; Check player is not  
-    MOVE.L  THROW_X,   D1
-    MOVE.L  ENEMY_X,    D2            ; Move Enemy X to D2
-    ADD.W   ENEMY_WIDTH,  D2                    ; Set Enemy width X + Width
-    CMP.L   D1,         D2                  ; Do they OverLap ?
-    BGE     TRW_LTE_TO_ENEMY_Y_PLUS_H  ; Less than or Equal
-    BRA     CHECK_THROW_FLY_COLLISIONS
-
-TRW_LTE_TO_ENEMY_Y_PLUS_H:     
-    MOVE.L  THROW_Y,   D1          ; Move Player Y to D1
-    MOVE.L  ENEMY_Y,    D2          ; Move Enemy Y to D2
-    ADD.W   ENEMY_HEIGHT,D2          ; Set Enemy Height to D2
-    CMP.L   D1,         D2          ; Do they Overlap ?
-    BGE     TRW_PLUS_H_LTE_TO_THROW_Y  ; Less than or Equal
-    BRA     CHECK_THROW_FLY_COLLISIONS
-
-TRW_PLUS_H_LTE_TO_THROW_Y:     ; Less than or Equal ?
-    ADD.L   #THRW_H_INIT,D1          ; Add Player Height to D1
-    MOVE.L  ENEMY_Y,    D2          ; Move Enemy Height to D2  
-    CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     ATTACK_COLLISION               ; Collision !
-    BRA     CHECK_THROW_FLY_COLLISIONS
-
-*--------------------Checking for THROW FLYING collision---------------------
-CHECK_THROW_FLY_COLLISIONS:
-    CLR.L   D1                      ; Clear D1
-    CLR.L   D2                      ; Clear D2
-THROW_X_LTE_TO_FLYENEMY_X_PLUS_W:
-    MOVE.L  THROW_X,   D1
-    ADD.L   #THRW_W_INIT,D1          ; Move Player Width to D1
-    MOVE.L  FLYINGENEMY_X,    D2                    ; Move Enemy X to D2
-    CMP.L   D1,         D2                          ; Do the Overlap ?
-    BLE     THROW_PLUS_W_LTE_TO_FLYENMY_X     ; Less than or Equal ?
-    BRA     COLLISION_CHECK_DONE
-
-THROW_PLUS_W_LTE_TO_FLYENMY_X:           ; Check player is not  
-    MOVE.L  THROW_X,   D1
-    MOVE.L  FLYINGENEMY_X,    D2            ; Move Enemy X to D2
-    ADD.W   FLYENEMY_WIDTH,  D2                    ; Set Enemy width X + Width
-    CMP.L   D1,         D2                  ; Do they OverLap ?
-    BGE     TRW_LTE_TO_FLYENEMY_Y_PLUS_H  ; Less than or Equal
-    BRA     COLLISION_CHECK_DONE
-
-TRW_LTE_TO_FLYENEMY_Y_PLUS_H:     
-    MOVE.L  THROW_Y,   D1          ; Move Player Y to D1
-    MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Y to D2
-    ADD.W   FLYENEMY_HEIGHT,D2          ; Set Enemy Height to D2
-    CMP.L   D1,         D2          ; Do they Overlap ?
-    BGE     TRW_PLUS_H_LTE_TO_FLYENEMY_Y  ; Less than or Equal
-    BRA     COLLISION_CHECK_DONE
-
-TRW_PLUS_H_LTE_TO_FLYENEMY_Y:     ; Less than or Equal ?
-    ADD.L   #THRW_H_INIT,D1          ; Add Player Height to D1
-    MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Height to D2  
-    CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     ATTACK_FLY_COLLISION               ; Collision !
-    BRA     COLLISION_CHECK_DONE
-
-
-;---
-
-ATTACK_COLLISION:
-    TST.B   ENEMY_HIT
-    BNE     STILL_COLLIDED
-    BSR     PLAY_HIT
-    MOVE.L  #400, ENEMY_Y
-    MOVE.B  #01,  ENEMY_HIT
-    ADDI.B  #1,   ENEMIES_DEFEATED
-    RTS
-
-ATTACK_FLY_COLLISION:
-    TST.B   FLYENEMY_HIT
-    BNE     STILL_COLLIDED
-    BSR     PLAY_HIT
-    MOVE.L  #400, FLYINGENEMY_Y
-    MOVE.B  #01,  FLYENEMY_HIT
-    ADDI.B  #1,   ENEMIES_DEFEATED
-    RTS
-
-COLLISION_CHECK_DONE:               ; No Collision Update points
-    CLR.B   IN_ENEMY
-    CLR.B   IN_HPACK
-    CLR.L   D1
-    MOVE.B  POINTS,    D1          ; Move points upgrade to D1
-    ADD.L   PLAYER_SCORE,D1         ; Add to current player score
-    MOVE.L  D1, PLAYER_SCORE        ; Update player score in memory
-    RTS                             ; Return to subroutine
-
-
-ENEMYCOLLISION:
-    CMP.B     #$01, IN_ENEMY
-    BEQ     STILL_COLLIDED
-    CMP.B   #01, DRAW_HEALTHPACKS
-    BNE     RESET_HEALTH_POSITION
-    MOVE.B  #01, DRAW_HEALTHPACKS 
-    MOVE.B  #01, SPAWN_HEALTHPACKS 
-    SUB.B   #1, LIVES
-    MOVE.B  #$01, IN_ENEMY
-    TST.B   LIVES
-    BEQ     GAME_OVER
-    BSR     PLAY_HITHURT               ; Play Opps Wav
-    RTS                             ; Return to subroutine
-
-HEALTH_COLLISION:
-    CMP.B     #$01, IN_HPACK
-    BEQ     STILL_COLLIDED
-    MOVE.B  #00, DRAW_HEALTHPACKS
-    BSR     PLAY_POWERUP               ; Play Opps Wav
-    ADD.B   #1, LIVES
-    CMP.B   #05, LIVES
-    BGE     STOP_HPACK_SPAWN
-    MOVE.B  #$01, IN_HPACK
-    RTS
+    include     "battle/battlecollisions.x68"     
 
 STOP_HPACK_SPAWN:
     MOVE.B  #00, SPAWN_HEALTHPACKS
@@ -1697,9 +1432,9 @@ GAME_OVER:
     TRAP	#15                     ; Trap (Perform action)
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1005,     D1          ; Col 10, Row 03
+    MOVE.W  #$0705,     D1          ; Col 10, Row 03
     TRAP    #15                     ; Trap (Perform action)
-    LEA     GAMEOVER_MSG,A1        ; Game Over Message
+    LEA     HILLLOST_MSG,A1        ; Game Over Message
     MOVE    #13,        D0          ; No Line feed
     TRAP    #15                     ; Trap (Perform action)
 
@@ -1728,7 +1463,7 @@ GAME_OVER:
 
     ; Restart
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0B08,     D1          ; Col 09, Row 01
+    MOVE.W  #$0A08,     D1          ; Col 09, Row 01
     TRAP    #15                     ; Trap (Perform action)
     LEA     RESTART_MSG,  A1          ; Score Message
     MOVE    #13,        D0          ; No Line feed
@@ -1775,13 +1510,16 @@ VARMSG           DC.B    'DRAW', 0             ; Gravity Position Message
 GND_MSG         DC.B    'ENEMIES DEFEATED:', 0           ; On Ground Position Message
 
 EXIT_MSG        DC.B    'Exiting....', 0    ; Exit Message
-GAMEOVER_MSG    DC.B    'Game Over!', 0      ; Game Over Message
-RESTART_MSG    DC.B    'Press R to play again', 0      ; Game Over Message
+HILLLOST_MSG    DC.B    'ANT HILL HAS BEEN OVERRUN!', 0      ; Game Over Message
+RESTART_MSG    DC.B    'Press R to return to map', 0      ; Game Over Message
 TREET          DC.B     '##',0
 
 PRESSSTART      DC.B    'Enter 1 to start',0
 TITLEMSG        DC.B    'ANT DEFENDER',0
-LIVES_MSG       DC.B    'Lives : ',0        ; lives message
+antHealth_MSG       DC.B    'Health : ',0        ; health message
+antsRem_MSG       DC.B    'Ants Remaining : ',0        ; health message
+hillHP_MSG       DC.B    'Hill Health: ',0        ; health message
+hillHP          DC.B      10
 
 IN_ENEMY        DC.B      00                  ; marker for if the player is in the enemy
 IN_HPACK        DC.B      00                  ; marker for if the player is in the health pack
@@ -1835,7 +1573,10 @@ ENEMYCOLOR        DC.L        $000000FF
 FLYENEMYCOLOR     DC.L        $00FF0000
 
 RANDOM            DS.L        01  ; Reserve Space for Random Number
-LIVES             DC.B        05  ; reserves space for player lives
+antHealth         DC.B        03  ; reserves space for antHealth
+antsRemaining     DC.B        01  ; reserves space for ants
+
+
  
 POINTS            DC.B        02          ; Points added
 
@@ -1858,8 +1599,11 @@ THROW_VELOCITY   DS.L    01  ; Reserve Space for Player Velocity
 THROW_GRAVITY    DS.L    01  ; Reserve Space for Player Gravity
 
 ENEMIES_DEFEATED     DC.B    00
+enemies_to_defeat
+
 ENEMY_HIT           DC.B    00
 FLYENEMY_HIT        DC.B    00
+
 
 * Widths and heights of player, enemy and healthpack
 *-----------------------------------------------------------
@@ -1899,6 +1643,7 @@ WIDTH   DC.W    $FFB0
 timer           DC.L    0
 
 ;    END    START        ; last line of source
+
 
 
 
