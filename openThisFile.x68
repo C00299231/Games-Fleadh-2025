@@ -11,6 +11,11 @@ firstInit:
     MOVE.B  #17,        D1          ; Combine Tasks
 	TRAP	#15                     ; Trap (Perform action)
 	
+    bra nextInit
+    
+nextInit:
+	move.w #0, lvlType
+    
     MOVE.B  #tcScreen, D0           ; access screen information
     MOVE.L  #tcScreenSize, D1       ; placing 0 in D1 triggers loading screen size information
     TRAP    #15                     ; interpret D0 and D1 for screen size
@@ -19,6 +24,8 @@ firstInit:
     MOVE.W  D1,         screenW     ; place screen width in memory location
     
 	move.b #$00, isPaused
+
+   
 	
 	clr.l d2
 	move #tcFont, d0
@@ -32,7 +39,7 @@ title:
     
     move.w #$1f0d, d1
     jsr setCursor
-    lea titlemsg, a1
+    lea title1msg, a1
     jsr print
     
     move.w #$1c0f, d1
@@ -48,35 +55,36 @@ titleLoop:
     MOVE.B  #94,        D0
     TRAP    #15
     
+    jsr testInput
     
-    ; put "get input" code into d0
-    move.l #enterKey, d1
-    move.b #tcinp, d0
-    trap #15
-    
-    tst.b d1
-    bne init
     bra titleLoop
 
 
-titleMsg dc.b '- CELL DEFENDER -',0
+title1Msg dc.b '- CELL DEFENDER -',0
 
 title2msg dc.b 'Press "enter" to start...',0
 
 ; include other files 
- include "main.x68"
- include "shapeSizes.x68"
- include "trapCodes.x68"
- include "inputKeyCodes.x68"
- include "colours.x68"
- include "cell.x68"
- include "draw.x68"
- include "enemies.x68"
- include "timings.x68"
- include "enemyManager.x68"
- include "camera.x68"
+ include "map/main.x68"
+ include "map/shapeSizes.x68"
+ include "map/trapCodes.x68"
+ include "map/inputKeyCodes.x68"
+ include "map/colours.x68"
+ include "map/cell.x68"
+ include "map/draw.x68"
+ include "map/enemies.x68"
+ include "map/timings.x68"
+ include "map/enemyManager.x68"
+ include "map/camera.x68"
+ include "map/input.x68"
+
+ include "Running/RUNtestMelee2.x68"
 
 	end start
+
+
+
+
 
 
 

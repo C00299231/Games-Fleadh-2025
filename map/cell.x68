@@ -125,6 +125,9 @@ zone1collision:
     lea zoneMsg, a1
     jsr print
 
+    ; need to go to enemy thing
+    bra initRun
+
     rts
 
 zone2collision:
@@ -183,35 +186,35 @@ zone4collision:
 endCollision:
     rts
 
-;---------------cell top-left bounds
+;-cell top-left bounds
 celltlX ds.l 01
 celltlY ds.l 01
 ; cell bottom-right bounds
 cellbrX ds.l 01
 cellbrY ds.l 01
 
-;---------------zone 1 top-left bounds
+;----------------------zone 1 top-left bounds
 zone1tlX ds.l 01
 zone1tlY ds.l 01
 ; zone 1 bottom-right bounds
 zone1brX ds.l 01
 zone1brY ds.l 01
 
-;---------------zone 2 top-left bounds
+;----------------------zone 2 top-left bounds
 zone2tlX ds.l 01
 zone2tlY ds.l 01
 ; zone 2 bottom-right bounds
 zone2brX ds.l 01
 zone2brY ds.l 01
 
-;---------------zone 3 top-left bounds
+;----------------------zone 3 top-left bounds
 zone3tlX ds.l 01
 zone3tlY ds.l 01
 ; zone 3 bottom-right bounds
 zone3brX ds.l 01
 zone3brY ds.l 01
 
-;---------------zone 4 top-left bounds
+;----------------------zone 4 top-left bounds
 zone4tlX ds.l 01
 zone4tlY ds.l 01
 ; zone 4 bottom-right bounds
@@ -230,6 +233,9 @@ zoneWidth dc.l 55
 zoneHeight dc.l 45
 
 zoneMsg dc.b 'IN ZONE',0
+
+enterHill:
+
 
 
 *~Font name~Courier New~
