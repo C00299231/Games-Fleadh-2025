@@ -301,7 +301,7 @@ antKilled:
     TST.b     antsRemaining
     BEQ       GAME_OVER
     BSR     PLAY_HITHURT               ; Play Opps Wav
-    RTS     DRAW_RESPAWN
+    BSR     DRAW_RESPAWN
     RTS
 
 HEALTH_COLLISION:

@@ -199,7 +199,7 @@ INITRUN:
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     MOVE.L  D1,         HEALTH_Y     ; Enemy Y Position
 
-    MOVE.B     #20,    hillHP
+    MOVE.B     #100,    hillHP
 
     LEA    LEVELS,      A2
     MOVE.B  #03,        antHealth
@@ -222,7 +222,7 @@ INITRUN:
     MOVE.B  #00,        FLYENEMY_HIT
 
     ADD.B   #20,        enemiesToDefeat
-    MOVE.B  #19,         ENEMIES_DEFEATED
+    MOVE.B  #0,         ENEMIES_DEFEATED
 
     CLR.L   D1
  
@@ -343,11 +343,18 @@ PROCESS_INPUT:
     tst.b isPaused
     bne pausedInput
 
+    CMP.W   #3,lvlIndex
+    BEQ     COMPLETE_RESTART
+
     CMP.B   #0,hillHP
     BLE     PROCESS_RESTART
 
     MOVE.B  enemiesToDefeat,D1
     CMP.B   ENEMIES_DEFEATED,D1
+    BLE     PROCESS_RESTART
+    
+    MOVE.B  enemiesToDefeat,D1
+    CMP.B   enemiesPassed,D1
     BLE     PROCESS_RESTART
 
     TST.B   antsRemaining
@@ -820,52 +827,52 @@ DRAW_PLYR_DATA:
     TRAP    #15                     ; Trap (Perform action)
 
     ; Player Score Message
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0201,     D1          ; Col 02, Row 01
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     SCORE_MSG,  A1          ; Score Message
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)
-
-    ; Player Score Value
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0901,     D1          ; Col 09, Row 01
-    TRAP    #15                     ; Trap (Perform action)
-    MOVE.B  #03,        D0          ; Display number at D1.L
-    MOVE.L  PLAYER_SCORE,D1         ; Move Score to D1.L
-    TRAP    #15                     ; Trap (Perform action)
+    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    ;MOVE.W  #$0201,     D1          ; Col 02, Row 01
+    ;TRAP    #15                     ; Trap (Perform action)
+    ;LEA     SCORE_MSG,  A1          ; Score Message
+    ;MOVE    #13,        D0          ; No Line feed
+    ;TRAP    #15                     ; Trap (Perform action)
+;
+    ;; Player Score Value
+    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    ;MOVE.W  #$0901,     D1          ; Col 09, Row 01
+    ;TRAP    #15                     ; Trap (Perform action)
+    ;MOVE.B  #03,        D0          ; Display number at D1.L
+    ;MOVE.L  PLAYER_SCORE,D1         ; Move Score to D1.L
+    ;TRAP    #15                     ; Trap (Perform action)
     
     ; Player X Message
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0202,     D1          ; Col 02, Row 02
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     X_MSG,      A1          ; X Message
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)
+    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    ;MOVE.W  #$0202,     D1          ; Col 02, Row 02
+    ;TRAP    #15                     ; Trap (Perform action)
+    ;LEA     X_MSG,      A1          ; X Message
+    ;MOVE    #13,        D0          ; No Line feed
+    ;TRAP    #15                     ; Trap (Perform action)
     
     ; Player X
-    MOVE.B  #TC_CURSR_P, D0          ; Set Cursor Position
-    MOVE.W  #$0502,     D1          ; Col 05, Row 02
-    TRAP    #15                     ; Trap (Perform action)
-    MOVE.B  #03,        D0          ; Display number at D1.L
-    MOVE.L  HEALTH_X,   D1          ; Move X to D1.L
-    TRAP    #15                     ; Trap (Perform action)
+    ;MOVE.B  #TC_CURSR_P, D0          ; Set Cursor Position
+    ;MOVE.W  #$0502,     D1          ; Col 05, Row 02
+    ;TRAP    #15                     ; Trap (Perform action)
+    ;MOVE.B  #03,        D0          ; Display number at D1.L
+    ;MOVE.L  HEALTH_X,   D1          ; Move X to D1.L
+    ;TRAP    #15                     ; Trap (Perform action)
     
     ; Player Y Message
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1002,     D1          ; Col 10, Row 02
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     Y_MSG,      A1          ; Y Message
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)
+    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    ;MOVE.W  #$1002,     D1          ; Col 10, Row 02
+    ;TRAP    #15                     ; Trap (Perform action)
+    ;LEA     Y_MSG,      A1          ; Y Message
+    ;MOVE    #13,        D0          ; No Line feed
+    ;TRAP    #15                     ; Trap (Perform action)
     
     ; Player Y
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1202,     D1          ; Col 12, Row 02
-    TRAP    #15                     ; Trap (Perform action)
-    MOVE.B  #03,        D0          ; Display number at D1.L
-    MOVE.L  FLYINGENEMY_Y,   D1          ; Move X to D1.L
-    TRAP    #15                     ; Trap (Perform action) 
+    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    ;MOVE.W  #$1202,     D1          ; Col 12, Row 02
+    ;TRAP    #15                     ; Trap (Perform action)
+    ;MOVE.B  #03,        D0          ; Display number at D1.L
+    ;MOVE.L  FLYINGENEMY_Y,   D1          ; Move X to D1.L
+    ;TRAP    #15                     ; Trap (Perform action) 
 
     ; Player 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
@@ -953,7 +960,7 @@ DRAW_PLYR_DATA:
     
     ; Show antHealth msg
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0207,     D1          ; Col 02, Row 06
+    MOVE.W  #$0202,     D1          ; Col 02, Row 06
     TRAP    #15                     ; Trap (Perform action)
     LEA     antHealth_MSG,   A1          ; Draw
     MOVE    #13,        D0          ; No Line feed
@@ -961,7 +968,7 @@ DRAW_PLYR_DATA:
     
     ; Show antHealth msg
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0A07,     D1          ; Col 30, Row 1
+    MOVE.W  #$0A02,     D1          ; Col 30, Row 1
     TRAP    #15                     ; Trap (Perform action)   
     EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.B  antHealth,      D1          ; Move Key Pressed to D1
@@ -1713,6 +1720,52 @@ DRAWDIRT:
 
     RTS                             ; Return to subroutine
 
+
+*-----------------DRAW respawn -----------------------------*
+DRAW_RESPAWN:
+    MOVEQ.L     #0,  D5
+    MOVE.W      respawnTime,D5
+
+    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
+    DIVU    #02,        D1          ; divide by 2 for center on Y Axis
+    MOVE.L  D1,         PLAYER_Y    ; Players Y Position
+
+MOVE_RESPAWNED:
+    MOVE.L  D5, PLAYER_X
+
+    ; Enable back buffer
+    MOVE.B  #TC_REDRAW,        D0
+    TRAP    #15
+
+    ; Clear the screen
+    MOVE.B	#TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W	#$FF00,     D1          ; Clear contents
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.B  #1,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    BSR     DRAW_BACKGROUND        
+    BSR     DRAW_HILL 
+    BSR     DRAW_PLYR_DATA          ; Draw Draw Score, HUD, Player X and Y
+    BSR     DRAW_PLAYER             ; Draw Player
+    BSR     DRAW_ENEMY              ; Draw Enemy
+    BSR     DRAW_FLYENEMY
+    BSR     DRAW_HEALTHPACK
+    BSR     DRAW_FLOOR              ; Draw Floor
+    BSR     drawPause        
+
+
+    ADDQ.W      #1,respawnTime
+    MOVE.W      respawnTime,D5
+    CMP.W       #200,respawnTime
+    BNE         MOVE_RESPAWNED
+    MOVE.W     #0,respawnTime
+    ;else
+    RTS
+    
 *-----------------------------------------------------------
 * Subroutine    : Collision Check
 * Description   : Axis-Aligned Bounding Box Collision Detection
@@ -1914,6 +1967,9 @@ LOSSINPUTLOOP:
 
 WAVE_DEFEATED:
 
+    CMP.W   #3,lvlIndex
+    BEQ     WIN_SCREEN
+    
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
     TRAP	#15                     ; Trap (Perform action)
@@ -1994,9 +2050,96 @@ WAVE_DEFEATED:
     MOVE.B  #TC_REDRAW,        D0
     TRAP    #15
 
+WAVEWININPUTLOOP:
+    BSR     BATTLEINPUT
+    BRA     WAVEWININPUTLOOP
+
+WIN_SCREEN:
+
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$FF00,     D1          ; Fill Screen Clear
+    TRAP	#15                     ; Trap (Perform action)
+    BSR     PLAY_GAMEOVER
+
+*------------Set Colours--------------*
+    MOVE.L  #color5,     D1
+    MOVE.B  #21,        D0          ; Set Text Color
+    MOVE.L  #$01130005, D2
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  #color1,     D1
+    MOVE.B  #81,        D0          ; Set Text Color
+    TRAP    #15                     ; Trap (Perform action)
+
+*------------ fill background --------------*
+    MOVE.W      #0,D1
+    MOVE.W      #0,d2
+    MOVE.B      #89,D0
+    TRAP        #15
+
+*------------ Print wave defeated message--------------*
+
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$0703,     D1          ; Col 10, Row 03
+    TRAP    #15                     ; Trap (Perform action)
+    LEA     WIN_MSG,A1        ; Game Over Message
+    BSR     print
+
+*------------print amount of enemies defeated--------------*
+
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$0606,     D1          ; Col 02, Row 01
+    TRAP    #15                     ; Trap (Perform action)
+    LEA     ENEMIESDEAD_MSG,  A1          ; Score Message
+    BSR     print
+
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$1B06,     D1          ; Col 09, Row 01
+    TRAP    #15                     ; Trap (Perform action)
+    MOVE.B  #03,        D0          ; Display number at D1.L
+    MOVEQ.L #0,D1
+    MOVE.B  ENEMIES_DEFEATED,D1         ; Move Score to D1.L
+    TRAP    #15                     ; Trap (Perform action)
+    
+*------------print hill health --------------*
+
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$0607,     D1          ; Col 02, Row 01
+    TRAP    #15                     ; Trap (Perform action)
+    LEA     hillHP_MSG,  A1          ; Score Message
+    BSR     print
+
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$1B07,     D1          ; Col 09, Row 01
+    TRAP    #15                     ; Trap (Perform action)
+    MOVEQ.L #0,D1
+    MOVE.B  hillHP,D1         ; Move Score to D1.L
+    MOVE.B  #03,        D0          ; Display number at D1.L
+    TRAP    #15                     ; Trap (Perform action)
+    
+*------------ print restart --------------*
+    MOVE.L  #color5,     D1
+    MOVE.B  #21,        D0          ; Set Text Color
+    MOVE.L  #$03140000, D2
+    TRAP    #15                     ; Trap (Perform action)
+
+
+    ; Restart
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$0B09,     D1          ; Col 09, Row 01
+    TRAP    #15                     ; Trap (Perform action)
+    LEA     RESTART_MSG,  A1          ; Score Message
+    MOVE    #13,        D0          ; No Line feedF=
+    TRAP    #15                     ; Trap (Perform action)
+
+    
+    MOVE.B  #TC_REDRAW,        D0
+    TRAP    #15
+
 WININPUTLOOP:
     BSR     BATTLEINPUT
     BRA     WININPUTLOOP
+
 
 EXIT:
     
@@ -2033,6 +2176,7 @@ ENEMYCOUNT_MSG         DC.B    'Wave enemy count:', 0
 
 EXIT_MSG        DC.B    'Exiting....', 0    ; Exit Message
 HILLLOST_MSG    DC.B    'ANT HILL HAS BEEN OVERRUN!', 0      ; Game Over Message
+WIN_MSG    DC.B    'ENEMY ARMY HAS BEEN DEFEATED!', 0      ; Game Over Message
 HILLDEFENDED_MSG    DC.B    'WAVE COMPLETE!', 0      ; Game Over Message
 FALLENKINGDOM_MSG    DC.B    'YOUR ANT KINGDOM HAS FALLEN', 0      ; Game Over Message
 GAMEOVER_MSG    DC.B    'GAME OVER', 0      ; Game Over Message
@@ -2100,7 +2244,7 @@ FLYENEMYCOLOR     DC.L        $00FF0000
 
 RANDOM            DS.L        01  ; Reserve Space for Random Number
 antHealth         DC.B        03  ; reserves space for antHealth
-antsRemaining     DC.B        01  ; reserves space for ants
+antsRemaining     DC.B        05  ; reserves space for ants
 
 
  
@@ -2152,12 +2296,15 @@ FLYENEMY_HEIGHT   DC.W        12
 * so keep the files small. Used https://voicemaker.in/ to 
 * generate and Audacity to convert MP3 to WAV
 *-----------------------------------------------------------
-JUMP_WAV        DC.B    'jump.wav1',0        ; Jump Sound
-GAMEOVER_WAV         DC.B    'gameOver.wav1',0         ; Run Sound
-HITHURT_WAV        DC.B    'hitHurt.wav1',0        ; Collision Opps
-HIT_WAV        DC.B    'hit.wav1',0        ; Collision Opps
-POWERUP_WAV        DC.B    'powerUP.wav1',0        ; Collision Opps
-LEVELCHANGE_WAV        DC.B    'levelChange.wav1',0        ; Collision Opps
+JUMP_WAV        DC.B    'jump.wav',0        ; Jump Sound
+GAMEOVER_WAV         DC.B    'gameOver.wav',0         ; Run Sound
+HITHURT_WAV        DC.B    'hitHurt.wav',0        ; Collision Opps
+HIT_WAV        DC.B    'hit.wav',0        ; Collision Opps
+POWERUP_WAV        DC.B    'powerUP.wav',0        ; Collision Opps
+LEVELCHANGE_WAV        DC.B    'levelChange.wav',0        ; Collision Opps
+
+
+respawnTime         dc.W        0
 
 *---*
 TRUNK   DC.W    $3A0C
