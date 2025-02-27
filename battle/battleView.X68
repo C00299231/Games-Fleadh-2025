@@ -26,8 +26,8 @@ TC_EXIT     EQU         09          ; Exit Trapcode
 * Description   : Size of Player and Enemy and properties
 * of these characters e.g Starting Positions and Sizes
 *-----------------------------------------------------------
-PLYR_W_INIT EQU         20          ; Players initial Width
-PLYR_H_INIT EQU         12          ; Players initial Height
+PLYR_W_INIT EQU         27          ; Players initial Width
+PLYR_H_INIT EQU         13          ; Players initial Height
 
 PLYR_DFLT_V EQU         00          ; Default Player Velocity
 PLYR_JUMP_V EQU         -19          ; Player Jump Velocity
@@ -50,12 +50,11 @@ POWERUP_INDEX  EQU          03          ; Player Opps Sound Index
 LEVELCHANGE_INDEX  EQU      04          ; Player Opps Sound Index
 HIT_INDEX  EQU              05  
 
-ENMY_W_INIT EQU         12          ; Enemy initial Width
-ENMY_H_INIT EQU         12          ; Enemy initial Height
-ENEMY_H_INIT EQU         12          ; Enemy initial Height
+ENMY_W_INIT EQU         27          ; Enemy initial Width
+ENMY_H_INIT EQU         13          ; Enemy initial Height
 
-FLY_ENMY_W_INIT  EQU         20          ; Enemy initial Width
-FLY_ENMY_H_INIT  EQU         12          ; Enemy initial Height
+FLY_ENMY_W_INIT  EQU         30          ; Enemy initial Width
+FLY_ENMY_H_INIT  EQU         13          ; Enemy initial Height
 
 HEALTH_PACK_W    EQU         12          ; Enemy initial Width
 HEALTH_PACK_H    EQU         12          ; Enemy initial Height
@@ -200,7 +199,7 @@ INITRUN:
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     MOVE.L  D1,         HEALTH_Y     ; Enemy Y Position
 
-    MOVE.B     #10,    hillHP
+    MOVE.B     #50,    hillHP
 
     LEA    LEVELS,      A2
     MOVE.B  #03,        antHealth
@@ -1096,7 +1095,7 @@ PLAY_HIT:
 
 *-----------------------------------------------------------
 * Subroutine    : Draw Player
-* Description   : Draw Player Square
+* Description   : Draw Player Ant
 *-----------------------------------------------------------
 DRAW_PLAYER:
     ; Set Pixel Colors
@@ -1108,20 +1107,111 @@ DRAW_PLAYER:
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
-    ; Set X, Y, Width and Height
+*-------------- draw body -----------------*
     MOVE.L  PLAYER_X,   D1          ; X
     MOVE.L  PLAYER_Y,   D2
-    
+    SUBQ.L  #4,D2
+
     MOVE.L  PLAYER_X,   D3
     EOR.L   D4,D4
     MOVE.B   PLAYER_WIDTH,   D4      ; Width
     ADD.L   D4,D3
-    MOVE.L  PLAYER_Y,   D4 
+    MOVE.L  PLAYER_Y,   D4
     SUB.B   PLAYER_HEIGHT,   D4      ; Height          ; Y
+    
+     ; Draw Player
+    MOVE.B  #87,        D0          ; Draw Player
+    TRAP    #15                     ; Trap (Perform action)
+
+*-------------- draw anthrax -----------------*
+    MOVE.L  PLAYER_X,   D1          ; X
+    MOVE.L  PLAYER_Y,   D2
+    SUBQ.L  #4,D2
+    MOVE.L  PLAYER_X,   D3
+    EOR.L   D4,D4
+    MOVE.B   PLAYER_WIDTH,   D4      ; Width
+    SUBI.B   #12,D4
+    ADD.L   D4,D3
+    MOVE.L  PLAYER_Y,   D4
+    SUB.B   PLAYER_HEIGHT,   D4      ; Height
+    SUB.B   #3,D4
     
     ; Draw Player
     MOVE.B  #87,        D0          ; Draw Player
     TRAP    #15                     ; Trap (Perform action)
+
+*-------------- draw antena -----------------*    
+    ; change thickness
+    MOVE.l  #3,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    MOVE.L  PLAYER_X,D1
+    ADD.L   #22,D1
+    MOVE.L  PLAYER_Y,D2
+    SUB.L   #PLYR_H_INIT,D2
+    MOVE.L  D1,D3
+    ADD.L   #10,D3
+    MOVE.L  D2,D4
+    SUBI.L  #7,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw leg 1 -----------------*
+    MOVE.L  PLAYER_X,D1
+    MOVE.L  PLAYER_Y,D2
+    MOVE.L  D1,D3
+    ADD.L   #4,D3
+    MOVE.L  D2,D4
+    SUBI.L  #4,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw leg 2 -----------------*
+    MOVE.L  PLAYER_X,D1
+    ADD.L   #13,D1
+    MOVE.L  PLAYER_Y,D2
+    MOVE.L  D1,D3
+    MOVE.L  D2,D4
+    SUBI.L  #4,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw leg 3 -----------------*
+    MOVE.L  PLAYER_X,D1
+    ADD.L   #22,D1
+    MOVE.L  PLAYER_Y,D4
+    MOVE.L  D1,D3
+    ADD.L   #3,D3
+    MOVE.L  D4,D2
+    SUBI.L  #4,D2
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+    ; Set Pixel Colors
+    MOVE.L  #WHITE,     D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+*-------------- draw eye -----------------*
+    MOVE.L  PLAYER_X,D1
+    ADD.L   #22,D1
+    MOVE.L  PLAYER_Y,D2
+    SUB.L   #10,D2
+    MOVE.L  D1,D3
+    MOVE.L  D2,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+    MOVE.l  #1,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+    
     BSR     IS_ATTACKING
     BSR     IS_THROWING
 
@@ -1185,12 +1275,12 @@ DRAW_THROW:
 
 *-----------------------------------------------------------
 * Subroutine    : Draw Enemy
-* Description   : Draw Enemy Square
+* Description   : Draw Enemy Ant
 *-----------------------------------------------------------
 DRAW_ENEMY:
     ; Set Pixel Colors
-    MOVE.L  ENEMYCOLOR,       D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
+    MOVE.L  ENEMYCOLOR,       D1          ; Set pen color
+    MOVE.B  #80,        D0          ; Task for pen Color
     TRAP    #15                     ; Trap (Perform action)
 
     ; Reset Pixel Colors
@@ -1198,17 +1288,116 @@ DRAW_ENEMY:
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
-    ; Set X, Y, Width and Height
-    MOVE.L  ENEMY_X,    D1          ; X
-    MOVE.L  ENEMY_Y,    D2          ; Y
-    MOVE.L  ENEMY_X,    D3
-    ADD.W   ENEMY_WIDTH,   D3      ; Width
-    MOVE.L  ENEMY_Y,    D4 
-    SUB.W   ENEMY_HEIGHT,   D4      ; Height
+    *-------------- draw ENEMY body -----------------*
+    MOVE.L  ENEMY_X,   D1          ; X
+    MOVE.L  ENEMY_Y,   D2
+    SUBQ.L  #4,D2
+
+    MOVE.L  ENEMY_X,   D3
+    ADD.L   #ENMY_W_INIT, D3  
+    MOVE.L  ENEMY_Y,   D4
+    SUB.L   #ENMY_H_INIT,   D4      ; Height          ; Y
     
-    ; Draw Enemy    
-    MOVE.B  #87,        D0          ; Draw Enemy
+     ; Draw 
+    MOVE.B  #87,        D0          ; Draw enemy
     TRAP    #15                     ; Trap (Perform action)
+
+*-------------- draw ENEMY anthrax -----------------*
+    MOVE.L  ENEMY_X,   D1          ; X
+    MOVE.L  D1,   D3
+    ADD.L   #ENMY_W_INIT,D1
+    MOVE.L  ENEMY_Y,   D2
+    SUBQ.L  #4,D2
+    MOVE.L  ENEMY_X,   D3
+    ADDI.L   #12,D3
+    
+    MOVE.L  ENEMY_Y,   D4
+    SUB.L   #ENMY_H_INIT,   D4      ; Height          ; Y
+    SUB.B   #3,D4
+    
+    ; Draw 
+    MOVE.B  #87,        D0          ; Draw enemy
+    TRAP    #15                     ; Trap (Perform action)
+
+*-------------- draw ENEMY antena -----------------*    
+    ; change thickness
+    MOVE.l  #3,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    MOVE.L  ENEMY_X,D1
+    ADD.L   #3,D1
+    MOVE.L  ENEMY_Y,D2
+    SUB.L   #ENMY_H_INIT,D2
+    MOVE.L  D1,D3
+    SUB.L   #10,D3
+    MOVE.L  D2,D4
+    SUBI.L  #7,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw ENEMY leg 1 -----------------*
+    MOVE.L  ENEMY_X,D1
+    MOVE.L  ENEMY_Y,D2
+    MOVE.L  D1,D3
+    ADD.L   #4,D3
+    MOVE.L  D2,D4
+    SUBI.L  #4,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw ENEMY leg 2 -----------------*
+    MOVE.L  ENEMY_X,D1
+    ADD.L   #13,D1
+    MOVE.L  ENEMY_Y,D2
+    MOVE.L  D1,D3
+    MOVE.L  D2,D4
+    SUBI.L  #4,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw ENEMY leg 3 -----------------*
+    MOVE.L  ENEMY_X,D1
+    ADD.L   #22,D1
+    MOVE.L  ENEMY_Y,D4
+    MOVE.L  D1,D3
+    ADD.L   #3,D3
+    MOVE.L  D4,D2
+    SUBI.L  #4,D2
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+    ; Set Pixel Colors
+    MOVE.L  #BLACK,     D1          ; Set Pen color
+    MOVE.B  #80,        D0          ; Task for Pen Color
+    TRAP    #15                     ; Trap (Perform action)
+
+*-------------- draw ENEMY eye -----------------*
+    ; change thickness
+    MOVE.l  #3,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    MOVE.L  ENEMY_X,D1
+    ADD.L   #3,D1
+    MOVE.L  ENEMY_Y,D2
+    SUB.L   #10,D2
+    MOVE.L  D1,D3
+    ADDQ.L  #1,D3
+    MOVE.L  D2,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+    ; reset pen
+    MOVE.l  #1,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
     RTS                             ; Return to subroutine
 
 DRAW_FLYENEMY:
@@ -1222,17 +1411,115 @@ DRAW_FLYENEMY:
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
-    ; Set X, Y, Width and Height
-    MOVE.L  FLYINGENEMY_X,    D1          ; X
-    MOVE.L  FLYINGENEMY_Y,    D2          ; Y
-    MOVE.L  FLYINGENEMY_X,    D3
-    ADD.W   FLYENEMY_WIDTH,   D3      ; Width
-    MOVE.L  FLYINGENEMY_Y,    D4 
-    SUB.W   FLYENEMY_HEIGHT,   D4      ; Height
+        *-------------- draw FLYINGENEMY body -----------------*
+    MOVE.L  FLYINGENEMY_X,   D1          ; X
+    MOVE.L  FLYINGENEMY_Y,   D2
+    SUBQ.L  #4,D2
+
+    MOVE.L  FLYINGENEMY_X,   D3
+    ADD.L   #FLY_ENMY_W_INIT, D3  
+    MOVE.L  FLYINGENEMY_Y,   D4
+    SUB.L   #FLY_ENMY_H_INIT,   D4      ; Height          ; Y
     
-    ; Draw Enemy    
-    MOVE.B  #87,        D0          ; Draw Enemy
+     ; Draw 
+    MOVE.B  #87,        D0          ; Draw enemy
     TRAP    #15                     ; Trap (Perform action)
+
+*-------------- draw FLYINGENEMY anthrax -----------------*
+    MOVE.L  FLYINGENEMY_X,   D1          ; X
+    MOVE.L  D1,   D3
+    ADD.L   #FLY_ENMY_W_INIT,D1
+    MOVE.L  FLYINGENEMY_Y,   D2
+    SUBQ.L  #4,D2
+    MOVE.L  FLYINGENEMY_X,   D3
+    ADDI.L   #12,D3
+    
+    MOVE.L  FLYINGENEMY_Y,   D4
+    SUB.L   #FLY_ENMY_H_INIT,   D4      ; Height          ; Y
+    SUB.B   #3,D4
+    
+    ; Draw 
+    MOVE.B  #87,        D0          ; Draw enemy
+    TRAP    #15                     ; Trap (Perform action)
+
+*-------------- draw FLYINGENEMY antena -----------------*    
+    ; change thickness
+    MOVE.l  #3,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    MOVE.L  FLYINGENEMY_X,D1
+    ADD.L   #3,D1
+    MOVE.L  FLYINGENEMY_Y,D2
+    SUB.L   #FLY_ENMY_H_INIT,D2
+    MOVE.L  D1,D3
+    SUB.L   #10,D3
+    MOVE.L  D2,D4
+    SUBI.L  #7,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw FLYINGENEMY leg 1 -----------------*
+    MOVE.L  FLYINGENEMY_X,D1
+    MOVE.L  FLYINGENEMY_Y,D2
+    MOVE.L  D1,D3
+    ADD.L   #4,D3
+    MOVE.L  D2,D4
+    SUBI.L  #4,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw FLYINGENEMY leg 2 -----------------*
+    MOVE.L  FLYINGENEMY_X,D1
+    ADD.L   #13,D1
+    MOVE.L  FLYINGENEMY_Y,D2
+    MOVE.L  D1,D3
+    MOVE.L  D2,D4
+    SUBI.L  #4,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw FLYINGENEMY leg 3 -----------------*
+    MOVE.L  FLYINGENEMY_X,D1
+    ADD.L   #22,D1
+    MOVE.L  FLYINGENEMY_Y,D4
+    MOVE.L  D1,D3
+    ADD.L   #3,D3
+    MOVE.L  D4,D2
+    SUBI.L  #4,D2
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+    ; Set Pixel Colors
+    MOVE.L  #BLACK,     D1          ; Set Pen color
+    MOVE.B  #80,        D0          ; Task for Pen Color
+    TRAP    #15                     ; Trap (Perform action)
+
+*-------------- draw FLYINGENEMY eye -----------------*
+    ; change thickness
+    MOVE.l  #3,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    MOVE.L  FLYINGENEMY_X,D1
+    ADD.L   #3,D1
+    MOVE.L  FLYINGENEMY_Y,D2
+    SUB.L   #10,D2
+    MOVE.L  D1,D3
+    MOVE.L  D2,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+    ; reset pen
+    MOVE.l  #1,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
     RTS  
 
 DRAW_HEALTHPACK:
@@ -1624,12 +1911,12 @@ FLYENEMY_HEIGHT   DC.W        12
 * so keep the files small. Used https://voicemaker.in/ to 
 * generate and Audacity to convert MP3 to WAV
 *-----------------------------------------------------------
-JUMP_WAV        DC.B    'jump.wav',0        ; Jump Sound
-GAMEOVER_WAV         DC.B    'gameOver.wav',0         ; Run Sound
-HITHURT_WAV        DC.B    'hitHurt.wav',0        ; Collision Opps
-HIT_WAV        DC.B    'hit.wav',0        ; Collision Opps
-POWERUP_WAV        DC.B    'powerUP.wav',0        ; Collision Opps
-LEVELCHANGE_WAV        DC.B    'levelChange.wav',0        ; Collision Opps
+JUMP_WAV        DC.B    'jump.wav1',0        ; Jump Sound
+GAMEOVER_WAV         DC.B    'gameOver.wav1',0         ; Run Sound
+HITHURT_WAV        DC.B    'hitHurt.wav1',0        ; Collision Opps
+HIT_WAV        DC.B    'hit.wav1',0        ; Collision Opps
+POWERUP_WAV        DC.B    'powerUP.wav1',0        ; Collision Opps
+LEVELCHANGE_WAV        DC.B    'levelChange.wav1',0        ; Collision Opps
 
 *---*
 TRUNK   DC.W    $3A0C

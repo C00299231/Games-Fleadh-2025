@@ -19,7 +19,7 @@ PLAYER_X_PLUS_W_LTE_TO_ENEMY_X:     ; Check player is not
 PLAYER_Y_LTE_TO_ENEMY_Y_PLUS_H:     
     MOVE.L  PLAYER_Y,   D1          ; Move Player Y to D1
     MOVE.L  ENEMY_Y,    D2          ; Move Enemy Y to D2
-    ADD.W   ENMY_H_INIT,D2          ; Set Enemy Height to D2
+    ;ADD.W   ENMY_H_INIT,D2          ; Set Enemy Height to D2
     CMP.L   D1,         D2          ; Do they Overlap ?
     BLE     PLAYER_Y_PLUS_H_LTE_TO_ENEMY_Y  ; Less than or Equal
     BRA     CHECK_FLYENEMY_COLLISIONS

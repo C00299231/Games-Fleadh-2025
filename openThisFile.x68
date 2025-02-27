@@ -18,7 +18,7 @@ nextInit:
     
     MOVE.B  #tcScreen, D0           ; access screen information
     MOVE.L  #tcScreenSize, D1       ; placing 0 in D1 triggers loading screen size information
-    TRAP    #15                     ; interpret D0 and D1 for screen size
+    TRAP    #15                      ; interpret D0 and D1 for screen size
     MOVE.W  D1,         screenH     ; place screen height in memory location
     SWAP    D1                      ; Swap top and bottom word to retrive screen size
     MOVE.W  D1,         screenW     ; place screen width in memory location
@@ -83,7 +83,6 @@ title2msg dc.b 'Press "enter" to start...',0
  include "score.x68"
 
 	end start
-
 
 
 
