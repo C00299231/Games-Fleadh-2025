@@ -145,7 +145,7 @@ drawBg:
     ; set colours
     move.l #color2, d1
     jsr setPenColour
-    move.l #color1, d1
+    move.l #BROWN, d1
     jsr setFillColour
 
     ; clear d3 and d4 (screen W and H are words)
