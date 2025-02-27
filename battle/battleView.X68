@@ -140,9 +140,9 @@ INITRUN:
     MOVE.L  D1,         PLAYER_Y    ; Players Y Position
 
     ; Initialise Player Score
-    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.L  #00,        D1          ; Init Score
-    MOVE.L  D1,         PLAYER_SCORE
+    ;EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    ;MOVE.L  #00,        D1          ; Init Score
+    ;MOVE.L  D1,         PLAYER_SCORE
 
     ; Initialise Player Velocity
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
@@ -198,7 +198,7 @@ INITRUN:
     ; Initial Position for Health pack
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
-    SUB.L   #-1,        D1
+    SUB.L   #-10,        D1
     MOVE.L  D1,         HEALTH_X     ; Enemy X Position
 
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
@@ -206,7 +206,7 @@ INITRUN:
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     MOVE.L  D1,         HEALTH_Y     ; Enemy Y Position
 
-    MOVE.B     #100,    hillHP
+    MOVE.B     #10,    hillHP
 
     LEA    LEVELS,      A2
     MOVE.B  #03,        antHealth
@@ -228,9 +228,10 @@ INITRUN:
     MOVE.B  #00,        ENEMY_HIT
     MOVE.B  #00,        FLYENEMY_HIT
 
-    ADD.B   #20,        enemiesToDefeat
+    ADD.B   #5,        enemiesToDefeat
     MOVE.B  #0,         ENEMIES_DEFEATED
-
+    MOVE.B  #0,         enemiesPassed
+    MOVE.B  #5,         backToMapCount
     CLR.L   D1
  
 
@@ -353,33 +354,8 @@ PROCESS_INPUT:
     CMP.W   #3,lvlIndex
     BEQ     COMPLETE_RESTART
 
-    CMP.B   #0,hillHP
-    BLE     PROCESS_RESTART
-
-    MOVE.B  enemiesToDefeat,D1
-    CMP.B   ENEMIES_DEFEATED,D1
-    BLE     PROCESS_RESTART
-    
-    MOVE.B  enemiesToDefeat,D1
-    CMP.B   enemiesPassed,D1
-    BLE     PROCESS_RESTART
-
     TST.B   antsRemaining
     BLE     COMPLETE_RESTART
-
-    RTS                             ; Return to subroutine
-
-PROCESS_RESTART:
-    CMP.L   #Rkey,  CURRENT_KEY ; Is Current Key R
-    IF <EQ> THEN
-        
-        MOVE.L    #color5,D1
-        MOVE.L  #00090000,D2
-        MOVE.B  #tcFont,D0
-        TRAP    #15
-        
-        BRA     mapNotFirstInit
-    ENDI
 
     RTS                             ; Return to subroutine
 
@@ -1830,6 +1806,9 @@ STILL_COLLIDED:
 
 HILL_LOST:
 
+    CMP.W   #3,lvlIndex
+    BEQ     WIN_SCREEN
+
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
     TRAP	#15                     ; Trap (Perform action)
@@ -1898,16 +1877,37 @@ HILL_LOST:
     MOVE.L  #$03140000, D2
     TRAP    #15                     ; Trap (Perform action)
 
+    ; Restart
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$090C,     D1          ; Col 09, Row 01
+    MOVE.W  #$070C,     D1          ; Col 09, Row 01
     TRAP    #15                     ; Trap (Perform action)
     LEA     BACK_TO_MAP_MSG,  A1          ; Score Message
     MOVE    #13,        D0          ; No Line feedF=
     TRAP    #15                     ; Trap (Perform action)
 
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$1F0C,     D1          ; Col 09, Row 01
+    TRAP    #15                     ; Trap (Perform action)
+    MOVEQ.L #0,D1
+    MOVE.B  backToMapCount,D1         ; Move Score to D1.L
+    MOVE.B  #03,        D0          ; Display number at D1.L
+    TRAP    #15                     ; Trap (Perform action)
+
     
     MOVE.B  #TC_REDRAW,        D0
     TRAP    #15
+   
+    ; delay by 1sec
+    MOVE.b  #23,D0
+    MOVE.L  #100,D1
+    TRAP    #15
+
+    SUB.B   #01,backToMapCount
+    TST.B   backToMapCount
+    BEQ     mapNotFirstInit
+
+    ; back to top
+    BRA     HILL_LOST
 
 INPUTLOOP:
     BSR     BATTLEINPUT
@@ -2078,19 +2078,37 @@ WAVE_DEFEATED:
 
     ; Restart
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$090C,     D1          ; Col 09, Row 01
+    MOVE.W  #$070C,     D1          ; Col 09, Row 01
     TRAP    #15                     ; Trap (Perform action)
     LEA     BACK_TO_MAP_MSG,  A1          ; Score Message
     MOVE    #13,        D0          ; No Line feedF=
     TRAP    #15                     ; Trap (Perform action)
 
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$1F0C,     D1          ; Col 09, Row 01
+    TRAP    #15                     ; Trap (Perform action)
+    MOVEQ.L #0,D1
+    MOVE.B  backToMapCount,D1         ; Move Score to D1.L
+    MOVE.B  #03,        D0          ; Display number at D1.L
+    TRAP    #15                     ; Trap (Perform action)
+
+
     
     MOVE.B  #TC_REDRAW,        D0
     TRAP    #15
+   
+    ; delay by 1sec
+    MOVE.b  #23,D0
+    MOVE.L  #100,D1
+    TRAP    #15
 
-WAVEWININPUTLOOP:
-    BSR     BATTLEINPUT
-    BRA     WAVEWININPUTLOOP
+    SUB.B   #01,backToMapCount
+    TST.B   backToMapCount
+    BEQ     mapNotFirstInit
+
+    ; back to top
+    BRA     WAVE_DEFEATED
+
 
 WIN_SCREEN:
     move.b #1, isWin
@@ -2218,7 +2236,7 @@ WIN_MSG    DC.B    'ENEMY ARMY HAS BEEN DEFEATED!', 0      ; Game Over Message
 HILLDEFENDED_MSG    DC.B    'WAVE COMPLETE!', 0      ; Game Over Message
 FALLENKINGDOM_MSG    DC.B    'YOUR ANT KINGDOM HAS FALLEN', 0      ; Game Over Message
 GAMEOVER_MSG    DC.B    'GAME OVER', 0      ; Game Over Message
-BACK_TO_MAP_MSG    DC.B    'Press R to return to map', 0      ; Game Over Message
+BACK_TO_MAP_MSG    DC.B    'Returning to map in ...', 0      ; Game Over Message
 RESTART_MSG    DC.B    'Press R to restart', 0      ; Game Over Message
 TREET          DC.B     '##',0
 
@@ -2346,7 +2364,7 @@ MAP_SONG_WAV    DC.B    'antopia-map.wav',0
 
 
 respawnTime         dc.W        0
-
+backToMapCount      dc.b        3
 *---*
 TRUNK   DC.W    $3A0C
 X   DC.W    200
@@ -2362,12 +2380,3 @@ timer           DC.L    0
 
 
 
-
-
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~

@@ -31,6 +31,14 @@ mapInit:
 
 ; subsequent inits for map
 mapNotFirstInit:
+
+    ; reset font size and colour
+    MOVE.L    #color5,D1
+    MOVE.L  #00090000,D2
+    MOVE.B  #tcFont,D0
+    TRAP    #15
+        
+
     ;set map song, play
     jsr stop_song
     jsr MAP_SONG_LOAD
