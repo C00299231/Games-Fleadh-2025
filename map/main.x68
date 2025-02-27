@@ -19,9 +19,6 @@ mapInit:
     ;add.l cellYoffset, d1
     MOVE.L  D1,         playerY    ; Players Y Position
     
-
-    
-
     jsr initializeCell
     jsr initDraw
     jsr initAllEnemies
@@ -30,8 +27,8 @@ mapInit:
 
 ; subsequent inits for map
 mapNotFirstInit:
-    move.w #1, lvlType
-    add.w #1, lvlIndex
+    move.w #1, lvlType ; map type
+    add.w #1, lvlIndex ; next level
     move.l centerX, playerX
     move.l centerY, playerY
     ;add.l cellYoffset, playerY
@@ -70,10 +67,26 @@ battle:
     rts
 
 collision:
-    jsr zone1collision
-    jsr zone2collision
-    jsr zone3collision
-    jsr zone4collision
+    cmpi #0, lvlIndex
+    if <eq> then
+        jsr zone1collision
+    endi
+
+    cmpi #1, lvlIndex
+    if <eq> then
+        jsr zone2collision
+    endi
+
+    cmpi #2, lvlIndex
+    if <eq> then
+        jsr zone3collision
+    endi
+
+    cmpi #3, lvlIndex
+    if <eq> then
+        jsr zone4collision
+    endi
+
     rts
 
 paused:

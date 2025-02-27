@@ -354,7 +354,7 @@ PROCESS_RESTART:
         MOVE.B  #tcFont,D0
         TRAP    #15
         
-        BRA     loop
+        BRA     mapNotFirstInit
     ENDI
 
     RTS                             ; Return to subroutine

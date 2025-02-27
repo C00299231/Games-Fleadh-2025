@@ -145,6 +145,7 @@ zone2collision:
     jsr print
 
     ; at this point, player is confirmed in zone 2
+    bra initRun
 
     rts
 
@@ -160,9 +161,7 @@ zone3collision:
     blt endCollision
 
     ; at this point, player is confirmed in zone 3
-
-    lea zoneMsg, a1
-    jsr print
+    bra initRun
     
     rts
 
@@ -178,9 +177,8 @@ zone4collision:
     blt endCollision
 
     ; at this point, player is confirmed in zone 4
+    bra initRun
 
-    lea zoneMsg, a1
-    jsr print
     rts
 
 endCollision:
