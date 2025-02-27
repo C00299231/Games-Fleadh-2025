@@ -11,7 +11,7 @@ noLivesMsg1 dc.b 'Your army is depleted.',0
                 'your kingdom and claim it for themselves.',0
 
 ; play message depending on how many hills you had at the end
-fourHillsMsg dc.b   'Under your might and valour, you easily slew your opponents.',0
+fourHillsMsg dc.b   'Through your might and valour, you easily slew your opponents.',0
 threeHillsMsg dc.b  'You fought well, and managed to thwart the invasion.',0
 twoHillsMsg dc.b    'After a hard-fought battle, the invaders are defeated.',0
 oneHillMsg dc.b     'With your kingdom nearing ruin, you finally defeated the invaders.',0
