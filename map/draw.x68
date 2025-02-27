@@ -30,8 +30,11 @@ draw:
 
     jsr followCam
     jsr drawBg
+    jsr drawEnemyHill
     jsr drawEnemies
+    jsr drawEnemyDoor
     jsr drawCell
+    
     jsr drawPlayer
     jsr drawText
     jsr drawHealth
@@ -277,31 +280,94 @@ drawCell:
     move.l zone1tlY, d2
     move.l zone1brX, d3
     move.l zone1brY, d4
-    jsr drawRect
+    jsr drawAntHill
 
     ;---------------draw zone 2
     move.l zone2tlX, d1
     move.l zone2tlY, d2
     move.l zone2brX, d3
     move.l zone2brY, d4
-    jsr drawRect
+    jsr drawAntHill
     
     ;---------------draw zone 3
     move.l zone3tlX, d1
     move.l zone3tlY, d2
     move.l zone3brX, d3
     move.l zone3brY, d4
-    jsr drawRect
+    jsr drawAntHill
 
     ;---------------draw zone 4
     move.l zone4tlX, d1
     move.l zone4tlY, d2
     move.l zone4brX, d3
     move.l zone4brY, d4
-    jsr drawRect
+    jsr drawAntHill
 
     ; done
+    RTS
+
+drawEnemyHill:
+    ; base: top middle
+    move.l centerX, d1
+    move.l #0, d2
+    move.l centerX, d3
+    move.l #0, d4
+
+    ; box 1
+    sub.l #90, d1
+    add.l #90, d3
+    add.l #30, d4
+    jsr drawRect
+    
+    ; box 2
+    add.l #20, d1
+    sub.l #20, d3
+    add.l #30, d4
+    jsr drawRect
+
+    ; door opening (cover drawn later)
+
+    add.l #50, d1
+    sub.l #50, d3
+    jsr drawRect
     rts
+
+drawEnemyDoor:
+    ; base: top middle
+    move.l centerX, d1
+    move.l #0, d2
+    move.l centerX, d3
+    move.l #0, d4
+
+    ; edit
+    sub.l #20, d1
+    add.l #20, d3
+    add.l #30, d4
+    jsr drawRect
+    rts
+
+drawAntHill: ; d1 thru 4 are already assigned
+    jsr drawRect
+    add #5, D1
+    sub #2, D2
+    sub #5, D3
+    sub #12, D4
+    jsr drawRect
+    
+    add #5, D1
+    sub #2, D2
+    sub #5, D3
+    sub #12, D4
+    jsr drawRect
+    
+    add #5, D1
+    sub #2, D2
+    sub #5, D3
+    sub #12, D4
+    jsr drawRect
+    
+    rts
+
 
 endDraw:
     rts
@@ -383,7 +449,20 @@ drawRect:
     mulu cameraZoom, d3
     mulu cameraZoom, d4
 
-    bra drawUiRect
+    move.b #tcRect, d0
+    trap #15
+
+    ; UN-zoom by camera
+    divu cameraZoom, d1
+    divu cameraZoom, d2
+    divu cameraZoom, d3
+    divu cameraZoom, d4
+    ; UN-offset by camera
+    add.l cameraX, d1
+    add.l cameraY, d2
+    add.l cameraX, d3
+    add.l cameraY, d4
+    rts
 
 drawUiRect:
     MOVE.B  #tcRect, d0

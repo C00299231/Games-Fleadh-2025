@@ -24,6 +24,7 @@ mapInit:
     MOVE.L  D1,         playerY    ; Players Y Position
     
     jsr initializeCell
+    jsr initStarts
     jsr initDraw
     jsr initAllEnemies
 

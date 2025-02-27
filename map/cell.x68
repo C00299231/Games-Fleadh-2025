@@ -227,8 +227,11 @@ cellYradius dc.l 80
 cellYoffset dc.l 60
 
 ; width of zone
-zoneWidth dc.l 55
-zoneHeight dc.l 45
+zoneWidth dc.l 54
+zoneHeight dc.l 44
+
+zoneWrad dc.l 27
+zoneHrad dc.l 22
 
 zoneMsg dc.b 'IN ZONE',0
 

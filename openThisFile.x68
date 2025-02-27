@@ -14,6 +14,11 @@ firstInit:
     bra nextInit
     
 nextInit:
+    ; song
+    jsr stop_song
+    jsr MENU_SONG_LOAD
+    jsr play_song
+
 	move.w #0, lvlType
     
     MOVE.B  #tcScreen, D0           ; access screen information
@@ -37,7 +42,7 @@ nextInit:
 title:
     jsr drawBg
     
-    move.w #$1f0d, d1
+    move.w #$220d, d1
     jsr setCursor
     lea title1msg, a1
     jsr print
@@ -60,7 +65,7 @@ titleLoop:
     bra titleLoop
 
 
-title1Msg dc.b '- CELL DEFENDER -',0
+title1Msg dc.b '- ANTOPIA -',0
 
 title2msg dc.b 'Press "enter" to start...',0
 
@@ -83,17 +88,6 @@ title2msg dc.b 'Press "enter" to start...',0
  include "score.x68"
 
 	end start
-
-
-
-
-
-
-
-
-
-
-
 
 
 

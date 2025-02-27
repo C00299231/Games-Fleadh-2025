@@ -1,21 +1,57 @@
 ;ENEMY 1
-enemy1x dc.l 00
-enemy1y dc.l 00
+enemy1x dc.l 0
+enemy1y dc.l 20
 ;ENEMY 2
-enemy2x dc.l 50
-enemy2y dc.l 50
+enemy2x dc.l 0
+enemy2y dc.l 75
 ;ENEMY 3
-enemy3x dc.l 100
-enemy3y dc.l 100
+enemy3x dc.l 0
+enemy3y dc.l 130
 ;ENEMY 4
-enemy4x dc.l 150
-enemy4y dc.l 150
+enemy4x dc.l 0
+enemy4y dc.l 185
 
 enemyIndex dc.b 1
 
 ; current enemy spawn
 currentSpawnX ds.l 01
 currentSpawnY ds.l 01
+
+yFlag0 dc.l 150
+yFlag1 ds.l 01
+yFlag2 ds.l 01
+
+xFlag1 ds.l 01
+xFlag2
+
+xFlagOffset equ 40
+
+
+initStarts:
+    ; set enemy spawn to top middle
+    move.l centerX, enemyStartX
+    move.l #0, enemyStartY
+
+    
+    move.l cellTlY, d2
+    add.l zoneHrad, d2
+    move.l cellBrY, d3
+    sub.l zoneHrad, d3
+
+    move.l d2, yFlag1
+    move.l d3, yFlag2
+
+    move.l centerX, d2
+    sub.l cellXradius, d2
+    sub.l #xFlagOffset, d2
+    move.l d2, xFlag1
+
+    move.l centerX, d2
+    add.l cellXradius, d2
+    add.l #xFlagOffset, d2
+    move.l d2, xFlag2
+    rts
+
 
 initAllEnemies:
     move.w lvlIndex, enemyDir
@@ -37,31 +73,50 @@ initAllEnemies:
     move.w screenW, d2
     move.w screenH, d3
 
-    cmpi.w #0, enemyDir
-    beq initAlltl
-    cmpi.w #1, enemyDir
-    beq initAlltr
-    cmpi.w #2, enemyDir
-    beq initAllbr
-    cmpi.w #3, enemyDir
-    beq initAllbl
+    move.l enemyStartX, enemy1x
+    move.l enemyStartY, enemy1Y
+
+    move.l enemyStartX, enemy2x
+    move.l enemyStartY, enemy2Y
+
+    move.l enemyStartX, enemy3x
+    move.l enemyStartY, enemy3Y
+
+    move.l enemyStartX, enemy4x
+    move.l enemyStartY, enemy4Y
+
+    ; add values
+    sub.l #enemy1offset, enemy1y
+
+    sub.l #enemy2offset, enemy2y
+
+    sub.l #enemy3offset, enemy3y
+
+    sub.l #enemy4offset, enemy4y
     rts
 
 initAlltl: ; top left enemies
-    ; no need to clear values
+    move.l enemyStartX, enemy1x
+    move.l enemyStartY, enemy1Y
+
+    move.l enemyStartX, enemy2x
+    move.l enemyStartY, enemy2Y
+
+    move.l enemyStartX, enemy3x
+    move.l enemyStartY, enemy3Y
+
+    move.l enemyStartX, enemy4x
+    move.l enemyStartY, enemy4Y
 
     ; add values
-    add.l #enemy1offset, enemy1x
-    add.l #enemy1offset, enemy1y
+    sub.l #enemy1offset, enemy1y
 
-    add.l #enemy2offset, enemy2x
-    add.l #enemy2offset, enemy2y
+    sub.l #enemy2offset, enemy2y
 
-    add.l #enemy3offset, enemy3x
-    add.l #enemy3offset, enemy3y
+    sub.l #enemy3offset, enemy3y
 
-    add.l #enemy4offset, enemy4x
-    add.l #enemy4offset, enemy4y
+    sub.l #enemy4offset, enemy4y
+
     rts
 initAlltr:
     move.l d2, enemy1x
@@ -246,9 +301,12 @@ saveEnemy4:
 
 ; ENEMY START POINTS
 enemy1offset equ 0
-enemy2offset equ 50
-enemy3offset equ 100
-enemy4offset equ 150
+enemy2offset equ 100
+enemy3offset equ 200
+enemy4offset equ 300
+
+enemyStartX ds.l 01
+enemyStartY ds.l 01
 
 enemyXmove equ 2
 enemyYmove equ 1

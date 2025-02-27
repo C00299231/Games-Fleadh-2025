@@ -9,6 +9,7 @@ scoreWin equ 100
 ; values
 totalKills dc.l 0
 isWin dc.l 0
+perfectDefenceAmount dc.l 0
 
 tallyScore:
     move.l #0, score ; init to zero, just in case
@@ -32,6 +33,10 @@ tallyScore:
     add.l d2, score
 
     ; perfect hill defence
+    clr.l d2
+    move.b #scorePerfectDef, d2
+    mulu perfectDefenceAmount, d2
+    add.l d2, score
 
 
     

@@ -16,27 +16,10 @@ enemyY ds.l 01
 ; 3: bl
 
 initEnemy:
-    ; move screen w and h into regs
-    clr.l d2 ; put screenw here
-    clr.l d3 ; put screenh here
-    move.w screenW, d2
-    move.w screenH, d3
-
-    ; init based on which direction
-    tst enemyDir
-    beq initEnemytl
-
-    cmpi #1, enemyDir
-    beq initEnemytr
-
-    cmpi #2, enemyDir
-    beq initEnemybr
-
-    cmpi #3, enemyDir
-    beq initEnemyBl
-
-    ; no valid direction placed. just put enemy at the top
-    bra initEnemyTl
+    move.l enemyStartX, enemyX
+    move.l enemyStartY, enemyY
+    jsr endInitEnemy
+    rts
 
 processEnemy:
 
@@ -71,97 +54,203 @@ enemyColCheck:
     ; no valid direction. nothing we can do atp
     rts
 
-;-------------------------------ENEMY TOP
-initEnemytl:
-    move.l #0, enemyY
-    move.l #0, enemyX
-    jsr endInitEnemy
-    rts
+;-------------------------------ENEMY TL
 processEnemyTl:
     move.w enemyTime, d5
     jsr checkIncrement
-    bne endProcess
+    bne endProcessNoCol
+    
+    move.l enemyX, d2
+    move.l enemyY, d3
 
-    add.l #enemyYmove, enemyY
+    ; first, check not reached flag0
+    cmp.l yFlag0, d3
+    if <lt> then
+        ; go down
+        add.l #1, enemyY
+        bra endProcess
+    endi
+    
+    ; then, check not reached xflag, but past yFlag
+    cmp.l xFlag1, d2
+    if <ge> then
+        cmp.l yFlag0, d3
+        if <le> then
+            ; go left
+            sub.l #1, enemyX
+            bra endProcess
+        endi
+    endi
+
+    ; finally, check not reached yflag1
+    cmp.l yFlag1, d3
+    if <lt> then
+        ; go down
+        add.l #1, enemyY
+        bra endProcess
+    endi
+
+    ; past all flags, go right
     add.l #1, enemyX
-
-    jsr enemyColCheck
 
     bra endProcess
 
-;-------------------------------ENEMY LEFT
-initEnemytr:
-    move.l d2, enemyX
-    move.l #0, enemyY
-    jsr endInitEnemy
-    rts
+;-------------------------------ENEMY TR
 processEnemytr:
     move.w enemyTime, d5
     jsr checkIncrement
-    bne endProcess
+    bne endProcessNoCol
+    
+    move.l enemyX, d2
+    move.l enemyY, d3
 
-    add.l #enemyYmove, enemyY
+    ; first, check not reached flag0
+    cmp.l yFlag0, d3
+    if <lt> then
+        ; go down
+        add.l #1, enemyY
+        bra endProcess
+    endi
+    
+    ; then, check not reached xflag, but past yFlag
+    cmp.l xFlag2, d2
+    if <le> then
+        cmp.l yFlag0, d3
+        if <le> then
+            ; go right
+            add.l #1, enemyX
+            bra endProcess
+        endi
+    endi
+
+    ; finally, check not reached yflag1
+    cmp.l yFlag1, d3
+    if <lt> then
+        ; go down
+        add.l #1, enemyY
+        bra endProcess
+    endi
+
+    ; past all flags, go left
     sub.l #1, enemyX
-
-    jsr enemyColCheck
 
     bra endProcess
 
 
 
-;-------------------------------ENEMY RIGHT
-initEnemybr:
-    move.l d2, enemyX
-
-    move.l d3, enemyY
-
-    jsr endInitEnemy
-    rts
+;-------------------------------ENEMY BR
 processEnemybr:
     move.w enemyTime, d5
     jsr checkIncrement
-    bne endProcess
+    bne endProcessNoCol
+    
+    move.l enemyX, d2
+    move.l enemyY, d3
 
-    sub.l #enemyYmove, enemyY
-    sub.l #enemyXmove, enemyX
+    ; first, check not reached flag0
+    cmp.l yFlag0, d3
+    if <lt> then
+        ; go down
+        add.l #1, enemyY
+        bra endProcess
+    endi
+    
+    ; then, check not reached xflag, but past yFlag
+    cmp.l xFlag2, d2
+    if <le> then
+        cmp.l yFlag0, d3
+        if <le> then
+            ; go right
+            add.l #1, enemyX
+            bra endProcess
+        endi
+    endi
 
-    jsr enemyColCheck
+    ; finally, check not reached yflag1
+    cmp.l yFlag2, d3
+    if <lt> then
+        ; go down
+        add.l #1, enemyY
+        bra endProcess
+    endi
+
+    ; past all flags, go left
+    sub.l #1, enemyX
 
     bra endProcess
 
-;-------------------------------ENEMY BOTTOM
-initEnemyBl:
-    move.l d3, enemyY
-
-    move.l #0, enemyX
-
-    jsr endInitEnemy
-    rts
+;-------------------------------ENEMY BL
 processEnemyBl:
     move.w enemyTime, d5
     jsr checkIncrement
-    bne endProcess
+    bne endProcessNoCol
+    
+    move.l enemyX, d2
+    move.l enemyY, d3
 
-    sub.l #enemyYmove, enemyY
-    add.l #enemyXmove, enemyX
+    ; first, check not reached flag0
+    cmp.l yFlag0, d3
+    if <lt> then
+        ; go down
+        add.l #1, enemyY
+        bra endProcess
+    endi
+    
+    ; then, check not reached xflag, but past yFlag
+    cmp.l xFlag1, d2
+    if <ge> then
+        cmp.l yFlag0, d3
+        if <le> then
+            ; go left
+            sub.l #1, enemyX
+            bra endProcess
+        endi
+    endi
 
-    jsr enemyColCheck
+    ; finally, check not reached yflag1
+    cmp.l yFlag2, d3
+    if <lt> then
+        ; go down
+        add.l #1, enemyY
+        bra endProcess
+    endi
+
+    ; past all flags, go right
+    add.l #1, enemyX
 
     bra endProcess
 
-;----------COLLISION
+;-----------------------------------------------------COLLISION
 enemyLeftColCheck:
+    ; check y
+    move.l cellTlY, d2
+    cmp.l enemyY, d2
+    bgt endColCheck
+
+    ; check x
     move.l celltlX, d2
-    ;sub.l #enemyW, d2
     cmp.l enemyX, d2
-    ble enemyCollide
+    bgt endColCheck
+
+    jsr initEnemy
     rts
 
 enemyRightColCheck:
+    ; check y
+    move.l cellTlY, d2
+    cmp.l enemyY, d2
+    bgt endColCheck
+
+
+    ; check x
     move.l cellbrx, d2
     sub.l #enemyw, d2
     cmp.l enemyX, d2
-    bge enemyCollide
+    blt endColCheck
+
+    jsr initEnemy
+    rts
+endColCheck:
     rts
 
 ;---------------OTHER STUFF
@@ -170,6 +259,9 @@ enemyCollide: ; enemy successfully reached the base
     rts
 
 endProcess:
+    jsr enemyColCheck
+    rts
+endProcessNoCol:
     rts
 endCollide:
     rts

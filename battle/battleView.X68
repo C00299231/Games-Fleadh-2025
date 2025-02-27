@@ -1137,6 +1137,13 @@ BATTLE_SONG_LOAD:
     TRAP    #15                     ; Trap (Perform action)
     RTS                             ; Return to subroutine
 
+MENU_SONG_LOAD:
+    LEA     MENU_SONG_WAV,   A1          ; Load Wav File into A1
+    MOVE    #SONG_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
 ; special function to play song in song index
 PLAY_SONG:
     MOVE    #SONG_INDEX,D1          ; Load Sound INDEX
@@ -2361,6 +2368,7 @@ LEVELCHANGE_WAV DC.B    'levelChange.wav',0 ; Collision Opps
 
 BATTLE_SONG_WAV DC.B    'antopia-battle.wav',0
 MAP_SONG_WAV    DC.B    'antopia-map.wav',0
+MENU_SONG_WAV   dc.B    'antopia-menu.wav',0
 
 
 respawnTime         dc.W        0
