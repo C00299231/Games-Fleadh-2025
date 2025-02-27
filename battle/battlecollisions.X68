@@ -252,7 +252,7 @@ ATTACK_COLLISION:
     BSR     PLAY_HIT
     MOVE.L  #400, ENEMY_Y
     MOVE.B  #01,  ENEMY_HIT
-    ADDI.B  #1,   ENEMIES_DEFEATED
+    BSR     CHECK_ENEMIES_CLEARED
     RTS
 
 ATTACK_FLY_COLLISION:
@@ -261,7 +261,14 @@ ATTACK_FLY_COLLISION:
     BSR     PLAY_HIT
     MOVE.L  #400, FLYINGENEMY_Y
     MOVE.B  #01,  FLYENEMY_HIT
-    ADDI.B  #1,   ENEMIES_DEFEATED
+    BSR     CHECK_ENEMIES_CLEARED
+    RTS
+
+CHECK_ENEMIES_CLEARED:
+    ADDI.B  #1,         ENEMIES_DEFEATED
+    MOVE.B  ENEMIES_DEFEATED,D1
+    CMP.B   enemiesToDefeat,D1
+    BEQ     WAVE_DEFEATED
     RTS
 
 COLLISION_CHECK_DONE:               ; No Collision Update points
@@ -294,6 +301,7 @@ antKilled:
     TST.b     antsRemaining
     BEQ       GAME_OVER
     BSR     PLAY_HITHURT               ; Play Opps Wav
+    RTS     DRAW_RESPAWN
     RTS
 
 HEALTH_COLLISION:
