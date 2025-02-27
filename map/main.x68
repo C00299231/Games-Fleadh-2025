@@ -27,6 +27,14 @@ mapInit:
 
 ; subsequent inits for map
 mapNotFirstInit:
+
+    ; reset font size and colour
+    MOVE.L    #color5,D1
+    MOVE.L  #00090000,D2
+    MOVE.B  #tcFont,D0
+    TRAP    #15
+        
+
     move.w #1, lvlType ; map type
     add.w #1, lvlIndex ; next level
     move.l centerX, playerX
