@@ -56,7 +56,7 @@ title:
     bra titleLoop
     
 titleLoop:
-     ; Enable back buffer
+     ; Enable back buffer0
     MOVE.B  #94,        D0
     TRAP    #15
     
@@ -65,11 +65,12 @@ titleLoop:
     bra titleLoop
 
 
-title1Msg dc.b '- ANTOPIA -',0
+title1Msg dc.b '- ANT-TOPIA -',0
 
 title2msg dc.b 'Press "enter" to start...',0
 
-; include other files 
+; include other fila
+aaes 
  include "map/main.x68"
  include "map/shapeSizes.x68"
  include "map/trapCodes.x68"

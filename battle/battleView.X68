@@ -26,12 +26,6 @@ TC_EXIT     EQU         09          ; Exit Trapcode
 * Description   : Size of Player and Enemy and properties
 * of these characters e.g Starting Positions and Sizes
 *-----------------------------------------------------------
-PLYR_W_INIT EQU         27          ; Players initial Width
-PLYR_H_INIT EQU         13          ; Players initial Height
-
-PLYR_DFLT_V EQU         00          ; Default Player Velocity
-PLYR_JUMP_V EQU         -19          ; Player Jump Velocity
-PLYR_DFLT_G EQU         01          ; Player Default Gravity
 
 THRW_W_INIT EQU         15          ; Players initial Width
 THRW_H_INIT EQU         15          ; Players initial Height
@@ -55,6 +49,9 @@ SONG_INDEX equ          06
 ENMY_W_INIT EQU         27          ; Enemy initial Width
 ENMY_H_INIT EQU         13          ; Enemy initial Height
 
+BIGENMY_W_INIT EQU         35          ; BRute Enemy initial Width
+BIGENMY_H_INIT EQU         18          ; Brute Enemy initial Height
+
 FLY_ENMY_W_INIT  EQU         30          ; Enemy initial Width
 FLY_ENMY_H_INIT  EQU         13          ; Enemy initial Height
 
@@ -63,20 +60,7 @@ HEALTH_PACK_H    EQU         12          ; Enemy initial Height
 
 LOOKRIGHT   EQU         02          ; Look Right
 LOOKLEFT    EQU         01          ; Look Left
-*-----------------------------------------------------------
-* Section       : Graphic Colors
-* Description   : Screen Pixel Color
-*-----------------------------------------------------------
-WHITE           EQU     $00FFFFFF
-BLACK           EQU     $00000000
-RED             EQU     $000000FF
-BLUE            EQU     $00FF0000
-GREEN           EQU     $00566D19
-LIFEGREEN       EQU     $0044FF44
-BROWN           EQU     $0019506D         ; Brown   
-DIRT           EQU      $00004FAD         ; Brown   
-SKY             EQU     $00FFE2B0         ; Sky Blue
-;ad4f00
+
 *-----------------------------------------------------------
 * Section       : Keyboard Keys
 * Description   : Spacebar and Escape or two functioning keys
@@ -177,10 +161,6 @@ INITRUN:
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     MOVE.L  D1,         ENEMY_Y     ; Enemy Y Position
 
-    ; Initialise the starting enemy width and height
-    MOVE.W  #12,        ENEMY_WIDTH ; Enemy Width
-    MOVE.W  #12,        ENEMY_HEIGHT ; Enemy Height
-
     ; Initial Position for Flying Enemy
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
@@ -192,9 +172,6 @@ INITRUN:
     SUB.W   #60,        D1
     MOVE.L  D1,         FLYINGENEMY_Y     ; Enemy Y Position
     
-    ; Initial Flying enemy width and height
-    MOVE.W  #20,        FLYENEMY_WIDTH ; Enemy Width
-    MOVE.W  #12,        FLYENEMY_HEIGHT ; Enemy Height
     ; Initial Position for Health pack
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
@@ -206,10 +183,17 @@ INITRUN:
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     MOVE.L  D1,         HEALTH_Y     ; Enemy Y Position
 
-    MOVE.B     #10,    hillHP
+    MOVE.B     #50,    hillHP
 
     LEA    LEVELS,      A2
     MOVE.B  #03,        antHealth
+
+    MOVE.L  #150,       currentHealth
+    move.l  #20,        healthTlX
+    move.l  #425,       healthTlY
+    move.l  #170,       healthBrX
+    move.l  #440,       healthBrY
+
     MOVE.B  #02,        POINTS
     MOVE.B  #00,        DRAW_HEALTHPACKS
     MOVE.B  #00,        SPAWN_HEALTHPACKS
@@ -228,10 +212,10 @@ INITRUN:
     MOVE.B  #00,        ENEMY_HIT
     MOVE.B  #00,        FLYENEMY_HIT
 
-    ADD.B   #5,        enemiesToDefeat
+    ADD.B   #50,        enemiesToDefeat
     MOVE.B  #0,         ENEMIES_DEFEATED
     MOVE.B  #0,         enemiesPassed
-    MOVE.B  #5,         backToMapCount
+    MOVE.B  #4,         backToMapCount
     CLR.L   D1
  
 
@@ -259,7 +243,11 @@ GAME:
 GAMELOOP:
     ; Main Gameloop
     MOVE.L      #3000,timer
+    MOVE.L      #0,D1
+    MOVE.B      #23,D0
+    TRAP        #15
 DELAY:     
+
     SUBI.L      #1,timer            ; decrement timer by 1 to simulate a delay
     TST.L       timer            ; compare 0 to the value of timer
     BNE         DELAY               ; branch back to DELAY if the previous compare was not equal
@@ -348,8 +336,11 @@ PROCESS_INPUT:
     CMP.b   #escapekey,    currentKey ; Is Current Key Escape
     BEQ     escapePressed
 
-    tst.b isPaused
-    bne pausedInput
+    cmpi.b #key0, currentKey ; fullscreen
+    beq key0pressed
+
+    tst.b   isPaused
+    bne     pausedInput
 
     CMP.W   #3,lvlIndex
     BEQ     COMPLETE_RESTART
@@ -387,18 +378,8 @@ stillPaused:
 * Description   : Main update loop update Player and Enemies
 *-----------------------------------------------------------
 UPDATE:
-    ; Update the Players Positon based on Velocity and Gravity
-    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.L  PLYR_VELOCITY, D1       ; Fetch Player Velocity
-    MOVE.L  PLYR_GRAVITY, D2        ; Fetch Player Gravity
-    ADD.L   D2,         D1          ; Add Gravity to Velocity
-    MOVE.L  D1,         PLYR_VELOCITY ; Update Player Velocity
-    ADD.L   PLAYER_Y,   D1          ; Add Velocity to Player
-    MOVE.L  D1,         PLAYER_Y    ; Update Players Y Position
-    MOVE.L  D1,         ATTACK_Y 
-
+    BSR     UPDATE_PLAYER
     BSR     MOVE_THROW
-
     ; Move the Enemy
     CLR.L   D1                      ; Clear the contents of D0
     MOVE.L  ENEMY_X,    D1          ; Move the Enemy X Position to D0
@@ -407,11 +388,14 @@ UPDATE:
     BSR     MOVE_ENEMY              ; Move the Enemy
 
     ; Move flying enemy
+
     CLR.L   D1                      ; Clear the contents of D0
     MOVE.L  FLYINGENEMY_X,    D1          ; Move the Enemy X Position to D0
     CMP.L   #00,        D1
     BLE     RESET_FLYENEMY_POSITION    ; Reset Enemy if off Screen
 
+
+    ; Move health
     CMP.L   #00,        HEALTH_X
     BLE     RESET_HEALTH_POSITION
     BSR     MOVE_HEALTHPACK
@@ -423,6 +407,8 @@ UPDATE:
     BNE     ATTACK_TIME_SUB
     MOVE.B  #00,        CURRENTLYATTACKING
     MOVE.L  #480,        ATTACK_Y
+
+    
 
     RTS                             ; Return to subroutine  
 
@@ -464,31 +450,6 @@ ATTACK_COOLDOWN_SUB:
     SUB.W   #02,        ATTACK_COOLDOWN
     RTS                            
 
-MOVE_PLAYER_LEFT:
-    TST.B  isPaused
-    IF <NE> THEN
-        RTS
-    ENDI
-
-    MOVE.B  #LOOKLEFT,        PLAYER_DIR
-    MOVE.L  PLAYER_X,   D1          ; Fetch Player X Position
-    SUB.L   #02,        D1          ; Move Player Left
-    MOVE.L  D1,         PLAYER_X    ; Update Players X Position
-    SUB.L   #02,        ATTACK_X
-    RTS                             ; Return to subroutine    
-
-MOVE_PLAYER_RIGHT:
-    TST.B  isPaused
-    IF <NE> THEN
-        RTS
-    ENDI
-    MOVE.B  #LOOKRIGHT,        PLAYER_DIR
-    MOVE.L  PLAYER_X,   D1          ; Fetch Player X Position
-    ADD.L   #02,        D1          ; Move Player Right
-    MOVE.L  D1,         PLAYER_X    ; Update Players X Position
-    ADD.L   #02,        ATTACK_X
-    RTS                             ; Return to subroutine
-
 MOVE_HEALTHPACK:
     SUB.L   #02,        HEALTH_X
     RTS
@@ -509,23 +470,40 @@ MOVE_ENEMY:
     MOVE.L  (A2)+,       D6
     CMP.L   D6,   D5
     BGT     MOVE_ENEMY_L2
+    CMP.L   #130,      FLYINGENEMY_X
+    IF <LE> THEN
+        ADD.L   #1,FLYINGENEMY_Y
+    ENDI
+
     SUB.L   #03,        FLYINGENEMY_X
     SUB.L   #02,        ENEMY_X     ; Move enemy by X Value
     RTS
 
 MOVE_ENEMY_L2:
     SUB.L   #03,        FLYINGENEMY_X
+     CMP.L   #130,      FLYINGENEMY_X
+    IF <LE> THEN
+        ADD.L   #1,FLYINGENEMY_Y
+    ENDI
     SUB.L   #04,        ENEMY_X     ; Move enemy by X Value
     MOVE.B  #03,        POINTS
     RTS
 
 MOVE_ENEMY_L3:
+    CMP.L   #130,      FLYINGENEMY_X
+    IF <LE> THEN
+        ADD.L   #3,FLYINGENEMY_Y
+    ENDI
     SUB.L   #07,        FLYINGENEMY_X
     SUB.L   #05,        ENEMY_X     ; Move enemy by X Value
     MOVE.B  #05,        POINTS
     RTS
 
 MOVE_ENEMY_L4:
+    CMP.L   #130,      FLYINGENEMY_X
+    IF <LE> THEN
+        ADD.L   #5,FLYINGENEMY_Y
+    ENDI
     SUB.L   #10,        FLYINGENEMY_X
     SUB.L   #08,        ENEMY_X     ; Move enemy by X Value
     MOVE.B  #10,        POINTS
@@ -591,6 +569,7 @@ CHECK_WAVE_CLEARED:
 
 damage_hill:
     subq.b  #5,hillHP
+    sub.l   #15,currentHealth
     CMP.b   #0,hillHP
     BLE     HILL_LOST
     RTS
@@ -653,18 +632,43 @@ DRAWBATTLE:
     BSR     DRAW_BACKGROUND        
     BSR     DRAW_HILL 
     BSR     DRAW_PLYR_DATA          ; Draw Draw Score, HUD, Player X and Y
-    BSR     DRAW_PLAYER             ; Draw Player
+    BSR     DRAW_ENTRANCE_HOLE
     BSR     DRAW_ENEMY              ; Draw Enemy
     BSR     DRAW_FLYENEMY
     BSR     DRAW_HEALTHPACK
+    BSR     DRAW_ENTRANCE
+    BSR     DRAW_PLAYER             ; Draw Player
     BSR     DRAW_FLOOR              ; Draw Floor
+    BSR     drawHillHealth         ; draw hill hp
     BSR     drawPause
     RTS                             ; Return to subroutine
 
 
+
+drawHillHealth:
+    BSR     drawHealth
+        
+    MOVE.L  #color5,D1
+    MOVE.B  #tcFont,D0
+    MOVE.L  #00090000,D2
+    TRAP    #15
+
+    MOVE.L  #BROWN,D1
+    MOVE.B  #tcPenFil,D0
+    TRAP    #15
+
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$041B,     D1          ; Col 02, Row 01
+    TRAP    #15                     ; Trap (Perform action)
+    LEA     hillHP_MSG,  A1          ; Score Message
+    MOVE    #13,        D0          ; No Line feed
+    TRAP    #15                     ; Trap (Perform action)
+
+    RTS
+
 DRAW_HILL:
 
-; Set Pixel Colors
+    ; Set Pixel Colors
     MOVE.L  #DIRT,     D1          ; Set Background color
     MOVE.B  #80,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
@@ -679,7 +683,7 @@ DRAW_HILL:
     MOVE.L  #30,   D3           
     MOVE.L  #120,   D4     
     
-    MOVE.B  #87,        D0          ; Draw Line
+    MOVE.B  #87,        D0          ; Draw 
     TRAP    #15                     ; Trap (Perform action)
     
      ; Set X, Y, X2, and Y2
@@ -689,7 +693,7 @@ DRAW_HILL:
     MOVE.L  #135,   D4 
     
     
-    MOVE.B  #87,        D0          ; Draw Line
+    MOVE.B  #87,        D0          ; Draw
     TRAP    #15                     ; Trap (Perform action)
 
      ; Set X, Y, X2, and Y2
@@ -699,7 +703,7 @@ DRAW_HILL:
     MOVE.L  #150,   D4 
     
     
-    MOVE.B  #87,        D0          ; Draw Line
+    MOVE.B  #87,        D0          ; Draw 
     TRAP    #15                     ; Trap (Perform action)
 
      ; Set X, Y, X2, and Y2
@@ -709,7 +713,7 @@ DRAW_HILL:
     MOVE.L  #200,   D4 
     
     
-    MOVE.B  #87,        D0          ; Draw Line
+    MOVE.B  #87,        D0          ; Draw 
     TRAP    #15                     ; Trap (Perform action)
 
     MOVE.L  #BLACK,     D1
@@ -726,9 +730,117 @@ DRAW_HILL:
     MOVE.L  #120,   D4     
 
     
-    MOVE.B  #87,        D0          ; Draw Line
+    MOVE.B  #87,        D0          ; Draw 
     TRAP    #15                     ; Trap (Perform action)
 
+    RTS
+
+    ; Set Pixel Colors
+    MOVE.L  #DIRT,     D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  #DIRT,     D1
+    MOVE.B  #81,        D0
+    TRAP    #15
+
+    ; Set X, Y, X2, and Y2
+    MOVE.L  #0,   D1          ; X
+    MOVE.L  #241,  D2          ; Y
+    MOVE.L  #30,   D3           
+    MOVE.L  #120,   D4     
+    
+    MOVE.B  #87,        D0          ; Draw 
+    TRAP    #15                     ; Trap (Perform action)
+    
+     ; Set X, Y, X2, and Y2
+    MOVE.L  #0,   D1          ; X
+    MOVE.L  #241,  D2          ; Y
+    MOVE.L  #60,   D3           
+    MOVE.L  #135,   D4 
+    
+    
+    MOVE.B  #87,        D0          ; Draw
+    TRAP    #15                     ; Trap (Perform action)
+
+     ; Set X, Y, X2, and Y2
+    MOVE.L  #0,   D1          ; X
+    MOVE.L  #241,  D2          ; Y
+    MOVE.L  #80,   D3           
+    MOVE.L  #150,   D4 
+    
+    
+    MOVE.B  #87,        D0          ; Draw 
+    TRAP    #15                     ; Trap (Perform action)
+
+     ; Set X, Y, X2, and Y2
+    MOVE.L  #0,   D1          ; X
+    MOVE.L  #241,  D2          ; Y
+    MOVE.L  #100,   D3           
+    MOVE.L  #200,   D4 
+    
+    
+    MOVE.B  #87,        D0          ; Draw 
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  #BLACK,     D1
+    MOVE.B  #81,        D0
+    TRAP    #15
+    MOVE.L  #BLACK,     D1
+    MOVE.B  #80,        D0
+    TRAP    #15
+
+    ; Set X, Y, X2, and Y2
+    MOVE.L  #5,   D1          ; X
+    MOVE.L  #130,  D2          ; Y
+    MOVE.L  #25,   D3           
+    MOVE.L  #120,   D4     
+
+    
+    MOVE.B  #87,        D0          ; Draw 
+    TRAP    #15                     ; Trap (Perform action)
+
+    RTS
+
+DRAW_ENTRANCE:
+    ; Set Pixel Colors
+    MOVE.L  #DIRT,     D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  #DIRT,     D1
+    MOVE.B  #81,        D0
+    TRAP    #15
+
+    ; Set X, Y, X2, and Y2
+    MOVE.L  #0,   D1          ; X
+    MOVE.L  #241,  D2          ; Y
+    MOVE.L  #5,   D3           
+    MOVE.L  #181,   D4     
+    
+    MOVE.B  #87,        D0          ; Draw 
+    TRAP    #15                     ; Trap (Perform action)
+
+    RTS
+
+DRAW_ENTRANCE_HOLE:
+    ; Set Pixel Colors
+    MOVE.L  #BLACK,     D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  #BLACK,     D1
+    MOVE.B  #81,        D0
+    TRAP    #15
+
+    ; Set X, Y, X2, and Y2
+    MOVE.L  #5,   D1          ; X
+    MOVE.L  #241,  D2          ; Y
+    MOVE.L  #20,   D3           
+    MOVE.L  #211,   D4     
+    
+    MOVE.B  #87,        D0          ; Draw 
+    TRAP    #15                     ; Trap (Perform action)
     RTS
 
 DRAW_BACKGROUND:
@@ -800,7 +912,6 @@ DRAW_PLYR_DATA:
     EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
     EOR.L    D2,D2
 
-
     MOVE.L  #BLACK,     D1
     MOVE.B  #21,        D0          ; Set Text Color
     TRAP    #15                     ; Trap (Perform action)
@@ -808,55 +919,6 @@ DRAW_PLYR_DATA:
     MOVE.L  #SKY,       D1          ; Set Text Color
     MOVE.L  #81,        D0          ; Set Text Color
     TRAP    #15                     ; Trap (Perform action)
-
-    ; Player Score Message
-    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    ;MOVE.W  #$0201,     D1          ; Col 02, Row 01
-    ;TRAP    #15                     ; Trap (Perform action)
-    ;LEA     SCORE_MSG,  A1          ; Score Message
-    ;MOVE    #13,        D0          ; No Line feed
-    ;TRAP    #15                     ; Trap (Perform action)
-;
-    ;; Player Score Value
-    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    ;MOVE.W  #$0901,     D1          ; Col 09, Row 01
-    ;TRAP    #15                     ; Trap (Perform action)
-    ;MOVE.B  #03,        D0          ; Display number at D1.L
-    ;MOVE.L  PLAYER_SCORE,D1         ; Move Score to D1.L
-    ;TRAP    #15                     ; Trap (Perform action)
-    
-    ; Player X Message
-    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    ;MOVE.W  #$0202,     D1          ; Col 02, Row 02
-    ;TRAP    #15                     ; Trap (Perform action)
-    ;LEA     X_MSG,      A1          ; X Message
-    ;MOVE    #13,        D0          ; No Line feed
-    ;TRAP    #15                     ; Trap (Perform action)
-    
-    ; Player X
-    ;MOVE.B  #TC_CURSR_P, D0          ; Set Cursor Position
-    ;MOVE.W  #$0502,     D1          ; Col 05, Row 02
-    ;TRAP    #15                     ; Trap (Perform action)
-    ;MOVE.B  #03,        D0          ; Display number at D1.L
-    ;MOVE.L  HEALTH_X,   D1          ; Move X to D1.L
-    ;TRAP    #15                     ; Trap (Perform action)
-    
-    ; Player Y Message
-    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    ;MOVE.W  #$1002,     D1          ; Col 10, Row 02
-    ;TRAP    #15                     ; Trap (Perform action)
-    ;LEA     Y_MSG,      A1          ; Y Message
-    ;MOVE    #13,        D0          ; No Line feed
-    ;TRAP    #15                     ; Trap (Perform action)
-    
-    ; Player Y
-    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    ;MOVE.W  #$1202,     D1          ; Col 12, Row 02
-    ;TRAP    #15                     ; Trap (Perform action)
-    ;MOVE.B  #03,        D0          ; Display number at D1.L
-    ;MOVE.L  FLYINGENEMY_Y,   D1          ; Move X to D1.L
-    ;TRAP    #15                     ; Trap (Perform action) 
-
     ; Player 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$0203,     D1          ; Col 02, Row 03
@@ -924,22 +986,6 @@ DRAW_PLYR_DATA:
     MOVE.B  #03,        D0          ; Display the contents of D1
     TRAP    #15                     ; Trap (Perform action)
 
-    ; Show hill msg
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0206,     D1          ; Col 02, Row 06
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     hillHP_MSG,   A1          ; Draw
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)  
-    
-    ; Show hill msg
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0E06,     D1          ; Col 30, Row 1
-    TRAP    #15                     ; Trap (Perform action)   
-    EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.B  hillHP,      D1          ; Move Key Pressed to D1
-    MOVE.B  #03,        D0          ; Display the contents of D1
-    TRAP    #15                     ; Trap (Perform action)
     
     ; Show antHealth msg
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
@@ -1164,182 +1210,7 @@ STOP_SONG:
 * Subroutine    : Draw Player
 * Description   : Draw Player Ant
 *-----------------------------------------------------------
-DRAW_PLAYER:
-    ; Set Pixel Colors
-    MOVE.L  #BLACK,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
-    ; Reset Pixel Colors
-    MOVE.L  #BLACK,     D1          ; Set Background color
-    MOVE.B  #81,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
-
-*-------------- draw body -----------------*
-    MOVE.L  PLAYER_X,   D1          ; X
-    MOVE.L  PLAYER_Y,   D2
-    SUBQ.L  #4,D2
-
-    MOVE.L  PLAYER_X,   D3
-    EOR.L   D4,D4
-    MOVE.B   PLAYER_WIDTH,   D4      ; Width
-    ADD.L   D4,D3
-    MOVE.L  PLAYER_Y,   D4
-    SUB.B   PLAYER_HEIGHT,   D4      ; Height          ; Y
-    
-     ; Draw Player
-    MOVE.B  #87,        D0          ; Draw Player
-    TRAP    #15                     ; Trap (Perform action)
-
-*-------------- draw anthrax -----------------*
-    MOVE.L  PLAYER_X,   D1          ; X
-    MOVE.L  PLAYER_Y,   D2
-    SUBQ.L  #4,D2
-    MOVE.L  PLAYER_X,   D3
-    EOR.L   D4,D4
-    MOVE.B   PLAYER_WIDTH,   D4      ; Width
-    SUBI.B   #12,D4
-    ADD.L   D4,D3
-    MOVE.L  PLAYER_Y,   D4
-    SUB.B   PLAYER_HEIGHT,   D4      ; Height
-    SUB.B   #3,D4
-    
-    ; Draw Player
-    MOVE.B  #87,        D0          ; Draw Player
-    TRAP    #15                     ; Trap (Perform action)
-
-*-------------- draw antena -----------------*    
-    ; change thickness
-    MOVE.l  #3,D1
-    MOVE.B  #93,D0
-    TRAP    #15
-
-    MOVE.L  PLAYER_X,D1
-    ADD.L   #22,D1
-    MOVE.L  PLAYER_Y,D2
-    SUB.L   #PLYR_H_INIT,D2
-    MOVE.L  D1,D3
-    ADD.L   #10,D3
-    MOVE.L  D2,D4
-    SUBI.L  #7,D4
-
-    MOVE.B  #84,D0
-    TRAP    #15
-
-*-------------- draw leg 1 -----------------*
-    MOVE.L  PLAYER_X,D1
-    MOVE.L  PLAYER_Y,D2
-    MOVE.L  D1,D3
-    ADD.L   #4,D3
-    MOVE.L  D2,D4
-    SUBI.L  #4,D4
-
-    MOVE.B  #84,D0
-    TRAP    #15
-
-*-------------- draw leg 2 -----------------*
-    MOVE.L  PLAYER_X,D1
-    ADD.L   #13,D1
-    MOVE.L  PLAYER_Y,D2
-    MOVE.L  D1,D3
-    MOVE.L  D2,D4
-    SUBI.L  #4,D4
-
-    MOVE.B  #84,D0
-    TRAP    #15
-
-*-------------- draw leg 3 -----------------*
-    MOVE.L  PLAYER_X,D1
-    ADD.L   #22,D1
-    MOVE.L  PLAYER_Y,D4
-    MOVE.L  D1,D3
-    ADD.L   #3,D3
-    MOVE.L  D4,D2
-    SUBI.L  #4,D2
-
-    MOVE.B  #84,D0
-    TRAP    #15
-
-    ; Set Pixel Colors
-    MOVE.L  #WHITE,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
-
-*-------------- draw eye -----------------*
-    MOVE.L  PLAYER_X,D1
-    ADD.L   #22,D1
-    MOVE.L  PLAYER_Y,D2
-    SUB.L   #10,D2
-    MOVE.L  D1,D3
-    MOVE.L  D2,D4
-
-    MOVE.B  #84,D0
-    TRAP    #15
-
-    MOVE.l  #1,D1
-    MOVE.B  #93,D0
-    TRAP    #15
-    
-    BSR     IS_ATTACKING
-    BSR     IS_THROWING
-
-    RTS                             ; Return to subroutine
-
-IS_ATTACKING:
-    TST.B   CURRENTLYATTACKING
-    BNE     DRAW_ATTACK
-    RTS
-DRAW_ATTACK:
-
-    ; Set Pixel Colors
-    MOVE.L  #WHITE,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
-    ; Reset Pixel Colors
-    MOVE.L  #WHITE,     D1          ; Set Background color
-    MOVE.B  #81,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
-
-    MOVE.L  ATTACK_X,   D1          ; X
-    MOVE.L  ATTACK_Y,   D2
-    
-    MOVE.L  ATTACK_X,   D3
-    ADD.L   #ATTACK_WIDTH,   D3      ; Width
-    MOVE.L  ATTACK_Y,   D4 
-    SUB.L   #ATTACK_HEIGHT,   D4      ; Height          ; Y
-    
-    ; Draw Player
-    MOVE.B  #87,        D0          ; Draw Player
-    TRAP    #15                     ; Trap (Perform action)
-    RTS                             ; Return to subroutine
-
-IS_THROWING:
-    TST.B   CURRENTLYTHROWING
-    BNE     DRAW_THROW
-    RTS
-DRAW_THROW:
-
-    ; Set Pixel Colors
-    MOVE.L  #BROWN,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
-    ; Reset Pixel Colors
-    MOVE.L  #BROWN,     D1          ; Set Background color
-    MOVE.B  #81,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
-
-    MOVE.L  THROW_X,   D1          ; X
-    MOVE.L  THROW_Y,   D2
-    
-    MOVE.L  THROW_X,   D3
-    ADD.L   #THRW_W_INIT,   D3      ; Width
-    MOVE.L  THROW_Y,   D4 
-    SUB.L   #THRW_H_INIT,   D4      ; Height          ; Y
-    
-    ; Draw Acorn
-    MOVE.B  #87,        D0          ; Draw Player
-    TRAP    #15                     ; Trap (Perform action)
-    RTS                             ; Return to subroutine
-
+    include "battle/playerAnt.X68"
 *-----------------------------------------------------------
 * Subroutine    : Draw Enemy
 * Description   : Draw Enemy Ant
@@ -1369,7 +1240,7 @@ DRAW_ENEMY:
     MOVE.B  #87,        D0          ; Draw enemy
     TRAP    #15                     ; Trap (Perform action)
 
-*-------------- draw ENEMY anthrax -----------------*
+*-------------- draw ENEMY abdomen -----------------*
     MOVE.L  ENEMY_X,   D1          ; X
     MOVE.L  D1,   D3
     ADD.L   #ENMY_W_INIT,D1
@@ -1492,7 +1363,7 @@ DRAW_FLYENEMY:
     MOVE.B  #87,        D0          ; Draw enemy
     TRAP    #15                     ; Trap (Perform action)
 
-*-------------- draw FLYINGENEMY anthrax -----------------*
+*-------------- draw FLYINGENEMY abdomen -----------------*
     MOVE.L  FLYINGENEMY_X,   D1          ; X
     MOVE.L  D1,   D3
     ADD.L   #FLY_ENMY_W_INIT,D1
@@ -1561,12 +1432,49 @@ DRAW_FLYENEMY:
     MOVE.B  #84,D0
     TRAP    #15
 
+*-------------- draw FLYINGENEMY Wing 1 -----------------*
+    ; Set Pixel Colors
+    MOVE.L  #WING,     D1          ; Set Pen color
+    MOVE.B  #80,        D0          ; Task for Pen Color
+    TRAP    #15                     ; Trap (Perform action)
+    
+    ; change thickness
+    MOVE.l  #5,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    MOVE.L  FLYINGENEMY_X,D1
+    ADD.L   #15,D1
+    MOVE.L  FLYINGENEMY_Y,d2
+    SUB.L   #FLY_ENMY_H_INIT,D2
+    MOVE.L  D1,D3
+    SUB.L   #9,D3
+    MOVE.L  D2,D4
+    SUB.L   #10,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw FLYINGENEMY Wing 2 -----------------*
+    MOVE.L  FLYINGENEMY_X,D1
+    ADD.L   #15,D1
+    MOVE.L  FLYINGENEMY_Y,d2
+    SUB.L   #FLY_ENMY_H_INIT,D2
+    MOVE.L  D1,D3
+    ADD.L   #9,D3
+    MOVE.L  D2,D4
+    SUB.L   #10,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+
+*-------------- draw FLYINGENEMY eye -----------------*
     ; Set Pixel Colors
     MOVE.L  #BLACK,     D1          ; Set Pen color
     MOVE.B  #80,        D0          ; Task for Pen Color
     TRAP    #15                     ; Trap (Perform action)
-
-*-------------- draw FLYINGENEMY eye -----------------*
+    
     ; change thickness
     MOVE.l  #3,D1
     MOVE.B  #93,D0
@@ -1574,8 +1482,8 @@ DRAW_FLYENEMY:
 
     MOVE.L  FLYINGENEMY_X,D1
     ADD.L   #3,D1
-    MOVE.L  FLYINGENEMY_Y,D2
-    SUB.L   #10,D2
+    MOVE.L  FLYINGENEMY_Y,   D4
+    SUB.L   #FLY_ENMY_H_INIT,   D4      ; Height          ; Y
     MOVE.L  D1,D3
     MOVE.L  D2,D4
 
@@ -1667,61 +1575,13 @@ DRAW_FLOOR:
 * -----------------------------------------------------------
     LEA     LEVELS,      A2
     MOVE.L  PLAYER_SCORE,   D5
-    ;CMP.L   (A2)+,       D5
-    ;BGT     DRAW_FLOOR_L5
-    ;CMP.L   (A2)+,       D5
-    ;BGT     DRAW_FLOOR_L4
-    ;CMP.L   (A2)+,       D5
-    ;BGT     DRAW_FLOOR_L3
-    ;CMP.L   (A2)+,       D5
-    ;BGT     DRAW_FLOOR_L2
-    BRA     DRAW_FLOOR_L1
-
-DRAW_FLOOR_L5:
-    MOVE.W  #12,SCALER
-    MOVE.L  #480,   D2          ; Y
-    ;MOVE.L  #135, FLYINGENEMY_Y
-    ;MOVE.W  #40, FLYENEMY_HEIGHT
-    ;MOVE.W  #65, FLYENEMY_WIDTH
-    ;MOVE.W  #40, ENEMY_HEIGHT
-    ;MOVE.W  #40, ENEMY_WIDTH
     BRA     DRAWDIRT
     
-DRAW_FLOOR_L4:
-    MOVE.W  #10,SCALER
-    MOVE.L  #480,   D2          ; Y
-    ;MOVE.L  #140, FLYINGENEMY_Y
-    ;MOVE.W  #45, FLYENEMY_HEIGHT
-    ;MOVE.W  #55, FLYENEMY_WIDTH
-    ;MOVE.W  #30, ENEMY_HEIGHT
-    ;MOVE.W  #30, ENEMY_WIDTH
-    BRA     DRAWDIRT
-DRAW_FLOOR_L3:
-    MOVE.W  #8,SCALER
-    MOVE.L  #430,   D2          ; Y
-    ;MOVE.L  #160, FLYINGENEMY_Y
-    ;MOVE.W  #25, FLYENEMY_HEIGHT
-    ;MOVE.W  #35, FLYENEMY_WIDTH
-    ;MOVE.W  #25, ENEMY_HEIGHT
-    ;MOVE.W  #25, ENEMY_WIDTH
-    BRA     DRAWDIRT
-DRAW_FLOOR_L2:
-    MOVE.W  #6,SCALER
-    MOVE.L  #330,   D2          ; Y
-    MOVE.L  #170, FLYINGENEMY_Y
-    MOVE.W  #15, FLYENEMY_HEIGHT
-    MOVE.W  #25, FLYENEMY_WIDTH
-    MOVE.W  #15, ENEMY_HEIGHT
-    MOVE.W  #15, ENEMY_WIDTH
-
-    BRA     DRAWDIRT
-DRAW_FLOOR_L1:
-    MOVE.L  #277,   D2          ; Y
-    BRA     DRAWDIRT
 DRAWDIRT:
     ; Set X, Y, X2, and Y2
     MOVE.L  #0,   D1          ; X
-    MOVE.L  #640,   D3           
+    MOVE.L  #640,   D3  
+    MOVE.L  #277,   D2         
     MOVE.L  #480,   D4 
     
     ; Draw Dirt
@@ -1740,52 +1600,6 @@ DRAWDIRT:
     TRAP    #15                     ; Trap (Perform action)
 
     RTS                             ; Return to subroutine
-
-
-*-----------------DRAW respawn -----------------------------*
-DRAW_RESPAWN:
-    MOVEQ.L     #0,  D5
-    MOVE.W      respawnTime,D5
-
-    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
-    DIVU    #02,        D1          ; divide by 2 for center on Y Axis
-    MOVE.L  D1,         PLAYER_Y    ; Players Y Position
-
-MOVE_RESPAWNED:
-    MOVE.L  D5, PLAYER_X
-
-    ; Enable back buffer
-    MOVE.B  #TC_REDRAW,        D0
-    TRAP    #15
-
-    ; Clear the screen
-    MOVE.B	#TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W	#$FF00,     D1          ; Clear contents
-    TRAP    #15                     ; Trap (Perform action)
-
-    MOVE.B  #1,D1
-    MOVE.B  #93,D0
-    TRAP    #15
-
-    BSR     DRAW_BACKGROUND        
-    BSR     DRAW_HILL 
-    BSR     DRAW_PLYR_DATA          ; Draw Draw Score, HUD, Player X and Y
-    BSR     DRAW_PLAYER             ; Draw Player
-    BSR     DRAW_ENEMY              ; Draw Enemy
-    BSR     DRAW_FLYENEMY
-    BSR     DRAW_HEALTHPACK
-    BSR     DRAW_FLOOR              ; Draw Floor
-    BSR     drawPause        
-
-
-    ADDQ.W      #1,respawnTime
-    MOVE.W      respawnTime,D5
-    CMP.W       #200,respawnTime
-    BNE         MOVE_RESPAWNED
-    MOVE.W     #0,respawnTime
-    ;else
-    RTS
     
 *-----------------------------------------------------------
 * Subroutine    : Collision Check
@@ -1913,6 +1727,8 @@ HILL_LOST:
     TST.B   backToMapCount
     BEQ     mapNotFirstInit
 
+    MOVE.l  #200,currentHealth
+    bsr     initDraw
     ; back to top
     BRA     HILL_LOST
 
@@ -2113,6 +1929,8 @@ WAVE_DEFEATED:
     TST.B   backToMapCount
     BEQ     mapNotFirstInit
 
+    bsr     initDraw
+    MOVE.l  #200,currentHealth
     ; back to top
     BRA     WAVE_DEFEATED
 
@@ -2279,7 +2097,7 @@ CURRENT_KEY     DS.L    01  ; Reserve Space for Current Key Pressed
 LAST_KEY        DS.W    01  ; Reserve Space for Current Key Pressed
 
 *-----------------------------------------------------------
-* Section       : Character Positions
+* Section       : Character Data
 * Description   : Player and Enemy Position Memory Locations
 *-----------------------------------------------------------
 PLAYER_X        DS.L    01  ; Reserve Space for Player X Position
@@ -2359,12 +2177,12 @@ FLYENEMY_HEIGHT   DC.W        12
 * so keep the files small. Used https://voicemaker.in/ to 
 * generate and Audacity to convert MP3 to WAV
 *-----------------------------------------------------------
-JUMP_WAV        DC.B    'jump.wav',0        ; Jump Sound
-GAMEOVER_WAV    DC.B    'gameOver.wav',0    ; Run Sound
-HITHURT_WAV     DC.B    'hitHurt.wav',0     ; Collision Opps
-HIT_WAV         DC.B    'hit.wav',0         ; Collision Opps
-POWERUP_WAV     DC.B    'powerUP.wav',0     ; Collision Opps
-LEVELCHANGE_WAV DC.B    'levelChange.wav',0 ; Collision Opps
+JUMP_WAV        DC.B    'jump.wav1',0        ; Jump Sound
+GAMEOVER_WAV    DC.B    'gameOver.wav1',0    ; Run Sound
+HITHURT_WAV     DC.B    'hitHurt.wav1',0     ; Collision Opps
+HIT_WAV         DC.B    'hit.wav1',0         ; Collision Opps
+POWERUP_WAV     DC.B    'powerUP.wav1',0     ; Collision Opps
+LEVELCHANGE_WAV DC.B    'levelChange.wav1',0 ; Collision Opps
 
 BATTLE_SONG_WAV DC.B    'antopia-battle.wav',0
 MAP_SONG_WAV    DC.B    'antopia-map.wav',0
@@ -2385,6 +2203,7 @@ WIDTH   DC.W    $FFB0
 timer           DC.L    0
 
 ;    END    START        ; last line of source
+
 
 
 
