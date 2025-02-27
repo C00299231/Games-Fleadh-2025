@@ -4,6 +4,10 @@
 mapInit:
     move.w #1, lvlType
     move.w #0, lvlIndex
+
+    jsr stop_song
+    jsr MAP_SONG_LOAD
+    jsr play_song
 	
 	    ; Place the Player at the center of the screen
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
@@ -34,6 +38,12 @@ mapNotFirstInit:
     MOVE.B  #tcFont,D0
     TRAP    #15
         
+
+    ;set map song, play
+    jsr stop_song
+    jsr MAP_SONG_LOAD
+    jsr play_song
+
 
     move.w #1, lvlType ; map type
     add.w #1, lvlIndex ; next level

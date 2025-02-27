@@ -50,6 +50,8 @@ POWERUP_INDEX  EQU          03          ; Player Opps Sound Index
 LEVELCHANGE_INDEX  EQU      04          ; Player Opps Sound Index
 HIT_INDEX  EQU              05  
 
+SONG_INDEX equ          06
+
 ENMY_W_INIT EQU         27          ; Enemy initial Width
 ENMY_H_INIT EQU         13          ; Enemy initial Height
 
@@ -103,6 +105,11 @@ INITRUN:
     BSR     POWERUP_LOAD               ; Load Opps (Collision) Sound into Memory
     BSR     LVLCHANGE_LOAD               ; Load Opps (Collision) Sound into Memory
     BSR     HIT_LOAD
+
+    BSR     stop_song
+    BSR     BATTLE_SONG_LOAD
+
+    bsr PLAY_SONG
 
     ; Screen Size
     MOVE.B  #TC_SCREEN, D0          ; access screen information
@@ -1163,6 +1170,7 @@ GAMEOVER_LOAD:
     RTS                             ; Return to subroutine
 
 PLAY_GAMEOVER:
+    bsr STOP_SONG
     MOVE    #GAMEOVER_INDEX, D1          ; Load Sound INDEX
     MOVE    #75,        D0          ; Play Sound
     TRAP    #15                     ; Trap (Perform action)
@@ -1232,6 +1240,36 @@ PLAY_HIT:
     MOVE    #75,        D0          ; Play Sound
     TRAP    #15                     ; Trap (Perform action)
     RTS                             ; Return to subroutine
+
+MAP_SONG_LOAD:
+    LEA     MAP_SONG_WAV,   A1          ; Load Wav File into A1
+    MOVE    #SONG_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+BATTLE_SONG_LOAD:
+    LEA     BATTLE_SONG_WAV,   A1          ; Load Wav File into A1
+    MOVE    #SONG_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+; special function to play song in song index
+PLAY_SONG:
+    MOVE    #SONG_INDEX,D1          ; Load Sound INDEX
+    move.l #1, d2
+    MOVE    #77,        D0          ; Play Sound
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+; stop song playing
+STOP_SONG:
+    move #SONG_INDEX,d1
+    move.l #2, d2
+    move #77, d0
+    trap #15
+    rts
 
 *-----------------------------------------------------------
 * Subroutine    : Draw Player
@@ -2191,7 +2229,7 @@ WAVE_DEFEATED:
 
 
 WIN_SCREEN:
-
+    move.b #1, isWin
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
     TRAP	#15                     ; Trap (Perform action)
@@ -2433,11 +2471,14 @@ FLYENEMY_HEIGHT   DC.W        12
 * generate and Audacity to convert MP3 to WAV
 *-----------------------------------------------------------
 JUMP_WAV        DC.B    'jump.wav',0        ; Jump Sound
-GAMEOVER_WAV         DC.B    'gameOver.wav',0         ; Run Sound
-HITHURT_WAV        DC.B    'hitHurt.wav',0        ; Collision Opps
-HIT_WAV        DC.B    'hit.wav',0        ; Collision Opps
-POWERUP_WAV        DC.B    'powerUP.wav',0        ; Collision Opps
-LEVELCHANGE_WAV        DC.B    'levelChange.wav',0        ; Collision Opps
+GAMEOVER_WAV    DC.B    'gameOver.wav',0    ; Run Sound
+HITHURT_WAV     DC.B    'hitHurt.wav',0     ; Collision Opps
+HIT_WAV         DC.B    'hit.wav',0         ; Collision Opps
+POWERUP_WAV     DC.B    'powerUP.wav',0     ; Collision Opps
+LEVELCHANGE_WAV DC.B    'levelChange.wav',0 ; Collision Opps
+
+BATTLE_SONG_WAV DC.B    'antopia-battle.wav',0
+MAP_SONG_WAV    DC.B    'antopia-map.wav',0
 
 
 respawnTime         dc.W        0
@@ -2455,3 +2496,14 @@ timer           DC.L    0
 
 ;    END    START        ; last line of source
 
+
+
+
+
+
+
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
