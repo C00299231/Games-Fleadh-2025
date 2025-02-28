@@ -7,6 +7,41 @@ PLYR_DFLT_V EQU         00          ; Default Player Velocity
 PLYR_JUMP_V EQU         -19          ; Player Jump Velocity
 PLYR_DFLT_G EQU         01          ; Player Default Gravity
 
+INIT_PLAYER:
+
+    ; Place the Player at the center of the screen
+    EOR.L    D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
+    DIVU    #02,        D1          ; divide by 2 for center on X Axis
+    MOVE.L  D1,         PLAYER_X    ; Players X Position
+
+    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
+    DIVU    #02,        D1          ; divide by 2 for center on Y Axis
+    MOVE.L  D1,         PLAYER_Y    ; Players Y Position
+
+        ; Set the player starting width and height
+    MOVE.B  #PLYR_W_INIT,        PLAYER_WIDTH ; Players Width
+    MOVE.B  #PLYR_H_INIT,        PLAYER_HEIGHT ; Players Width
+
+    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
+    DIVU    #02,        D1          ; divide by 2 for center on Y Axis
+    MOVE.L  D1,         PLAYER_Y    ; Players Y Position
+
+    ; Initialise Player Velocity
+    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.B  #PLYR_DFLT_V,D1         ; Init Player Velocity
+    MOVE.L  D1,         PLYR_VELOCITY
+
+    ; Initialise Player Gravity
+    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.L  #PLYR_DFLT_G,D1         ; Init Player Gravity
+    MOVE.L  D1,         PLYR_GRAVITY
+
+        ; Initialize Player on Ground
+    MOVE.L  #GND_TRUE,  PLYR_ON_GND ; Init Player on Ground
+    
 
 UPDATE_PLAYER:
     ; Update the Players Positon based on Velocity and Gravity

@@ -22,7 +22,12 @@ DIRT           EQU      $0019506D        ; Brown
 BROWN            EQU    $0019191E         ; Brown   
 SKY             EQU     $00E2D8BC         ; Sky Blue
 WING            EQU     $00E2D833
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
+
+; tree
+TRUNKO          EQU     $00083677
+TRUNKI          EQU     $001f4a82
+; color of the leaves Dark to Light
+GREEN1          EQU     $00336115
+GREEN2          EQU     $00377815
+GREEN3          EQU     $003A9715
+GREEN4          EQU     $0042AA15
