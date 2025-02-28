@@ -612,7 +612,7 @@ drawHillHealth:
     MOVE.L  #00090000,D2
     TRAP    #15
 
-    MOVE.L  #BROWN,D1
+    MOVE.L  #deepgreen,D1
     MOVE.B  #tcPenFil,D0
     TRAP    #15
 
@@ -813,7 +813,7 @@ DRAW_BACKGROUND:
     MOVE.L      #89, D0
     TRAP        #15
     
-    MOVE.L     #BROWN,D1
+    MOVE.L     #brown,D1
     MOVE.L     #$01110000,D2
     MOVE.B     #21,D0
     TRAP       #15
@@ -1496,11 +1496,11 @@ DRAW_FLOOR:
     TRAP    #15                     ; Trap (Perform action)
 
     ; Set Pixel Colors
-    MOVE.L  #BROWN,     D1          ; Set Background color
+    MOVE.L  #deepgreen,     D1          ; Set Background color
     MOVE.B  #80,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
-    MOVE.L  #BROWN,     D1
+    MOVE.L  #deepgreen,     D1
     MOVE.B  #81,        D0
     TRAP    #15
 
@@ -1577,7 +1577,7 @@ HILL_LOST:
     MOVE.L  #$01130005, D2
     TRAP    #15                     ; Trap (Perform action)
 
-    MOVE.L  #color1,     D1
+    MOVE.L  #deepgreen,     D1
     MOVE.B  #81,        D0          ; Set Text Color
     TRAP    #15                     ; Trap (Perform action)
 
@@ -1778,8 +1778,8 @@ WAVE_DEFEATED:
     MOVE.L  #$01130005, D2
     TRAP    #15                     ; Trap (Perform action)
 
-    MOVE.L  #color1,     D1
-    MOVE.B  #81,        D0          ; Set Text Color
+    MOVE.L  #deepgreen,     D1
+    MOVE.B  #tcPenFil,        D0          ; Set Text Color
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*

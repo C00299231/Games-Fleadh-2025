@@ -79,7 +79,7 @@ aaes
  include "map/shapeSizes.x68"
  include "map/trapCodes.x68"
  include "map/inputKeyCodes.x68"
- include "map/colours.x68"
+ include "map/colours2.x68"
  include "map/cell.x68"
  include "map/draw.x68"
  include "map/enemies.x68"

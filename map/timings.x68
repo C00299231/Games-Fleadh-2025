@@ -1,6 +1,6 @@
 ; this file contains timing stuff
 
-playerTime dc.w 10
+playerTime dc.w 5
 enemyTime dc.w 5
 healTime dc.w 40
 enemySpawnTimer dc.w 2000
@@ -9,7 +9,21 @@ enemySpawnTimer dc.w 2000
 scoreLineDelay dc.l 100
 
 increment: ; D6 permanently used up
-    add.w #1, d6
+    
+    move.b #8, d0
+    trap #15
+    
+    ; d1 now contains time in 1/100 of second
+    ;probably the same as previousTime
+
+    cmp.l previousTime, d1
+    if <eq> then
+        add.l #1, d6
+    endi
+
+    bra endIncrement
+endIncrement:
+    move.l d1, previousTime
     rts
 
 checkIncrement: ; d5 has been given check value
@@ -28,3 +42,11 @@ newDelay: ; milliseconds in d1.l
     move #23, d0
     trap #15
     rts
+
+delay100:
+    move.l #1, d1
+    move #23, d0
+    trap #15
+    rts
+
+previousTime dc.l 0

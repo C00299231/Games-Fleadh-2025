@@ -135,7 +135,7 @@ drawText:
     ; set colours
     move.l #color5, d1
     jsr setPenColour
-    move.l #brown, d1
+    move.l #DEEPGREEN, d1
     jsr setFillColour
 
 
@@ -166,9 +166,9 @@ drawText:
 
 drawBg:
     ; set colours
-    move.l #color2, d1
+    move.l #brown, d1
     jsr setPenColour
-    move.l #BROWN, d1
+    move.l #DEEPGREEN, d1
     jsr setFillColour
 
     ; clear d3 and d4 (screen W and H are words)
@@ -203,21 +203,44 @@ drawPlayer:
     RTS
 
 drawEnemies:
+    jsr setRedEnemy
+
     jsr getEnemy1
     jsr drawEnemy
+
+    jsr setBlueEnemy
+
     jsr getEnemy2
     jsr drawEnemy
+
+    jsr setRedEnemy
+
     jsr getEnemy3
     jsr drawEnemy
+
+    jsr setBlueEnemy
+
     jsr getEnemy4
     jsr drawEnemy
 
-drawEnemy:
+setRedEnemy:
     ; set colour
-    move.l #color5, d1
+    move.l #red, d1
     jsr setPenColour
-    move.l #colorRed, d1
+    move.l #DEEPRED, d1
     jsr setFillColour
+    rts
+
+setBlueEnemy:
+    ; set colour
+    move.l #blue, d1
+    jsr setPenColour
+    move.l #DEEPBLUE, d1
+    jsr setFillColour
+    rts
+
+drawEnemy:
+    
 
     ; set rect values
     jsr prepareEnemyDraw
