@@ -22,11 +22,14 @@ initDraw:
     
     rts
 
-
-draw:
-     ; Enable back buffer
+getBackBuffer:
+    ; Enable back buffer
     MOVE.B  #94,        D0
     TRAP    #15
+    rts
+
+draw:
+    jsr getBackBuffer
 
     jsr followCam
     jsr drawBg
@@ -72,6 +75,16 @@ drawPause:
     move.w #$2208, d1
     jsr setCursor
     lea pauseMsg, a1
+    jsr print
+
+    ; draw options
+    move.w #$1c0c, d1
+    jsr setCursor
+    lea pauseOption1Msg, a1
+    jsr print
+    add.w #$2, d1
+    jsr setCursor
+    lea pauseOption2Msg, a1
     jsr print
 
     rts
@@ -530,6 +543,8 @@ pointsRow dc.b 03
 pauseHalfWidth dc.l 110
 pauseHalfHeight dc.l 130
 pauseMsg dc.b 'GAME PAUSED!', 0
+pauseOption2Msg dc.b '[2] main menu',0
+pauseOption1Msg dc.b '[1] exit game',0
 
 ; move to level stuff
 attackMsg1 dc.b 'AN ANTHILL IS UNDER ATTACK!',0
