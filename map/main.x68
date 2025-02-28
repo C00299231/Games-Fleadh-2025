@@ -86,25 +86,32 @@ battle:
     rts
 
 collision:
+    jsr resetZonePens
     cmpi #0, lvlIndex
     if <eq> then
-        jsr zone1collision
+        move.l #white, zone1pen
+        bra zone1collision
     endi
 
     cmpi #1, lvlIndex
     if <eq> then
-        jsr zone2collision
+        move.l #white, zone2pen
+        bra zone2collision
     endi
 
     cmpi #2, lvlIndex
     if <eq> then
-        jsr zone3collision
+        move.l #white, zone3pen
+        bra zone3collision
     endi
 
     cmpi #3, lvlIndex
     if <eq> then
-        jsr zone4collision
+        move.l #white, zone4pen
+        bra zone4collision
     endi
+
+    ; no collision
 
     rts
 

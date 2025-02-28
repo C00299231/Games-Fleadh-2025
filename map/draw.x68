@@ -1,5 +1,7 @@
 ; this file contains all draw functions
 
+
+
 initDraw:
     ; get health rectangle bounds
 
@@ -23,9 +25,23 @@ initDraw:
     rts
 
 getBackBuffer:
-    ; Enable back buffer
+    ; retrieve back buffer
     MOVE.B  #94,        D0
     TRAP    #15
+    rts
+
+enableDoubleBuffer:
+    ; Enable the screen back buffer(see easy 68k help)
+	MOVE.B  #tcdbl,D0          ; 92 Enables Double Buffer
+    MOVE.B  #17,        D1          ; Combine Tasks
+	TRAP	#15                     ; Trap (Perform action)
+    rts
+
+disableDoubleBuffer:
+    ; Enable the screen back buffer(see easy 68k help)
+	MOVE.B  #tcdbl,D0          ; 92 Enables Double Buffer
+    MOVE.B  #16,        D1          ; Combine Tasks
+	TRAP	#15                     ; Trap (Perform action)
     rts
 
 draw:
@@ -40,7 +56,7 @@ draw:
     
     jsr drawPlayer
     jsr drawText
-    jsr drawHealth
+    ;jsr drawHealth
     jsr drawPause
     rts
 
@@ -119,30 +135,21 @@ drawText:
     ; set colours
     move.l #color5, d1
     jsr setPenColour
-    move.l #color1, d1
+    move.l #brown, d1
     jsr setFillColour
-    ; PLAYER SCORE MSG
-    move.w #$200, d1
-    add.b pointsRow, d1
-    jsr setCursor
-    lea pointsMsg, a1
-    jsr print
-    ; PLAYER SCORE
-    move.l #$a00, d1
-    add.b pointsRow, d1
-    jsr setCursor
-    move.l currentPts, d1
-    jsr printNum
 
-    ; HEALTH
+
+    ;ANTS REMAINING
     move.w #$200, d1
-    add.b healthRow, d1
+    add.b pointsRow, d1
     jsr setCursor
-    lea healthMsg, a1
-    jsr print
+    lea antsRemainingMsg, a1
+    CLR.L D1
+    move.b antsRemaining, d1
+    jsr printWithNum
 
     ; ANTHILL
-    move.w #$1005, d1
+    move.w #$101b, d1
     jsr setCursor
     lea attackMsg1, a1
     jsr print
@@ -272,9 +279,9 @@ prepareEnemyDraw:
 drawCell:
     ;---------------draw main cell
     ; change colours
-    move.l #color4, d1
+    move.l #green, d1
     jsr setPenColour
-    move.l #color2, d1
+    move.l #green, d1
     jsr setFillColour
 
     move.l celltlX, d1
@@ -283,19 +290,22 @@ drawCell:
     move.l cellbrY, d4
     jsr drawRect
 
-    ; change colours
-    move.l #color4, d1
-    jsr setPenColour
-    move.l #color3, d1
-    jsr setFillColour
     ;---------------draw zone 1
+    ; change colours
+    move.l zone1pen, d1
+    jsr setPenColour
+    
     move.l zone1tlX, d1
     move.l zone1tlY, d2
     move.l zone1brX, d3
     move.l zone1brY, d4
     jsr drawAntHill
-
+    
     ;---------------draw zone 2
+    ; change colours
+    move.l zone2pen, d1
+    jsr setPenColour
+
     move.l zone2tlX, d1
     move.l zone2tlY, d2
     move.l zone2brX, d3
@@ -303,6 +313,10 @@ drawCell:
     jsr drawAntHill
     
     ;---------------draw zone 3
+    ; change colours
+    move.l zone3pen, d1
+    jsr setPenColour
+
     move.l zone3tlX, d1
     move.l zone3tlY, d2
     move.l zone3brX, d3
@@ -310,6 +324,10 @@ drawCell:
     jsr drawAntHill
 
     ;---------------draw zone 4
+    ; change colours
+    move.l zone4pen, d1
+    jsr setPenColour
+
     move.l zone4tlX, d1
     move.l zone4tlY, d2
     move.l zone4brX, d3
@@ -320,6 +338,10 @@ drawCell:
     RTS
 
 drawEnemyHill:
+    move.l #brown, d1
+    jsr setPenColour
+    move.l #dirt, d1
+    jsr setFillColour
     ; base: top middle
     move.l centerX, d1
     move.l #0, d2
@@ -338,14 +360,27 @@ drawEnemyHill:
     add.l #30, d4
     jsr drawRect
 
-    ; door opening (cover drawn later)
+    ; save d1
+    move.l d1, d5
+    move.l #dirt, d1
+    jsr setPenColour
+    move.l #brown, d1
+    jsr setFillColour
+    move.l d5, d1
 
+    ; door opening (cover drawn later)
+    
     add.l #50, d1
     sub.l #50, d3
     jsr drawRect
     rts
 
 drawEnemyDoor:
+    move.l #dirt, d1
+    jsr setPenColour
+    move.l #dirt, d1
+    jsr setFillColour
+
     ; base: top middle
     move.l centerX, d1
     move.l #0, d2
@@ -360,6 +395,16 @@ drawEnemyDoor:
     rts
 
 drawAntHill: ; d1 thru 4 are already assigned
+
+
+    ; store d1
+    move.l d1, d5
+
+    move.l #dirt, d1
+    jsr setFillColour
+
+    move.l d5, d1
+    
     jsr drawRect
     add #5, D1
     sub #2, D2
@@ -377,6 +422,18 @@ drawAntHill: ; d1 thru 4 are already assigned
     sub #2, D2
     sub #5, D3
     sub #12, D4
+    jsr drawRect
+
+    ; store d1
+    move.l d1, d5
+    move.l #brown, d1
+    jsr setFillColour
+
+    move.l d5, d1
+    add #7, D1
+    add #3, D2
+    sub #7, D3
+    sub #5, D4
     jsr drawRect
     
     rts
@@ -403,6 +460,13 @@ setFontColour:
 print:
     move #13, d0
     trap #15
+    rts
+
+printWithNum:
+    move #14, d0
+    trap #15
+    jsr printNum
+    jsr crlf
     rts
 
 printNum:
@@ -522,7 +586,7 @@ crlf:
 isFullScreen dc.w 1
 
 endMsg dc.b 'GAME OVER', 0
-pointsMsg dc.b 'POINTS:', 0
+antsRemainingMsg dc.b 'ANTS REMAINING: ', 0
 healthMsg dc.b 'HEALTH:', 0
 
 healthTlX ds.l 01

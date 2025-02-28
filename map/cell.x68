@@ -235,8 +235,21 @@ zoneHrad dc.l 22
 
 zoneMsg dc.b 'IN ZONE',0
 
-enterHill:
+; colours
+zone1pen ds.l 01
+zone2pen ds.l 01
+zone3pen ds.l 01
+zone4pen ds.l 01
 
+resetZonePens:
+    move.l #brown, zone1pen
+    move.l #brown, zone2pen
+    move.l #brown, zone3pen
+    move.l #brown, zone4pen
+    rts
+
+enterHill:
+    rts
 
 
 *~Font name~Courier New~

@@ -1,6 +1,8 @@
 ; intro
 introMsg1 dc.b 'The ant kingdom is under siege by a rival colony!',0
-                'We must defend ourselves against the invaders!',0
+                'We must defend ourselves!',0
+
+introMsg2 dc.b 'Defend all four of your anthills against the invaders.'
 
 antsMsg1 dc.b 'You have ', 0
 antsMsg2 dc.b ' ants remaining.', 0

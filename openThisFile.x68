@@ -3,14 +3,18 @@
 
 	org $1000
 start:
+    ; Initialise Sounds
+    BSR     JUMP_LOAD               ; Load Jump Sound into Memory
+    BSR     GAMEOVER_LOAD                ; Load Run Sound into Memory
+    BSR     HITHURT_LOAD               ; Load Opps (Collision) Sound into Memory
+    BSR     POWERUP_LOAD               ; Load Opps (Collision) Sound into Memory
+    BSR     LVLCHANGE_LOAD               ; Load Opps (Collision) Sound into Memory
+    BSR     HIT_LOAD
+    
     bra firstInit
 
 firstInit:
-    ; Enable the screen back buffer(see easy 68k help)
-	MOVE.B  #tcdbl,D0          ; 92 Enables Double Buffer
-    MOVE.B  #17,        D1          ; Combine Tasks
-	TRAP	#15                     ; Trap (Perform action)
-	
+    jsr enableDoubleBuffer
     bra nextInit
     
 nextInit:
@@ -89,6 +93,7 @@ aaes
  include "score.x68"
 
 	end start
+
 
 
 

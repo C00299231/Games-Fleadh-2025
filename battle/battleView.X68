@@ -82,13 +82,8 @@ Kkey           EQU         $4B         ; K ASCII Keycode
 *-----------------------------------------------------------
 INITRUN:
     move.w #2, lvlType
-    ; Initialise Sounds
-    BSR     JUMP_LOAD               ; Load Jump Sound into Memory
-    BSR     GAMEOVER_LOAD                ; Load Run Sound into Memory
-    BSR     HITHURT_LOAD               ; Load Opps (Collision) Sound into Memory
-    BSR     POWERUP_LOAD               ; Load Opps (Collision) Sound into Memory
-    BSR     LVLCHANGE_LOAD               ; Load Opps (Collision) Sound into Memory
-    BSR     HIT_LOAD
+    
+    
 
     BSR     stop_song
     BSR     BATTLE_SONG_LOAD
