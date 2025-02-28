@@ -2177,12 +2177,12 @@ FLYENEMY_HEIGHT   DC.W        12
 * so keep the files small. Used https://voicemaker.in/ to 
 * generate and Audacity to convert MP3 to WAV
 *-----------------------------------------------------------
-JUMP_WAV        DC.B    'jump.wav1',0        ; Jump Sound
-GAMEOVER_WAV    DC.B    'gameOver.wav1',0    ; Run Sound
-HITHURT_WAV     DC.B    'hitHurt.wav1',0     ; Collision Opps
-HIT_WAV         DC.B    'hit.wav1',0         ; Collision Opps
-POWERUP_WAV     DC.B    'powerUP.wav1',0     ; Collision Opps
-LEVELCHANGE_WAV DC.B    'levelChange.wav1',0 ; Collision Opps
+JUMP_WAV        DC.B    'jump.wav',0        ; Jump Sound
+GAMEOVER_WAV    DC.B    'gameOver.wav',0    ; Run Sound
+HITHURT_WAV     DC.B    'hitHurt.wav',0     ; Collision Opps
+HIT_WAV         DC.B    'hit.wav',0         ; Collision Opps
+POWERUP_WAV     DC.B    'powerUP.wav',0     ; Collision Opps
+LEVELCHANGE_WAV DC.B    'levelChange.wav',0 ; Collision Opps
 
 BATTLE_SONG_WAV DC.B    'antopia-battle.wav',0
 MAP_SONG_WAV    DC.B    'antopia-map.wav',0

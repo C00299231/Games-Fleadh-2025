@@ -1,0 +1,5 @@
+IMPORTANT NOTES:
+
+pause menu
+    resetting the game does NOT reset all variables. must fix
+    exiting the game must exit it for real

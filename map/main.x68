@@ -153,13 +153,21 @@ takeDmg:
 ; runs if game is cut short w/ ESC key
 end:
     jsr clearscreen
+    jsr drawBg
+
+    move #$1d0a, d1
+    jsr setCursor
+
+    lea quitMsg, a1
+    jsr print
+    jsr getBackBuffer
     
     lea endmsg, a1
     jsr print
 	simhalt
 
 testMsg dc.b 'test',0
-
+quitMsg dc.b 'Thank you for playing!',0
 
 inputkeys dc.b 20,87,65,83,68,0
 
