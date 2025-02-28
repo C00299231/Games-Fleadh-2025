@@ -113,6 +113,7 @@ INITRUN:
     ; Initial Position for Enemy
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
+    ADD.L   #100,D1
     MOVE.L  D1,         ENEMY_X     ; Enemy X Position
 
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
@@ -123,6 +124,7 @@ INITRUN:
     ; Initial Position for Flying Enemy
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
+    ADD.L   #100,D1
     MOVE.L  D1,         FLYINGENEMY_X     ; Enemy X Position
 
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
@@ -190,16 +192,21 @@ GAME:
 
     
 GAMELOOP:
-    ; Main Gameloop
-    MOVE.L      #3000,timer
-    MOVE.L      #0,D1
-    MOVE.B      #23,D0
-    TRAP        #15
-DELAY:     
 
-    SUBI.L      #1,timer            ; decrement timer by 1 to simulate a delay
-    TST.L       timer            ; compare 0 to the value of timer
-    BNE         DELAY               ; branch back to DELAY if the previous compare was not equal
+
+    MOVEQ		#8,d0				* get time in 1/100 ths seconds
+	TRAP		#15
+
+	MOVE.l	d1,-(sp)			* push time on the stack
+    MOVE.l	(sp)+,d7			* restore time in 1/100 ths from stack
+wait_100ms:
+	MOVEQ		#8,d0				* get time in 1/100 ths seconds
+	TRAP		#15
+
+	SUB.l		d7,d1				* subtract previous time from current time
+	CMP.b		#$02,d1			* compare with 9/100ths
+	BMI.s		wait_100ms			* loop if time not up yet
+
 
     BSR     BATTLEINPUT                   ; Check Keyboard Input
     BSR     checkPaused
@@ -435,18 +442,22 @@ MOVE_ENEMY:
         ADD.L   #1,FLYINGENEMY_Y
     ENDI
 
-    SUB.L   #04,        FLYINGENEMY_X
-    SUB.L   #03,        ENEMY_X     ; Move enemy by X Value
+    SUB.L   #03,        FLYINGENEMY_X
+    SUB.L   #02,        ENEMY_X     ; Move enemy by X Value
     RTS
 
 MOVE_ENEMY_L2:
-    SUB.L   #03,        FLYINGENEMY_X
-     CMP.L   #130,      FLYINGENEMY_X
+    SUB.L   #02,        FLYINGENEMY_X
+    CMP.L   #380,       FLYINGENEMY_Y
+    IF <GE> THEN
+        SUB.l   #02,    FLYINGENEMY_X
+    ENDI
+
+    CMP.L   #130,      FLYINGENEMY_X
     IF <LE> THEN
         ADD.L   #1,FLYINGENEMY_Y
     ENDI
-    SUB.L   #05,        ENEMY_X     ; Move enemy by X Value
-    MOVE.B  #04,        POINTS
+    SUB.L   #04,        ENEMY_X     ; Move enemy by X Value
     RTS
 
 MOVE_ENEMY_L3:
@@ -454,9 +465,8 @@ MOVE_ENEMY_L3:
     IF <LE> THEN
         ADD.L   #3,FLYINGENEMY_Y
     ENDI
-    SUB.L   #07,        FLYINGENEMY_X
-    SUB.L   #05,        ENEMY_X     ; Move enemy by X Value
-    MOVE.B  #05,        POINTS
+    SUB.L   #05,        FLYINGENEMY_X
+    SUB.L   #04,        ENEMY_X     ; Move enemy by X Value
     RTS
 
 MOVE_ENEMY_L4:
@@ -464,9 +474,8 @@ MOVE_ENEMY_L4:
     IF <LE> THEN
         ADD.L   #4,FLYINGENEMY_Y
     ENDI
-    SUB.L   #08,        FLYINGENEMY_X
-    SUB.L   #06,        ENEMY_X     ; Move enemy by X Value
-    MOVE.B  #10,        POINTS
+    SUB.L   #07,        FLYINGENEMY_X
+    SUB.L   #05,        ENEMY_X     ; Move enemy by X Value
     RTS
 *-----------------------------------------------------------
 * Subroutine    : Reset Enemy
@@ -885,7 +894,7 @@ DRAW_TREES:
     MOVE.L  #33,D2
     MOVE.L  #391,D3
     MOVE.L  #118,D4
-    MOVE.B  #88,D0
+    MOVE.B  #87,D0
     TRAP    #15
    
       ; Set Pixel Colors
@@ -902,7 +911,7 @@ DRAW_TREES:
     MOVE.L  #42,D2
     MOVE.L  #427,D3
     MOVE.L  #133,D4
-    MOVE.B  #88,D0
+    MOVE.B  #87,D0
     TRAP    #15
     
           ; Set Pixel Colors
@@ -919,7 +928,7 @@ DRAW_TREES:
     MOVE.L  #65,D2
     MOVE.L  #368,D3
     MOVE.L  #150,D4
-    MOVE.B  #88,D0
+    MOVE.B  #87,D0
     TRAP    #15
     
           ; Set Pixel Colors
@@ -932,11 +941,11 @@ DRAW_TREES:
     TRAP    #15
 
 ; 88 for elipse
-    MOVE.L  #337,D1
-    MOVE.L  #74,D2
-    MOVE.L  #428,D3
+    MOVE.L  #340,D1
+    MOVE.L  #76,D2
+    MOVE.L  #423,D3
     MOVE.L  #158,D4
-    MOVE.B  #88,D0
+    MOVE.B  #87,D0
     TRAP    #15
     
 
@@ -2130,6 +2139,7 @@ healthCooldown      DC.W        0
 timer           DC.L    0
 
 ;    END    START        ; last line of source
+
 
 
 *~Font name~Courier New~
