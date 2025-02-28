@@ -2,7 +2,7 @@
     CLR.L   D2                      ; Clear D2
 PLAYER_X_LTE_TO_ENEMY_X_PLUS_W:
     MOVE.L  PLAYER_X,   D1          ; Move Player X to D1
-    ADD.B   PLAYER_WIDTH,D1          ; Move Player Width to D1
+    ADD.L   #PLYR_W_INIT,D1          ; Move Player Width to D1
     MOVE.L  ENEMY_X,    D2          ; Move Enemy X to D2
     CMP.L   D1,         D2          ; Do the Overlap ?
     BLE     PLAYER_X_PLUS_W_LTE_TO_ENEMY_X  ; Less than or Equal ?
@@ -19,7 +19,6 @@ PLAYER_X_PLUS_W_LTE_TO_ENEMY_X:     ; Check player is not
 PLAYER_Y_LTE_TO_ENEMY_Y_PLUS_H:     
     MOVE.L  PLAYER_Y,   D1          ; Move Player Y to D1
     MOVE.L  ENEMY_Y,    D2          ; Move Enemy Y to D2
-    ;ADD.W   ENMY_H_INIT,D2          ; Set Enemy Height to D2
     CMP.L   D1,         D2          ; Do they Overlap ?
     BLE     PLAYER_Y_PLUS_H_LTE_TO_ENEMY_Y  ; Less than or Equal
     BRA     CHECK_FLYENEMY_COLLISIONS
@@ -37,7 +36,7 @@ CHECK_FLYENEMY_COLLISIONS:
     CLR.L   D2                      ; Clear D2
 PLX_LTE_TO_FLYENEMY_X_PLUS_W:
     MOVE.L  PLAYER_X,   D1
-    ADD.B   PLAYER_WIDTH,D1          ; Move Player Width to D1
+    ADD.L   #PLYR_W_INIT,D1          ; Move Player Width to D1
     MOVE.L  FLYINGENEMY_X,    D2                    ; Move Enemy X to D2
     CMP.L   D1,         D2                          ; Do the Overlap ?
     BLE     PLX_PLUS_W_LTE_TO_FLYENEMY_X      ; Less than or Equal ?
@@ -284,15 +283,18 @@ COLLISION_CHECK_DONE:               ; No Collision Update points
 ENEMYCOLLISION:
     CMP.B     #$01, IN_ENEMY
     BEQ     STILL_COLLIDED
-    CMP.B   #01, DRAW_HEALTHPACKS
-    BNE     RESET_HEALTH_POSITION
-    MOVE.B  #01, DRAW_HEALTHPACKS 
-    MOVE.B  #01, SPAWN_HEALTHPACKS 
     SUB.B   #1, antHealth
     MOVE.B  #$01, IN_ENEMY
     TST.B   antHealth
     BEQ     antKilled
     BSR     PLAY_HITHURT               ; Play Opps Wav
+    CMP.B   #01, DRAW_HEALTHPACKS
+    IF <NE> THEN    
+        BSR RESET_HEALTH_POSITION
+    ENDI
+
+    MOVE.B  #01, DRAW_HEALTHPACKS 
+    MOVE.B  #01, SPAWN_HEALTHPACKS 
     RTS                             ; Return to subroutine
 
 antKilled:
@@ -305,12 +307,22 @@ antKilled:
     RTS
 
 HEALTH_COLLISION:
+    ; skip if still collided
     CMP.B     #$01, IN_HPACK
     BEQ     STILL_COLLIDED
-    MOVE.B  #00, DRAW_HEALTHPACKS
+
+    CMP.W   #0, healthCooldown
+    IF <EQ> THEN
+        MOVE.W  #500, healthCooldown
+    ENDI
+
     BSR     PLAY_POWERUP               ; Play Opps Wav
+
     ADD.B   #1, antHealth
     CMP.B   #03, antHealth
     BGE     STOP_HPACK_SPAWN
+    
     MOVE.B  #$01, IN_HPACK
+    MOVE.L  #90, HEALTH_Y
+    
     RTS

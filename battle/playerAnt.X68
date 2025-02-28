@@ -7,6 +7,41 @@ PLYR_DFLT_V EQU         00          ; Default Player Velocity
 PLYR_JUMP_V EQU         -19          ; Player Jump Velocity
 PLYR_DFLT_G EQU         01          ; Player Default Gravity
 
+INIT_PLAYER:
+
+    ; Place the Player at the center of the screen
+    EOR.L    D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
+    DIVU    #02,        D1          ; divide by 2 for center on X Axis
+    MOVE.L  D1,         PLAYER_X    ; Players X Position
+
+    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
+    DIVU    #02,        D1          ; divide by 2 for center on Y Axis
+    MOVE.L  D1,         PLAYER_Y    ; Players Y Position
+
+        ; Set the player starting width and height
+    MOVE.B  #PLYR_W_INIT,        PLAYER_WIDTH ; Players Width
+    MOVE.B  #PLYR_H_INIT,        PLAYER_HEIGHT ; Players Width
+
+    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
+    DIVU    #02,        D1          ; divide by 2 for center on Y Axis
+    MOVE.L  D1,         PLAYER_Y    ; Players Y Position
+
+    ; Initialise Player Velocity
+    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.B  #PLYR_DFLT_V,D1         ; Init Player Velocity
+    MOVE.L  D1,         PLYR_VELOCITY
+
+    ; Initialise Player Gravity
+    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.L  #PLYR_DFLT_G,D1         ; Init Player Gravity
+    MOVE.L  D1,         PLYR_GRAVITY
+
+        ; Initialize Player on Ground
+    MOVE.L  #GND_TRUE,  PLYR_ON_GND ; Init Player on Ground
+    
 
 UPDATE_PLAYER:
     ; Update the Players Positon based on Velocity and Gravity
@@ -204,11 +239,11 @@ IS_THROWING:
 DRAW_THROW:
 
     ; Set Pixel Colors
-    MOVE.L  #DIRT,     D1          ; Set Background color
+    MOVE.L  #ACORN,     D1          ; Set Background color
     MOVE.B  #80,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
     ; Reset Pixel Colors
-    MOVE.L  #DIRT,     D1          ; Set Background color
+    MOVE.L  #ACORN,     D1          ; Set Background color
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
@@ -223,6 +258,38 @@ DRAW_THROW:
     ; Draw Acorn
     MOVE.B  #87,        D0          ; Draw Player
     TRAP    #15                     ; Trap (Perform action)
+    
+    ; Set Pixel Colors
+    MOVE.L  #ACORNHAT,     D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+    ; Reset Pixel Colors
+    MOVE.L  #ACORNHAT,     D1          ; Set Background color
+    MOVE.B  #81,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  THROW_X,D1
+    SUB.L   #2,D1
+    ADD.l   #2,D3
+    ADD.L   #1,D4
+    MOVE.L  D4,D2
+    SUB.L   #6,D2
+
+    ; Draw Acorn
+    MOVE.B  #87,        D0          ; Draw Player
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  THROW_X,D1
+    ADD.L   #6,D1
+    MOVE.L  D2,D4
+    SUB.l   #5,D2
+    MOVE.L  D1,D3
+    ADD.L   #4,D3
+
+    ; Draw Acorn
+    MOVE.B  #87,        D0          ; Draw Player
+    TRAP    #15                     ; Trap (Perform action)
+
     RTS                             ; Return to subroutine
 
 *-----------------DRAW respawn -----------------------------*
