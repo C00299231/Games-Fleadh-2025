@@ -65,9 +65,9 @@ MOVE_PLAYER_LEFT:
 
     MOVE.B  #LOOKLEFT,        PLAYER_DIR
     MOVE.L  PLAYER_X,   D1          ; Fetch Player X Position
-    SUB.L   #02,        D1          ; Move Player Left
+    SUB.L   #03,        D1          ; Move Player Left
     MOVE.L  D1,         PLAYER_X    ; Update Players X Position
-    SUB.L   #02,        ATTACK_X
+    SUB.L   #03,        ATTACK_X
     RTS                             ; Return to subroutine    
 
 ; Move Player to the right
@@ -78,9 +78,9 @@ MOVE_PLAYER_RIGHT:
     ENDI
     MOVE.B  #LOOKRIGHT,        PLAYER_DIR
     MOVE.L  PLAYER_X,   D1          ; Fetch Player X Position
-    ADD.L   #02,        D1          ; Move Player Right
+    ADD.L   #03,        D1          ; Move Player Right
     MOVE.L  D1,         PLAYER_X    ; Update Players X Position
-    ADD.L   #02,        ATTACK_X
+    ADD.L   #03,        ATTACK_X
     RTS                             ; Return to subroutine
 
 ; draw all player relevant data
