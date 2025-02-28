@@ -1,11 +1,11 @@
 DRAW_ENEMY:
     ; Set Pixel Colors
-    MOVE.L  ENEMYCOLOR,       D1          ; Set pen color
+    MOVE.L  #RED,       D1          ; Set pen color
     MOVE.B  #80,        D0          ; Task for pen Color
     TRAP    #15                     ; Trap (Perform action)
 
     ; Reset Pixel Colors
-    MOVE.L  ENEMYCOLOR,     D1          ; Set Background color
+    MOVE.L  #colorRed,     D1          ; Set Background color
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 

@@ -137,15 +137,8 @@ INITRUN:
     MOVE.L  D1,         FLYINGENEMY_Y     ; Enemy Y Position
     
     ; Initial Position for Health pack
-    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
-    SUB.L   #-10,       D1
-    MOVE.L  D1,         HEALTH_X     ; Enemy X Position
-
-    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
-    DIVU    #02,        D1          ; divide by 2 for center on Y Axis
-    MOVE.L  D1,         HEALTH_Y     ; Enemy Y Position
+    MOVE.L  #380,         HEALTH_X     ; Enemy X Position
+    MOVE.L  #90,         HEALTH_Y     ; Enemy Y Position
 
     MOVE.B     #100,    hillHP
 
@@ -173,7 +166,7 @@ INITRUN:
     MOVE.B  #00,        ENEMY_HIT
     MOVE.B  #00,        FLYENEMY_HIT
 
-    ADD.B   #10,        enemiesToDefeat
+    ADD.B   #20,        enemiesToDefeat
     MOVE.B  #0,         ENEMIES_DEFEATED
     MOVE.B  #0,         enemiesPassed
     MOVE.B  #4,         backToMapCount
@@ -339,8 +332,10 @@ stillPaused:
 * Description   : Main update loop update Player and Enemies
 *-----------------------------------------------------------
 UPDATE:
+    ; update player position
     BSR     UPDATE_PLAYER
     BSR     MOVE_THROW
+
     ; Move the Enemy
     CLR.L   D1                      ; Clear the contents of D0
     MOVE.L  ENEMY_X,    D1          ; Move the Enemy X Position to D0
@@ -356,12 +351,16 @@ UPDATE:
     BLE     RESET_FLYENEMY_POSITION    ; Reset Enemy if off Screen
 
 
-    ; Move health
-    CMP.L   #00,        HEALTH_X
-    BLE     RESET_HEALTH_POSITION
+    ; move health
     BSR     MOVE_HEALTHPACK
+    MOVE.B  #1, healthCooldownOver
+    CMP.W   #0,healthCooldown
+    IF <GT> THEN
+        SUBI.W  #1, healthCooldown
+        MOVE.B  #0, healthCooldownOver
+    ENDI
+    
 
-  
     BSR     CHECK_ATTACK_COOLDOWN
 
     TST.W   ATTACK_TIME
@@ -412,7 +411,16 @@ ATTACK_COOLDOWN_SUB:
     RTS                            
 
 MOVE_HEALTHPACK:
-    SUB.L   #02,        HEALTH_X
+    ; check if health is meant to spawn
+    TST.B   SPAWN_HEALTHPACKS
+    BEQ     CONTINUE
+    
+    ; check if health is on the
+    CMP.L   #240,       HEALTH_Y
+    BGE     CONTINUE
+
+    ; else
+    ADD.L   #01,        HEALTH_Y
     RTS
 
 *-----------------------------------------------------------
@@ -512,9 +520,7 @@ RESET_FLYENEMY_POSITION:
     
 RESET_HEALTH_POSITION:
     MOVE.B  #01,        DRAW_HEALTHPACKS
-    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
-    MOVE.L  D1,         HEALTH_X     ; healthpack X Position
+    MOVE.L  #90,        HEALTH_Y
     RTS
 
 CHECK_WAVE_CLEARED:
@@ -971,7 +977,24 @@ DRAW_PLYR_DATA:
     TRAP    #15                     ; Trap (Perform action)
     MOVE.B  #03,        D0          ; Display number at D1.L
     EOR.L   D1,D1
-    MOVE.B  antsRemaining,D1        ; Move X to D1.L
+    MOVE.B  DRAW_HEALTHPACKS,D1        ; Move X to D1.L
+    TRAP    #15                     ; Trap (Perform action)
+
+  ; Player 
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$0201,     D1          ; Col 02, Row 03
+    TRAP    #15                     ; Trap (Perform action)
+    LEA     SCORE_MSG,      A1          ; Velocity Message
+    MOVE    #13,        D0          ; No Line feed
+    TRAP    #15                     ; Trap (Perform action)
+    
+    ; Player Velocity
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$1301,     D1          ; Col 05, Row 03
+    TRAP    #15                     ; Trap (Perform action)
+    MOVE.B  #03,        D0          ; Display number at D1.L
+    EOR.L   D1,D1
+    MOVE.W  healthCooldown,D1        ; Move X to D1.L
     TRAP    #15                     ; Trap (Perform action)
 
     ; Player On Ground Message
@@ -988,7 +1011,7 @@ DRAW_PLYR_DATA:
     TRAP    #15                     ; Trap (Perform action)
     MOVE.B  #03,        D0          ; Display number at D1.L
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.B  ENEMIES_DEFEATED,     D1          ; Move Play on Ground ? to D1.L
+    MOVE.B  SPAWN_HEALTHPACKS,     D1          ; Move Play on Ground ? to D1.L
     TRAP    #15                     ; Trap (Perform action)
     
     ; number of enemies in wave msg
@@ -1417,20 +1440,13 @@ DRAW_FLYENEMY:
 
 DRAW_HEALTHPACK:
 
+    TST.B   healthCooldownOver
+    BEQ     DRAW_HEALTHPACK_DONE
     CMP.B   #00,     SPAWN_HEALTHPACKS
     BEQ     DRAW_HEALTHPACK_DONE
     CMP.B   #00,     DRAW_HEALTHPACKS
     BEQ     DRAW_HEALTHPACK_DONE
     
-    ;BSR     RANDOM_NUMBER
-    ;CMP.L   #$80,  D1
-    ;BGT     DRAW_HEALTHPACK_DONE
-
-    MOVE.B  #01,        DRAW_HEALTHPACKS
-    MOVE.W  SCREEN_H,     D1
-    DIVU.W    #02,        D1
-    AND.L   #$0000FFFF,   D1
-    MOVE.L  D1,         HEALTH_Y
     ; Set Pixel Colors
     MOVE.L  #BLACK,       D1          ; Set Background color
     MOVE.B  #80,        D0          ; Task for Background Color
@@ -1456,6 +1472,11 @@ DRAW_HEALTHPACK:
 
 DRAW_HEALTHPACK_DONE:
     MOVE.L  #-1, HEALTH_Y
+    MOVE.W  healthCooldown,D2
+    CMP.W   #0,  D2
+    IF <EQ> THEN
+        BSR     RESET_HEALTH_POSITION
+    ENDI
     RTS
 
 DRAW_FLOOR:
@@ -1533,7 +1554,9 @@ CHECK_COLLISIONS:
     include     "battle/battlecollisions.x68"     
 
 STOP_HPACK_SPAWN:
+    MOVE.B  #00, DRAW_HEALTHPACKS
     MOVE.B  #00, SPAWN_HEALTHPACKS
+
     RTS
 
 STILL_COLLIDED:
@@ -1992,8 +2015,9 @@ hillHP          DC.B      10
 
 IN_ENEMY        DC.B      00                  ; marker for if the player is in the enemy
 IN_HPACK        DC.B      00                  ; marker for if the player is in the health pack
-DRAW_HEALTHPACKS   DC.B  $00                  ; marker for if the healthpacks are showing
-SPAWN_HEALTHPACKS   DC.B  $00                  ; marker for if the healthpacks are spawning
+DRAW_HEALTHPACKS   DC.B     $00                  ; marker for if the healthpacks are showing
+SPAWN_HEALTHPACKS   DC.B    $00                  ; marker for if the healthpacks are spawning
+healthCooldownOver  DC.B    $00
 
 LEVEL_02        DC.W    2000
 LEVEL_03        DC.W    10000
@@ -2106,10 +2130,12 @@ MENU_SONG_WAV   dc.B    'antopia-menu.wav1',0
 
 respawnTime         dc.W        0
 backToMapCount      dc.b        3
+healthCooldown      DC.W        0
 *---*
 timer           DC.L    0
 
 ;    END    START        ; last line of source
+
 
 *~Font name~Courier New~
 *~Font size~10~

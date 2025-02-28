@@ -22,6 +22,8 @@ DIRT           EQU      $0019506D        ; Brown
 BROWN            EQU    $0019191E         ; Brown   
 SKY             EQU     $00E2D8BC         ; Sky Blue
 WING            EQU     $00E2D833
+ACORN           EQU     $00075A96
+ACORNHAT        EQU     $00043A60
 
 ; tree
 TRUNKO          EQU     $00083677

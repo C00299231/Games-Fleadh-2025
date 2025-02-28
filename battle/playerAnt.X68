@@ -239,11 +239,11 @@ IS_THROWING:
 DRAW_THROW:
 
     ; Set Pixel Colors
-    MOVE.L  #DIRT,     D1          ; Set Background color
+    MOVE.L  #ACORN,     D1          ; Set Background color
     MOVE.B  #80,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
     ; Reset Pixel Colors
-    MOVE.L  #DIRT,     D1          ; Set Background color
+    MOVE.L  #ACORN,     D1          ; Set Background color
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
@@ -258,6 +258,38 @@ DRAW_THROW:
     ; Draw Acorn
     MOVE.B  #87,        D0          ; Draw Player
     TRAP    #15                     ; Trap (Perform action)
+    
+    ; Set Pixel Colors
+    MOVE.L  #ACORNHAT,     D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+    ; Reset Pixel Colors
+    MOVE.L  #ACORNHAT,     D1          ; Set Background color
+    MOVE.B  #81,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  THROW_X,D1
+    SUB.L   #2,D1
+    ADD.l   #2,D3
+    ADD.L   #1,D4
+    MOVE.L  D4,D2
+    SUB.L   #6,D2
+
+    ; Draw Acorn
+    MOVE.B  #87,        D0          ; Draw Player
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  THROW_X,D1
+    ADD.L   #6,D1
+    MOVE.L  D2,D4
+    SUB.l   #5,D2
+    MOVE.L  D1,D3
+    ADD.L   #4,D3
+
+    ; Draw Acorn
+    MOVE.B  #87,        D0          ; Draw Player
+    TRAP    #15                     ; Trap (Perform action)
+
     RTS                             ; Return to subroutine
 
 *-----------------DRAW respawn -----------------------------*
