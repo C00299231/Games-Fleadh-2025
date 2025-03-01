@@ -240,16 +240,29 @@ zone1pen ds.l 01
 zone2pen ds.l 01
 zone3pen ds.l 01
 zone4pen ds.l 01
+zone1shake dc.l 0
+zone2shake dc.l 0
+zone3shake dc.l 0
+zone4shake dc.l 0
 
 resetZonePens:
-    move.l #midbrown, zone1pen
-    move.l #midbrown, zone2pen
-    move.l #midbrown, zone3pen
-    move.l #midbrown, zone4pen
+    tst affectHillTimer
+    if <NE> then
+        sub #1, affectHillTimer
+        rts
+    endi
+
+    jsr processShakes
+
+    move.l #brown, zone1pen
+    move.l #brown, zone2pen
+    move.l #brown, zone3pen
+    move.l #brown, zone4pen
     rts
 
 enterHill:
     rts
+
 
 
 *~Font name~Courier New~

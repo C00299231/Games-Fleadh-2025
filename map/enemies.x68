@@ -16,6 +16,9 @@ enemyY ds.l 01
 ; 3: bl
 
 initEnemy:
+    jsr affectHill
+
+
     move.l enemyStartX, enemyX
     move.l enemyStartY, enemyY
     jsr endInitEnemy

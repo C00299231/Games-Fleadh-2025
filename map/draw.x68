@@ -64,9 +64,9 @@ drawPause:
     tst.b isPaused
     beq endDrawPause
 
-    move.l #color5, d1
+    move.l #white, d1
     jsr setPenColour
-    move.l #color1, d1
+    move.l #brown, d1
     jsr setFillColour
 
     ; make sure font is current
@@ -322,6 +322,9 @@ drawCell:
     move.l zone1tlY, d2
     move.l zone1brX, d3
     move.l zone1brY, d4
+
+    add.l zone1shake, d2
+    add.l zone1shake, d4
     jsr drawAntHill
     
     ;---------------draw zone 2
@@ -333,6 +336,9 @@ drawCell:
     move.l zone2tlY, d2
     move.l zone2brX, d3
     move.l zone2brY, d4
+
+    add.l zone2shake, d2
+    add.l zone2shake, d4
     jsr drawAntHill
     
     ;---------------draw zone 3
@@ -344,6 +350,9 @@ drawCell:
     move.l zone3tlY, d2
     move.l zone3brX, d3
     move.l zone3brY, d4
+
+    add.l zone3shake, d2
+    add.l zone3shake, d4
     jsr drawAntHill
 
     ;---------------draw zone 4
@@ -355,6 +364,9 @@ drawCell:
     move.l zone4tlY, d2
     move.l zone4brX, d3
     move.l zone4brY, d4
+
+    add.l zone4shake, d2
+    add.l zone4shake, d4
     jsr drawAntHill
 
     ; done
@@ -461,6 +473,87 @@ drawAntHill: ; d1 thru 4 are already assigned
     
     rts
 
+affectHillTimer dc.w 0
+hillShakeScale equ 2
+affectHill:
+    move.w #5, affectHillTimer
+    tst.w enemyDir
+
+    if <eq> then
+        move.l #midbrown, zone1pen
+        move.l #hillShakeScale, zone1shake
+        rts
+    endi
+
+    cmp.w #1, enemyDir
+    if <eq> then
+        move.l #midbrown, zone2pen
+        move.l #hillShakeScale, zone2shake
+        rts
+    endi
+
+    cmp.w #2, enemyDir
+    if <eq> then
+        move.l #midbrown, zone3pen
+        move.l #hillShakeScale, zone3shake
+        rts
+    endi
+
+    cmp.w #3, enemyDir
+    if <eq> then
+        move.l #midbrown, zone4pen
+        move.l #hillShakeScale, zone4shake
+        rts
+    endi
+    rts
+
+processShakes:   ; shake all hills
+
+    clr.l d2
+    move.l zone1shake, d2
+    jsr processOneShake
+    move.l d2, zone1shake
+
+    move.l zone2shake, d2
+    jsr processOneShake
+    move.l d2, zone2shake
+
+    move.l zone3shake, d2
+    jsr processOneShake
+    move.l d2, zone3shake
+
+    move.l zone4shake, d2
+    jsr processOneShake
+    move.l d2, zone4shake
+    rts
+
+
+processOneShake: ; shake in d2
+    cmpi.l #2, d2
+    if <eq> then
+        move.l #$FFFFFFFE, d2
+        rts
+    endi
+
+    cmpi.l #$FFFFFFFE, d2
+    if <eq> then
+        move.l #1, d2
+        rts
+    endi
+
+    cmpi.l #1, d2
+    if <eq> then
+        move.l #$FFFFFFFF, d2
+        rts
+    endi
+
+    cmpi.l #$FFFFFFFF, d2
+    if <eq> then
+        move.l #0, d2
+        rts
+    endi
+
+    rts
 
 endDraw:
     rts
