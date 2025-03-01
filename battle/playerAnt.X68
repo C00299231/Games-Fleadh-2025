@@ -127,24 +127,26 @@ DRAW_PLAYER:
     MOVE.B  #87,        D0          ; Draw Player
     TRAP    #15                     ; Trap (Perform action)
 
-*-------------- draw antena -----------------*    
     ; change thickness
-    MOVE.l  #3,D1
-    MOVE.B  #93,D0
-    TRAP    #15
+        MOVE.l  #3,D1
+        MOVE.B  #93,D0
+        TRAP    #15
+*-------------- draw antena -----------------*    
+    ; draw if not currently attacking melee
+    tst.b   CURRENTLYATTACKING
+    IF  <EQ>    THEN
+        MOVE.L  PLAYER_X,D1
+        ADD.L   #22,D1
+        MOVE.L  PLAYER_Y,D2
+        SUB.L   #PLYR_H_INIT,D2
+        MOVE.L  D1,D3
+        ADD.L   #10,D3
+        MOVE.L  D2,D4
+        SUBI.L  #7,D4
 
-    MOVE.L  PLAYER_X,D1
-    ADD.L   #22,D1
-    MOVE.L  PLAYER_Y,D2
-    SUB.L   #PLYR_H_INIT,D2
-    MOVE.L  D1,D3
-    ADD.L   #10,D3
-    MOVE.L  D2,D4
-    SUBI.L  #7,D4
-
-    MOVE.B  #84,D0
-    TRAP    #15
-
+        MOVE.B  #84,D0
+        TRAP    #15
+    ENDI
 *-------------- draw leg 1 -----------------*
     MOVE.L  PLAYER_X,D1
     MOVE.L  PLAYER_Y,D2
@@ -209,8 +211,7 @@ IS_ATTACKING:
     BNE     DRAW_ATTACK
     RTS
 DRAW_ATTACK:
-
-    ; Set Pixel Colors
+ ; Set Pixel Colors
     MOVE.L  #WHITE,     D1          ; Set Background color
     MOVE.B  #80,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
@@ -219,13 +220,51 @@ DRAW_ATTACK:
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
+    MOVE.l  #3,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    MOVE.L  PLAYER_X,D1
+    ADD.L   #22,D1
+    MOVE.L  PLAYER_Y,D2
+    SUB.L   #7,D2
+    MOVE.L  D1,D3
+    MOVE.L  D2,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+    ; Set Pixel Colors
+    MOVE.L  #BLACK,     D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+    ; Reset Pixel Colors
+    MOVE.L  #BLACK,     D1          ; Set Background color
+    MOVE.B  #81,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  PLAYER_X,D1
+    ADD.L   #22,D1
+    MOVE.L  PLAYER_Y,D2
+    SUB.L   #10,D2
+    MOVE.L  D1,D3
+    MOVE.L  D2,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+    MOVE.l  #1,D1
+    MOVE.B  #93,D0
+    TRAP    #15
     MOVE.L  ATTACK_X,   D1          ; X
     MOVE.L  ATTACK_Y,   D2
+    SUB.L   #9,D2
     
     MOVE.L  ATTACK_X,   D3
     ADD.L   #ATTACK_WIDTH,   D3      ; Width
-    MOVE.L  ATTACK_Y,   D4 
-    SUB.L   #ATTACK_HEIGHT,   D4      ; Height          ; Y
+    SUB.L   #8,D3
+    MOVE.L  D2,   D4 
+    SUB.L   #3,   D4      ; Height          ; Y
     
     ; Draw Player
     MOVE.B  #87,        D0          ; Draw Player

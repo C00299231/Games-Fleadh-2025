@@ -40,7 +40,7 @@ PLX_LTE_TO_FLYENEMY_X_PLUS_W:
     MOVE.L  FLYINGENEMY_X,    D2                    ; Move Enemy X to D2
     CMP.L   D1,         D2                          ; Do the Overlap ?
     BLE     PLX_PLUS_W_LTE_TO_FLYENEMY_X      ; Less than or Equal ?
-    BRA     CHECK_HEALTH_COLLISIONS
+    BRA     CHECK_brute_COLLISIONS
 
 PLX_PLUS_W_LTE_TO_FLYENEMY_X:           ; Check player is not  
     MOVE.L  PLAYER_X,   D1
@@ -48,7 +48,7 @@ PLX_PLUS_W_LTE_TO_FLYENEMY_X:           ; Check player is not
     ADD.W   FLYENEMY_WIDTH,  D2                    ; Set Enemy width X + Width
     CMP.L   D1,         D2                  ; Do they OverLap ?
     BGE     PLY_LTE_TO_FLYENEMY_Y_PLUS_H  ; Less than or Equal
-    BRA     CHECK_HEALTH_COLLISIONS
+    BRA     CHECK_brute_COLLISIONS
 
 PLY_LTE_TO_FLYENEMY_Y_PLUS_H:     
     MOVE.L  PLAYER_Y,   D1          ; Move Player Y to D1
@@ -56,11 +56,47 @@ PLY_LTE_TO_FLYENEMY_Y_PLUS_H:
     ADD.W   FLYENEMY_HEIGHT,D2          ; Set Enemy Height to D2
     CMP.L   D1,         D2          ; Do they Overlap ?
     BGE     PLY_PLUS_H_LTE_TO_FLYENEMY_Y  ; Less than or Equal
-    BRA     CHECK_HEALTH_COLLISIONS
+    BRA     CHECK_brute_COLLISIONS
 
 PLY_PLUS_H_LTE_TO_FLYENEMY_Y:     ; Less than or Equal ?
     ADD.B   PLAYER_HEIGHT,D1          ; Add Player Height to D1
     MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Height to D2  
+    CMP.L   D1,         D2          ; Do they OverLap ?
+    BLE     ENEMYCOLLISION               ; Collision !
+    BRA     CHECK_brute_COLLISIONS
+*--------------------Checking for brute enemy collision---------------------
+CHECK_brute_COLLISIONS:
+    CMP.W   #0,     lvlIndex
+    BEQ     CHECK_HEALTH_COLLISIONS
+    CLR.L   D1                      ; Clear D1
+    CLR.L   D2                      ; Clear D2
+PLX_LTE_TO_brute_X_PLUS_W:
+    MOVE.L  PLAYER_X,   D1
+    ADD.L   #PLYR_W_INIT,D1          ; Move Player Width to D1
+    MOVE.L  BRUTE_X,    D2                    ; Move Enemy X to D2
+    CMP.L   D1,         D2                          ; Do the Overlap ?
+    BLE     PLX_PLUS_W_LTE_TO_brute_X      ; Less than or Equal ?
+    BRA     CHECK_HEALTH_COLLISIONS
+
+PLX_PLUS_W_LTE_TO_brute_X:           ; Check player is not  
+    MOVE.L  PLAYER_X,   D1
+    MOVE.L  BRUTE_X,    D2            ; Move Enemy X to D2
+    ADD.L   #BRUTE_W_INIT,  D2                    ; Set Enemy width X + Width
+    CMP.L   D1,         D2                  ; Do they OverLap ?
+    BGE     PLY_LTE_TO_brute_Y_PLUS_H  ; Less than or Equal
+    BRA     CHECK_HEALTH_COLLISIONS
+
+PLY_LTE_TO_brute_Y_PLUS_H:     
+    MOVE.L  PLAYER_Y,   D1          ; Move Player Y to D1
+    MOVE.L  BRUTE_Y,    D2          ; Move Enemy Y to D2
+    ADD.L   #BRUTE_H_INIT,D2          ; Set Enemy Height to D2
+    CMP.L   D1,         D2          ; Do they Overlap ?
+    BGE     PLY_PLUS_H_LTE_TO_brute_Y  ; Less than or Equal
+    BRA     CHECK_HEALTH_COLLISIONS
+
+PLY_PLUS_H_LTE_TO_brute_Y:     ; Less than or Equal ?
+    ADD.B   PLAYER_HEIGHT,D1          ; Add Player Height to D1
+    MOVE.L  BRUTE_Y,    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
     BLE     ENEMYCOLLISION               ; Collision !
     BRA     CHECK_HEALTH_COLLISIONS
@@ -144,7 +180,7 @@ ATK_X_LTE_TO_FLYENEMY_X_PLUS_W:
     MOVE.L  FLYINGENEMY_X,    D2                    ; Move Enemy X to D2
     CMP.L   D1,         D2                          ; Do the Overlap ?
     BLE     ATTACK_PLUS_W_LTE_TO_FLYENMY_X     ; Less than or Equal ?
-    BRA     CHECK_THROW_COLLISION
+    BRA     CHECK_ATTACK_BRUTE_COLLISIONS
 
 ATTACK_PLUS_W_LTE_TO_FLYENMY_X:           ; Check player is not  
     MOVE.L  ATTACK_X,   D1
@@ -152,7 +188,7 @@ ATTACK_PLUS_W_LTE_TO_FLYENMY_X:           ; Check player is not
     ADD.W   FLYENEMY_WIDTH,  D2                    ; Set Enemy width X + Width
     CMP.L   D1,         D2                  ; Do they OverLap ?
     BGE     ATK_LTE_TO_FLYENEMY_Y_PLUS_H  ; Less than or Equal
-    BRA     CHECK_THROW_COLLISION
+    BRA     CHECK_ATTACK_BRUTE_COLLISIONS
 
 ATK_LTE_TO_FLYENEMY_Y_PLUS_H:     
     MOVE.L  ATTACK_Y,   D1          ; Move Player Y to D1
@@ -160,13 +196,48 @@ ATK_LTE_TO_FLYENEMY_Y_PLUS_H:
     ADD.W   FLYENEMY_HEIGHT,D2          ; Set Enemy Height to D2
     CMP.L   D1,         D2          ; Do they Overlap ?
     BGE     ATK_PLUS_H_LTE_TO_FLYENEMY_Y  ; Less than or Equal
-    BRA     CHECK_THROW_COLLISION
+    BRA     CHECK_ATTACK_BRUTE_COLLISIONS
 
 ATK_PLUS_H_LTE_TO_FLYENEMY_Y:     ; Less than or Equal ?
     ADD.L   #ATTACK_HEIGHT,D1          ; Add Player Height to D1
     MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
     BLE     ATTACK_FLY_COLLISION               ; Collision !
+    BRA     CHECK_ATTACK_BRUTE_COLLISIONS
+
+*--------------------Checking for ATTACK BRUTE collision---------------------
+CHECK_ATTACK_BRUTE_COLLISIONS:
+    CLR.L   D1                      ; Clear D1
+    CLR.L   D2                      ; Clear D2
+ATK_X_LTE_TO_BRUTE_X_PLUS_W:
+    MOVE.L  ATTACK_X,   D1
+    ADD.L   #ATTACK_WIDTH,D1          ; Move Player Width to D1
+    MOVE.L  BRUTE_X,    D2                    ; Move Enemy X to D2
+    CMP.L   D1,         D2                          ; Do the Overlap ?
+    BLE     ATTACK_PLUS_W_LTE_TO_BRUTE_X     ; Less than or Equal ?
+    BRA     CHECK_THROW_COLLISION
+
+ATTACK_PLUS_W_LTE_TO_BRUTE_X:           ; Check player is not  
+    MOVE.L  ATTACK_X,   D1
+    MOVE.L  BRUTE_X,    D2            ; Move Enemy X to D2
+    ADD.L   #BRUTE_W_INIT,  D2                    ; Set Enemy width X + Width
+    CMP.L   D1,         D2                  ; Do they OverLap ?
+    BGE     ATK_LTE_TO_BRUTE_Y_PLUS_H  ; Less than or Equal
+    BRA     CHECK_THROW_COLLISION
+
+ATK_LTE_TO_BRUTE_Y_PLUS_H:     
+    MOVE.L  ATTACK_Y,   D1          ; Move Player Y to D1
+    MOVE.L  BRUTE_Y,    D2          ; Move Enemy Y to D2
+    ADD.L   #BRUTE_H_INIT,D2          ; Set Enemy Height to D2
+    CMP.L   D1,         D2          ; Do they Overlap ?
+    BGE     ATK_PLUS_H_LTE_TO_BRUTE_Y  ; Less than or Equal
+    BRA     CHECK_THROW_COLLISION
+
+ATK_PLUS_H_LTE_TO_BRUTE_Y:     ; Less than or Equal ?
+    ADD.L   #ATTACK_HEIGHT,D1          ; Add Player Height to D1
+    MOVE.L  BRUTE_Y,    D2          ; Move Enemy Height to D2  
+    CMP.L   D1,         D2          ; Do they OverLap ?
+    BLE     ATTACK_BRUTE_COLLISION               ; Collision !
     BRA     CHECK_THROW_COLLISION
 
 *--------------------Checking for THROW collision---------------------
@@ -214,7 +285,7 @@ THROW_X_LTE_TO_FLYENEMY_X_PLUS_W:
     MOVE.L  FLYINGENEMY_X,    D2                    ; Move Enemy X to D2
     CMP.L   D1,         D2                          ; Do the Overlap ?
     BLE     THROW_PLUS_W_LTE_TO_FLYENMY_X     ; Less than or Equal ?
-    BRA     COLLISION_CHECK_DONE
+    BRA     CHECK_THROW_BRUTE_COLLISIONS
 
 THROW_PLUS_W_LTE_TO_FLYENMY_X:           ; Check player is not  
     MOVE.L  THROW_X,   D1
@@ -222,7 +293,7 @@ THROW_PLUS_W_LTE_TO_FLYENMY_X:           ; Check player is not
     ADD.W   FLYENEMY_WIDTH,  D2                    ; Set Enemy width X + Width
     CMP.L   D1,         D2                  ; Do they OverLap ?
     BGE     TRW_LTE_TO_FLYENEMY_Y_PLUS_H  ; Less than or Equal
-    BRA     COLLISION_CHECK_DONE
+    BRA     CHECK_THROW_BRUTE_COLLISIONS
 
 TRW_LTE_TO_FLYENEMY_Y_PLUS_H:     
     MOVE.L  THROW_Y,   D1          ; Move Player Y to D1
@@ -230,13 +301,48 @@ TRW_LTE_TO_FLYENEMY_Y_PLUS_H:
     ADD.W   FLYENEMY_HEIGHT,D2          ; Set Enemy Height to D2
     CMP.L   D1,         D2          ; Do they Overlap ?
     BGE     TRW_PLUS_H_LTE_TO_FLYENEMY_Y  ; Less than or Equal
-    BRA     COLLISION_CHECK_DONE
+    BRA     CHECK_THROW_BRUTE_COLLISIONS
 
 TRW_PLUS_H_LTE_TO_FLYENEMY_Y:     ; Less than or Equal ?
     ADD.L   #THRW_H_INIT,D1          ; Add Player Height to D1
     MOVE.L  FLYINGENEMY_Y,    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
     BLE     ATTACK_FLY_COLLISION               ; Collision !
+    BRA     CHECK_THROW_BRUTE_COLLISIONS
+
+*--------------------Checking for THROW BRUTE collision---------------------
+CHECK_THROW_BRUTE_COLLISIONS:
+    CLR.L   D1                      ; Clear D1
+    CLR.L   D2                      ; Clear D2
+THROW_X_LTE_TO_BRUTE_X_PLUS_W:
+    MOVE.L  THROW_X,   D1
+    ADD.L   #THROW_WIDTH,D1          ; Move Player Width to D1
+    MOVE.L  BRUTE_X,    D2                    ; Move Enemy X to D2
+    CMP.L   D1,         D2                          ; Do the Overlap ?
+    BLE     THROW_PLUS_W_LTE_TO_BRUTE_X     ; Less than or Equal ?
+    BRA     COLLISION_CHECK_DONE
+
+THROW_PLUS_W_LTE_TO_BRUTE_X:           ; Check player is not  
+    MOVE.L  THROW_X,   D1
+    MOVE.L  BRUTE_X,    D2            ; Move Enemy X to D2
+    ADD.L   #BRUTE_W_INIT,  D2                    ; Set Enemy width X + Width
+    CMP.L   D1,         D2                  ; Do they OverLap ?
+    BGE     TRW_LTE_TO_BRUTE_Y_PLUS_H  ; Less than or Equal
+    BRA     COLLISION_CHECK_DONE
+
+TRW_LTE_TO_BRUTE_Y_PLUS_H:     
+    MOVE.L  THROW_Y,   D1          ; Move Player Y to D1
+    MOVE.L  BRUTE_Y,    D2          ; Move Enemy Y to D2
+    ADD.L   #BRUTE_H_INIT,D2          ; Set Enemy Height to D2
+    CMP.L   D1,         D2          ; Do they Overlap ?
+    BGE     TRW_PLUS_H_LTE_TO_BRUTE_Y  ; Less than or Equal
+    BRA     COLLISION_CHECK_DONE
+
+TRW_PLUS_H_LTE_TO_BRUTE_Y:     ; Less than or Equal ?
+    ADD.L   #THROW_HEIGHT,D1          ; Add Player Height to D1
+    MOVE.L  BRUTE_Y,    D2          ; Move Enemy Height to D2  
+    CMP.L   D1,         D2          ; Do they OverLap ?
+    BLE     ATTACK_BRUTE_COLLISION               ; Collision !
     BRA     COLLISION_CHECK_DONE
 
 
@@ -263,6 +369,23 @@ ATTACK_FLY_COLLISION:
     BSR     CHECK_ENEMIES_CLEARED
     RTS
 
+ATTACK_BRUTE_COLLISION:
+    TST.B   BRUTE_HIT
+    BNE     STILL_COLLIDED
+    BSR     PLAY_HIT
+
+    SUBQ.B  #1,BRUTE_HP
+    TST.B   BRUTE_HP
+    IF <EQ> THEN
+        MOVE.L  #400, BRUTE_Y
+        MOVE.B  #1,BRUTE_DEAD
+        BSR     CHECK_ENEMIES_CLEARED
+        BSR     CHECK_ENEMIES_CLEARED
+    ENDI
+
+    MOVE.B  #01,  BRUTE_HIT
+    RTS
+
 CHECK_ENEMIES_CLEARED:
     ADDI.B  #1,         ENEMIES_DEFEATED
     MOVE.B  ENEMIES_DEFEATED,D1
@@ -272,6 +395,7 @@ CHECK_ENEMIES_CLEARED:
 
 COLLISION_CHECK_DONE:               ; No Collision Update points
     CLR.B   IN_ENEMY
+    CLR.B   BRUTE_HIT
     CLR.B   IN_HPACK
     CLR.L   D1
     MOVE.B  POINTS,    D1          ; Move points upgrade to D1
@@ -310,6 +434,8 @@ HEALTH_COLLISION:
     ; skip if still collided
     CMP.B     #$01, IN_HPACK
     BEQ     STILL_COLLIDED
+    CMP.B     #3, antHealth
+    BEQ     STILL_COLLIDED
 
     CMP.W   #0, healthCooldown
     IF <EQ> THEN
@@ -326,3 +452,7 @@ HEALTH_COLLISION:
     MOVE.L  #90, HEALTH_Y
     
     RTS
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
