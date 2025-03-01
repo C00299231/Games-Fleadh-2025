@@ -20,7 +20,7 @@ increment: ; D6 permanently used up
     ;if <eq> then
     ;    add.l #1, d6
     ;endi
-    add.l #1, d6
+    ;add.l #1, d6
 
     bra endIncrement
 endIncrement:

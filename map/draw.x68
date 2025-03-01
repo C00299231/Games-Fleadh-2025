@@ -123,8 +123,8 @@ drawHealth:
     ;move.l healthBrX, d3
     move.l healthBrY, d4
 
-    lea maxHealth, a2
-    lea currentHealth, a3
+    move.l maxHealth, d5
+    move.l currentHealth, d6
 
     jsr drawModularHbar
     rts

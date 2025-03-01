@@ -41,7 +41,7 @@ ROW_LOOP:
     MOVE.W #0, D7         ; Column counter
 
 COL_LOOP:
-
+    
     EOR.L		d6,d6				* clear the longword
 	MOVE.b	(a3)+,d6			* get the blue byte
 	SWAP		d6				* move it to the high word
