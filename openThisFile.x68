@@ -71,7 +71,7 @@ titleLoop:
 
 title1Msg dc.b '- ANT-TOPIA -',0
 
-title2msg dc.b 'Press "enter" to start...',0
+title2msg dc.b 'Press "enter/(A)" to start...',0
 
 ; include other fila
 aaes 
@@ -96,6 +96,11 @@ aaes
 
 
 
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
 
 *~Font name~Courier New~
 *~Font size~10~

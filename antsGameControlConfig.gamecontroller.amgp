@@ -4,8 +4,8 @@
     <sdlname>PDP Wired Fight Pad Pro for Nintendo Switch</sdlname>
     <!--The Unique ID for a joystick is included for informational purposes only.-->
     <uniqueID>030080376f0e0000850100007700680036953890000200B64286234</uniqueID>
-    <stickAxisAssociation index="1" xAxis="1" yAxis="2"/>
     <stickAxisAssociation index="2" xAxis="3" yAxis="4"/>
+    <stickAxisAssociation index="1" xAxis="1" yAxis="2"/>
     <vdpadButtonAssociations index="1">
         <vdpadButtonAssociation axis="0" button="12" direction="1"/>
         <vdpadButtonAssociation axis="0" button="13" direction="4"/>
@@ -13,50 +13,16 @@
         <vdpadButtonAssociation axis="0" button="15" direction="2"/>
     </vdpadButtonAssociations>
     <names>
-        <controlstickname index="1">L Stick</controlstickname>
-        <controlstickname index="2">R Stick</controlstickname>
+        <controlstickname index="2">Stick 2</controlstickname>
+        <controlstickname index="1">Stick 1</controlstickname>
     </names>
     <sets>
         <set index="1">
-            <stick index="1">
-                <stickbutton index="5">
-                    <slots>
-                        <slot>
-                            <code>0x53</code>
-                            <mode>keyboard</mode>
-                        </slot>
-                    </slots>
-                </stickbutton>
-                <stickbutton index="1">
-                    <slots>
-                        <slot>
-                            <code>0x57</code>
-                            <mode>keyboard</mode>
-                        </slot>
-                    </slots>
-                </stickbutton>
-                <stickbutton index="7">
-                    <slots>
-                        <slot>
-                            <code>0x41</code>
-                            <mode>keyboard</mode>
-                        </slot>
-                    </slots>
-                </stickbutton>
+            <stick index="2">
                 <stickbutton index="3">
                     <slots>
                         <slot>
-                            <code>0x44</code>
-                            <mode>keyboard</mode>
-                        </slot>
-                    </slots>
-                </stickbutton>
-            </stick>
-            <stick index="2">
-                <stickbutton index="5">
-                    <slots>
-                        <slot>
-                            <code>0x1000015</code>
+                            <code>0x1000014</code>
                             <mode>keyboard</mode>
                         </slot>
                     </slots>
@@ -69,6 +35,14 @@
                         </slot>
                     </slots>
                 </stickbutton>
+                <stickbutton index="5">
+                    <slots>
+                        <slot>
+                            <code>0x1000015</code>
+                            <mode>keyboard</mode>
+                        </slot>
+                    </slots>
+                </stickbutton>
                 <stickbutton index="7">
                     <slots>
                         <slot>
@@ -77,28 +51,46 @@
                         </slot>
                     </slots>
                 </stickbutton>
-                <stickbutton index="3">
-                    <slots>
-                        <slot>
-                            <code>0x1000014</code>
-                            <mode>keyboard</mode>
-                        </slot>
-                    </slots>
-                </stickbutton>
             </stick>
-            <dpad index="1">
-                <dpadbutton index="2">
+            <stick index="1">
+                <stickbutton index="3">
                     <slots>
                         <slot>
                             <code>0x44</code>
                             <mode>keyboard</mode>
                         </slot>
                     </slots>
-                </dpadbutton>
-                <dpadbutton index="1">
+                </stickbutton>
+                <stickbutton index="1">
                     <slots>
                         <slot>
                             <code>0x57</code>
+                            <mode>keyboard</mode>
+                        </slot>
+                    </slots>
+                </stickbutton>
+                <stickbutton index="5">
+                    <slots>
+                        <slot>
+                            <code>0x53</code>
+                            <mode>keyboard</mode>
+                        </slot>
+                    </slots>
+                </stickbutton>
+                <stickbutton index="7">
+                    <slots>
+                        <slot>
+                            <code>0x41</code>
+                            <mode>keyboard</mode>
+                        </slot>
+                    </slots>
+                </stickbutton>
+            </stick>
+            <dpad index="1">
+                <dpadbutton index="8">
+                    <slots>
+                        <slot>
+                            <code>0x41</code>
                             <mode>keyboard</mode>
                         </slot>
                     </slots>
@@ -111,21 +103,45 @@
                         </slot>
                     </slots>
                 </dpadbutton>
-                <dpadbutton index="8">
+                <dpadbutton index="1">
                     <slots>
                         <slot>
-                            <code>0x41</code>
+                            <code>0x57</code>
+                            <mode>keyboard</mode>
+                        </slot>
+                    </slots>
+                </dpadbutton>
+                <dpadbutton index="2">
+                    <slots>
+                        <slot>
+                            <code>0x44</code>
                             <mode>keyboard</mode>
                         </slot>
                     </slots>
                 </dpadbutton>
             </dpad>
-            <trigger index="6">
-                <throttle>positivehalf</throttle>
-            </trigger>
             <trigger index="5">
                 <throttle>positivehalf</throttle>
             </trigger>
+            <trigger index="6">
+                <throttle>positivehalf</throttle>
+            </trigger>
+            <button index="11">
+                <slots>
+                    <slot>
+                        <code>0x4c</code>
+                        <mode>keyboard</mode>
+                    </slot>
+                </slots>
+            </button>
+            <button index="10">
+                <slots>
+                    <slot>
+                        <code>0x4b</code>
+                        <mode>keyboard</mode>
+                    </slot>
+                </slots>
+            </button>
             <button index="5">
                 <slots>
                     <slot>
@@ -135,6 +151,22 @@
                 </slots>
             </button>
             <button index="7">
+                <slots>
+                    <slot>
+                        <code>0x1000000</code>
+                        <mode>keyboard</mode>
+                    </slot>
+                </slots>
+            </button>
+            <button index="2">
+                <slots>
+                    <slot>
+                        <code>0x20</code>
+                        <mode>keyboard</mode>
+                    </slot>
+                </slots>
+            </button>
+            <button index="1">
                 <slots>
                     <slot>
                         <code>0x1000004</code>
