@@ -396,7 +396,10 @@ UPDATE:
     MOVE.B  #00,        CURRENTLYATTACKING
     MOVE.L  #480,        ATTACK_Y
 
-    
+    TST.B   hillHurtTimer
+    IF <NE> THEN
+        SUB.B   #1,hillHurtTimer
+    ENDI
 
     RTS                             ; Return to subroutine  
 
@@ -565,9 +568,7 @@ RESET_BRUTE_POSITION:
     TST.B     BRUTE_DEAD
     IF <EQ> THEN        ; big enemy has not been killed
         BSR   damage_hill
-        BSR   damage_hill
-        BSR   damage_hill
-        
+        BSR   damage_hill        
     ENDI
     MOVE.B  #3,         BRUTE_HP
     MOVE.B  #0,         BRUTE_HIT
@@ -592,6 +593,7 @@ CHECK_WAVE_CLEARED:
 damage_hill:
     sub.b  #10,hillHP
     sub.l   #15,currentHealth
+    move.b  #10,hillHurtTimer
     CMP.b   #0,hillHP
     BLE     HILL_LOST
     RTS
@@ -653,7 +655,6 @@ DRAWBATTLE:
 
     BSR     DRAW_BACKGROUND        
     BSR     DRAW_HILL 
-    BSR     DRAW_PLYR_DATA          ; Draw Draw Score, HUD, Player X and Y
     BSR     DRAW_TREES
     BSR     DRAW_ENTRANCE_HOLE
     BSR     DRAW_ENEMY              ; Draw Enemy
@@ -663,6 +664,7 @@ DRAWBATTLE:
     BSR     DRAW_ENTRANCE
     BSR     DRAW_PLAYER             ; Draw Player
     BSR     DRAW_FLOOR              ; Draw Floor
+    BSR     DRAW_PLYR_DATA          ; Draw Draw Score, HUD, Player X and Y
     BSR     drawHillHealth         ; draw hill hp
     BSR     drawPause
     RTS                             ; Return to subroutine
@@ -692,72 +694,6 @@ drawHillHealth:
 
 DRAW_HILL:
 
-    ; Set Pixel Colors
-    MOVE.L  #DIRT,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
-
-    MOVE.L  #DIRT,     D1
-    MOVE.B  #81,        D0
-    TRAP    #15
-
-    ; Set X, Y, X2, and Y2
-    MOVE.L  #0,   D1          ; X
-    MOVE.L  #241,  D2          ; Y
-    MOVE.L  #30,   D3           
-    MOVE.L  #120,   D4     
-    
-    MOVE.B  #87,        D0          ; Draw 
-    TRAP    #15                     ; Trap (Perform action)
-    
-     ; Set X, Y, X2, and Y2
-    MOVE.L  #0,   D1          ; X
-    MOVE.L  #241,  D2          ; Y
-    MOVE.L  #60,   D3           
-    MOVE.L  #135,   D4 
-    
-    
-    MOVE.B  #87,        D0          ; Draw
-    TRAP    #15                     ; Trap (Perform action)
-
-     ; Set X, Y, X2, and Y2
-    MOVE.L  #0,   D1          ; X
-    MOVE.L  #241,  D2          ; Y
-    MOVE.L  #80,   D3           
-    MOVE.L  #150,   D4 
-    
-    
-    MOVE.B  #87,        D0          ; Draw 
-    TRAP    #15                     ; Trap (Perform action)
-
-     ; Set X, Y, X2, and Y2
-    MOVE.L  #0,   D1          ; X
-    MOVE.L  #241,  D2          ; Y
-    MOVE.L  #100,   D3           
-    MOVE.L  #200,   D4 
-    
-    
-    MOVE.B  #87,        D0          ; Draw 
-    TRAP    #15                     ; Trap (Perform action)
-
-    MOVE.L  #BLACK,     D1
-    MOVE.B  #81,        D0
-    TRAP    #15
-    MOVE.L  #BLACK,     D1
-    MOVE.B  #80,        D0
-    TRAP    #15
-
-    ; Set X, Y, X2, and Y2
-    MOVE.L  #5,   D1          ; X
-    MOVE.L  #130,  D2          ; Y
-    MOVE.L  #25,   D3           
-    MOVE.L  #120,   D4     
-
-    
-    MOVE.B  #87,        D0          ; Draw 
-    TRAP    #15                     ; Trap (Perform action)
-
-    RTS
 
     ; Set Pixel Colors
     MOVE.L  #DIRT,     D1          ; Set Background color
@@ -768,6 +704,19 @@ DRAW_HILL:
     MOVE.B  #81,        D0
     TRAP    #15
 
+    CMP.B   #0, hillHurtTimer
+    IF <NE> THEN
+     
+        MOVE.L  #MIDBROWN,     D1          ; Set Background color
+        MOVE.B  #80,        D0          ; Task for Background Color
+        TRAP    #15                     ; Trap (Perform action)
+
+        MOVE.L  #MIDBROWN,     D1
+        MOVE.B  #81,        D0
+        TRAP    #15
+    ENDI
+
+     
     ; Set X, Y, X2, and Y2
     MOVE.L  #0,   D1          ; X
     MOVE.L  #241,  D2          ; Y
@@ -835,6 +784,19 @@ DRAW_ENTRANCE:
     MOVE.L  #DIRT,     D1
     MOVE.B  #81,        D0
     TRAP    #15
+
+    
+    CMP.B   #0, hillHurtTimer
+    IF <NE> THEN
+            ; Set Pixel Colors
+        MOVE.L  #MIDBROWN,     D1          ; Set Background color
+        MOVE.B  #80,        D0          ; Task for Background Color
+        TRAP    #15                     ; Trap (Perform action)
+
+        MOVE.L  #MIDBROWN,     D1
+        MOVE.B  #81,        D0
+        TRAP    #15
+    ENDI
 
     ; Set X, Y, X2, and Y2
     MOVE.L  #0,   D1          ; X
@@ -1022,16 +984,34 @@ DRAW_PLYR_DATA:
     EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
     EOR.L    D2,D2
 
-    MOVE.L  #BLACK,     D1
-    MOVE.B  #21,        D0          ; Set Text Color
+    MOVE.L  #color5,D1
+    MOVE.B  #tcFont,D0
+    MOVE.L  #00090000,D2
+    TRAP    #15
+
+    MOVE.L  #deepgreen,D1
+    MOVE.B  #tcPenFil,D0
+    TRAP    #15
+
+      ; Show antHealth msg
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$0216,     D1          ; Col 02, Row 06
+    TRAP    #15                     ; Trap (Perform action)
+    LEA     antHealth_MSG,   A1          ; Draw
+    MOVE    #13,        D0          ; No Line feed
+    TRAP    #15                     ; Trap (Perform action)  
+    
+    ; Show antHealth msg
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$1716,     D1          ; Col 30, Row 1
+    TRAP    #15                     ; Trap (Perform action)   
+    EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.B  antHealth,      D1          ; Move Key Pressed to D1
+    MOVE.B  #03,        D0          ; Display the contents of D1
     TRAP    #15                     ; Trap (Perform action)
 
-    MOVE.L  #SKY,       D1          ; Set Text Color
-    MOVE.L  #81,        D0          ; Set Text Color
-    TRAP    #15                     ; Trap (Perform action)
-    ; Player 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0203,     D1          ; Col 02, Row 03
+    MOVE.W  #$0217,     D1          ; Col 02, Row 03
     TRAP    #15                     ; Trap (Perform action)
     LEA     antsRem_MSG,      A1          ; Velocity Message
     MOVE    #13,        D0          ; No Line feed
@@ -1039,39 +1019,22 @@ DRAW_PLYR_DATA:
     
     ; Player Velocity
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1703,     D1          ; Col 05, Row 03
+    MOVE.W  #$1717,     D1          ; Col 05, Row 03
     TRAP    #15                     ; Trap (Perform action)
     MOVE.B  #03,        D0          ; Display number at D1.L
     EOR.L   D1,D1
-    MOVE.B  antsRemaining,D1        ; Move X to D1.L
+    MOVE.B  hillHurtTimer,D1        ; Move X to D1.L
     TRAP    #15                     ; Trap (Perform action)
 
-  ; Player 
-    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    ;MOVE.W  #$0201,     D1          ; Col 02, Row 03
-    ;TRAP    #15                     ; Trap (Perform action)
-    ;LEA     SCORE_MSG,      A1          ; Velocity Message
-    ;MOVE    #13,        D0          ; No Line feed
-    ;TRAP    #15                     ; Trap (Perform action)
-    ;
-    ;; Player Velocity
-    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    ;MOVE.W  #$1301,     D1          ; Col 05, Row 03
-    ;TRAP    #15                     ; Trap (Perform action)
-    ;MOVE.B  #03,        D0          ; Display number at D1.L
-    ;EOR.L   D1,D1
-    ;MOVE.B  BRUTE_HP,D1        ; Move X to D1.L
-    ;TRAP    #15                     ; Trap (Perform action)
-
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0204,     D1          ; Col 10, Row 03
+    MOVE.W  #$0218,     D1          ; Col 10, Row 03
     TRAP    #15                     ; Trap (Perform action)
     LEA     ENEMIESDEAD_MSG,    A1          ; On Ground Message
     MOVE    #13,        D0          ; No Line feed
     TRAP    #15                     ; Trap (Perform action)
     
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1704,     D1          ; Col 06, Row 04
+    MOVE.W  #$1718,     D1          ; Col 06, Row 04
     TRAP    #15                     ; Trap (Perform action)
     MOVE.B  #03,        D0          ; Display number at D1.L
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
@@ -1080,7 +1043,7 @@ DRAW_PLYR_DATA:
     
     ; number of enemies in wave msg
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0205,     D1          ; Col 10, Row 03
+    MOVE.W  #$0219,     D1          ; Col 10, Row 03
     TRAP    #15                     ; Trap (Perform action)
     LEA     ENEMYCOUNT_MSG,    A1          ; On Ground Message
     MOVE    #13,        D0          ; No Line feed
@@ -1088,46 +1051,13 @@ DRAW_PLYR_DATA:
     
     ; number of enemies in wave 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1705,     D1          ; Col 06, Row 04
+    MOVE.W  #$1719,     D1          ; Col 06, Row 04
     TRAP    #15                     ; Trap (Perform action)
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.B  enemiesToDefeat,     D1          ; Move Play on Ground ? to D1.L
     MOVE.B  #03,        D0          ; Display number at D1.L
     TRAP    #15                     ; Trap (Perform action)
 
-    ; Show Keys Pressed
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$2001,     D1          ; Col 20, Row 1
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     KEYCODE_MSG, A1         ; Keycode
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)
-
-    ; Show KeyCode
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$3001,     D1          ; Col 30, Row 1
-    TRAP    #15                     ; Trap (Perform action)    
-    MOVE.L  CURRENT_KEY,D1          ; Move Key Pressed to D1
-    MOVE.B  #03,        D0          ; Display the contents of D1
-    TRAP    #15                     ; Trap (Perform action)
-
-    
-    ; Show antHealth msg
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0202,     D1          ; Col 02, Row 06
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     antHealth_MSG,   A1          ; Draw
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)  
-    
-    ; Show antHealth msg
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1702,     D1          ; Col 30, Row 1
-    TRAP    #15                     ; Trap (Perform action)   
-    EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.B  antHealth,      D1          ; Move Key Pressed to D1
-    MOVE.B  #03,        D0          ; Display the contents of D1
-    TRAP    #15                     ; Trap (Perform action)
 
     RTS
 *-----------------------------------------------------------
@@ -2258,6 +2188,7 @@ MENU_SONG_WAV   dc.B    'antopia-menu.wav1',0
 respawnTime         dc.W        0
 backToMapCount      dc.b        3
 healthCooldown      DC.W        0
+hillHurtTimer       dc.b        0
 *---*
 timer           DC.L    0
 
