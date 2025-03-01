@@ -3,7 +3,7 @@
 ; first init for map
 mapInit:
     move.w #1, lvlType
-    move.w #0, lvlIndex
+    move.w #3, lvlIndex
 
     lea     hillHPArray,a6
 
@@ -36,6 +36,7 @@ mapInit:
 mapNotFirstInit:
 
     move.b  hillHP,(a6)+
+
     ; reset font size and colour
     MOVE.L    #color5,D1
     MOVE.L  #00090000,D2

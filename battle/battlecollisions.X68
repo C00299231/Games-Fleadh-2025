@@ -451,6 +451,16 @@ HEALTH_COLLISION:
     MOVE.L  #90, HEALTH_Y
     
     RTS
+
+STOP_HPACK_SPAWN:
+    MOVE.B  #00, DRAW_HEALTHPACKS
+    MOVE.B  #00, SPAWN_HEALTHPACKS
+
+    RTS
+
+STILL_COLLIDED:
+    RTS
+    
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~

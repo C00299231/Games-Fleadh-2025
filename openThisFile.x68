@@ -11,6 +11,7 @@ start:
     BSR     LVLCHANGE_LOAD               ; Load Opps (Collision) Sound into Memory
     BSR     HIT_LOAD
     BSR     ROAR_LOAD
+    BSR     HILLHURT_LOAD
         
     bra firstInit
 
@@ -23,6 +24,17 @@ nextInit:
     jsr stop_song
     jsr MENU_SONG_LOAD
     jsr play_song
+
+    move.b  #0,enemiesToDefeat
+    lea     hillHPArray,a1
+    move.b  #100,(a1)+
+    move.b  #100,(a1)+
+    move.b  #100,(a1)+
+    move.b  #100,(a1)+
+    clr.l   perfectDefenceAmount
+    clr.l   totalKills
+    move.b  #5,antsRemaining
+    move.B  #0,totalHillsDefended
 
 	move.w #0, lvlType
     
@@ -103,6 +115,7 @@ aaes
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 *~Font name~Courier New~
 *~Font size~10~

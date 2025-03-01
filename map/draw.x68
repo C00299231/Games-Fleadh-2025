@@ -460,7 +460,7 @@ drawModularHbar:
     move.l #brown, d1
     jsr setFillColour
 
-    ; create rect
+    ; create rect   
     move.l d3, d1 ; return d3 to d1
     add.l d5, d3
     jsr drawUiRect
