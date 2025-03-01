@@ -5,6 +5,8 @@ mapInit:
     move.w #1, lvlType
     move.w #0, lvlIndex
 
+    lea     hillHPArray,a6
+
     jsr stop_song
     jsr MAP_SONG_LOAD
     jsr play_song
@@ -33,6 +35,7 @@ mapInit:
 ; subsequent inits for map
 mapNotFirstInit:
 
+    move.b  hillHP,(a6)+
     ; reset font size and colour
     MOVE.L    #color5,D1
     MOVE.L  #00090000,D2
@@ -204,7 +207,7 @@ screenW        DS.w    01  ; Reserve Space for Screen Width
 screenH        DS.w    01  ; Reserve Space for Screen Height
 
 lvlIndex dc.w 0
-
+hillHPArray     DC.B    100,100,100,100
 
 
 
