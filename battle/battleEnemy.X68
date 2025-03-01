@@ -140,7 +140,7 @@ DRAW_BRUTEENEMY:
     *-------------- draw BRUTE body -----------------*
     MOVE.L  BRUTE_X,   D1          ; X
     MOVE.L  BRUTE_Y,   D2
-    SUBQ.L  #4,D2
+    SUBQ.L  #7,D2
 
     MOVE.L  BRUTE_X,   D3
     ADD.L   #BRUTE_W_INIT, D3  
@@ -156,9 +156,9 @@ DRAW_BRUTEENEMY:
     MOVE.L  D1,   D3
     ADD.L   #BRUTE_W_INIT,D1
     MOVE.L  BRUTE_Y,   D2
-    SUBQ.L  #5,D2
+    SUBQ.L  #7,D2
     MOVE.L  BRUTE_X,   D3
-    ADDI.L   #22,D3
+    ADDI.L   #30,D3
     
     MOVE.L  BRUTE_Y,   D4
     SUB.L   #BRUTE_H_INIT,   D4      ; Height          ; Y
@@ -192,30 +192,30 @@ DRAW_BRUTEENEMY:
     MOVE.L  D1,D3
     ADD.L   #4,D3
     MOVE.L  D2,D4
-    SUBI.L  #5,D4
+    SUBI.L  #7,D4
 
     MOVE.B  #84,D0
     TRAP    #15
 
 *-------------- draw BRUTE leg 2 -----------------*
     MOVE.L  BRUTE_X,D1
-    ADD.L   #20,D1
+    ADD.L   #24,D1
     MOVE.L  BRUTE_Y,D2
     MOVE.L  D1,D3
     MOVE.L  D2,D4
-    SUBI.L  #5,D4
+    SUBI.L  #7,D4
 
     MOVE.B  #84,D0
     TRAP    #15
 
 *-------------- draw BRUTE leg 3 -----------------*
     MOVE.L  BRUTE_X,D1
-    ADD.L   #32,D1
+    ADD.L   #42,D1
     MOVE.L  BRUTE_Y,D4
     MOVE.L  D1,D3
     ADD.L   #3,D3
     MOVE.L  D4,D2
-    SUBI.L  #5,D2
+    SUBI.L  #7,D2
 
     MOVE.B  #84,D0
     TRAP    #15
@@ -227,16 +227,15 @@ DRAW_BRUTEENEMY:
 
 *-------------- draw BRUTE eye -----------------*
     ; change thickness
-    MOVE.l  #3,D1
+    MOVE.l  #4,D1
     MOVE.B  #93,D0
     TRAP    #15
 
     MOVE.L  BRUTE_X,D1
-    ADD.L   #4,D1
+    ADD.L   #7,D1
     MOVE.L  BRUTE_Y,D2
-    SUB.L   #13,D2
+    SUB.L   #17,D2
     MOVE.L  D1,D3
-    ADDQ.L  #1,D3
     MOVE.L  D2,D4
 
     MOVE.B  #84,D0

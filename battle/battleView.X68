@@ -50,8 +50,8 @@ SONG_INDEX equ          06
 ENMY_W_INIT EQU         27          ; Enemy initial Width
 ENMY_H_INIT EQU         13          ; Enemy initial Height
 
-BRUTE_W_INIT EQU         40          ; BRute Enemy initial Width
-BRUTE_H_INIT EQU         18          ; Brute Enemy initial Height
+BRUTE_W_INIT EQU         50          ; BRute Enemy initial Width
+BRUTE_H_INIT EQU         25          ; Brute Enemy initial Height
 
 FLY_ENMY_W_INIT  EQU         30          ; Enemy initial Width
 FLY_ENMY_H_INIT  EQU         13          ; Enemy initial Height
@@ -1033,25 +1033,25 @@ DRAW_PLYR_DATA:
     TRAP    #15                     ; Trap (Perform action)
     MOVE.B  #03,        D0          ; Display number at D1.L
     EOR.L   D1,D1
-    MOVE.B  DRAW_HEALTHPACKS,D1        ; Move X to D1.L
+    MOVE.B  antsRemaining,D1        ; Move X to D1.L
     TRAP    #15                     ; Trap (Perform action)
 
   ; Player 
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0201,     D1          ; Col 02, Row 03
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     SCORE_MSG,      A1          ; Velocity Message
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)
-    
-    ; Player Velocity
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1301,     D1          ; Col 05, Row 03
-    TRAP    #15                     ; Trap (Perform action)
-    MOVE.B  #03,        D0          ; Display number at D1.L
-    EOR.L   D1,D1
-    MOVE.B  BRUTE_HP,D1        ; Move X to D1.L
-    TRAP    #15                     ; Trap (Perform action)
+    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    ;MOVE.W  #$0201,     D1          ; Col 02, Row 03
+    ;TRAP    #15                     ; Trap (Perform action)
+    ;LEA     SCORE_MSG,      A1          ; Velocity Message
+    ;MOVE    #13,        D0          ; No Line feed
+    ;TRAP    #15                     ; Trap (Perform action)
+    ;
+    ;; Player Velocity
+    ;MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    ;MOVE.W  #$1301,     D1          ; Col 05, Row 03
+    ;TRAP    #15                     ; Trap (Perform action)
+    ;MOVE.B  #03,        D0          ; Display number at D1.L
+    ;EOR.L   D1,D1
+    ;MOVE.B  BRUTE_HP,D1        ; Move X to D1.L
+    ;TRAP    #15                     ; Trap (Perform action)
 
     ; Player On Ground Message
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
@@ -1067,7 +1067,7 @@ DRAW_PLYR_DATA:
     TRAP    #15                     ; Trap (Perform action)
     MOVE.B  #03,        D0          ; Display number at D1.L
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.B  SPAWN_HEALTHPACKS,     D1          ; Move Play on Ground ? to D1.L
+    MOVE.B  ENEMIES_DEFEATED,     D1          ; Move Play on Ground ? to D1.L
     TRAP    #15                     ; Trap (Perform action)
     
     ; number of enemies in wave msg
@@ -1492,9 +1492,10 @@ DRAW_FLYENEMY:
 
     MOVE.L  FLYINGENEMY_X,D1
     ADD.L   #3,D1
-    MOVE.L  FLYINGENEMY_Y,   D4
-    SUB.L   #FLY_ENMY_H_INIT,   D4      ; Height          ; Y
+    MOVE.L  FLYINGENEMY_Y,D2
+    SUB.L   #10,D2
     MOVE.L  D1,D3
+    ADDQ.L  #1,D3
     MOVE.L  D2,D4
 
     MOVE.B  #84,D0
@@ -1517,26 +1518,86 @@ DRAW_HEALTHPACK:
     BEQ     DRAW_HEALTHPACK_DONE
     
     ; Set Pixel Colors
-    MOVE.L  #BLACK,       D1          ; Set Background color
+    MOVE.L  #RED,       D1          ; Set Background color
     MOVE.B  #80,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
     ; Reset Pixel Colors
-    MOVE.L  #LIFEGREEN,     D1          ; Set Background color
+    MOVE.L  #RED,     D1          ; Set Background color
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
     ; Set X, Y, Width and Height
     MOVE.L  HEALTH_X,    D1          ; X
     MOVE.L  HEALTH_Y,    D2          ; Y
-    MOVE.L  HEALTH_X,    D3
+    MOVE.L  D1,    D3
     ADD.L   #HEALTH_PACK_W,   D3      ; Width
-    MOVE.L  HEALTH_Y,    D4 
+    MOVE.L  D2,    D4 
     SUB.L   #HEALTH_PACK_H,   D4      ; Height
-    
-    ; Draw Enemy    
-    MOVE.B  #87,        D0          ; Draw Enemy
+
+    ; Draw  
+    MOVE.B  #87,        D0          ; Draw
     TRAP    #15                     ; Trap (Perform action)
+
+    ; Set Pixel Colors
+    MOVE.L  #GREEN1,       D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    ; Reset Pixel Colors
+    MOVE.L  #GREEN1,     D1          ; Set Background color
+    MOVE.B  #81,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+    
+    ; change thickness
+    MOVE.l  #2,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+        ; Set X, Y, Width and Height
+    MOVE.L  HEALTH_X,    D1          ; X
+    MOVE.L  HEALTH_Y,    D2          ; Y
+    SUB.L   #HEALTH_PACK_H,   D2      ; Height
+    MOVE.L  D1,    D3
+    ADD.L   #3,D1
+    ADD.L   #HEALTH_PACK_W,   D3      ; Width
+    SUB.L   #5,D3
+    MOVE.L  D2,    D4
+    SUB.L   #5,     D4 
+
+    ; Draw  
+    MOVE.B  #87,        D0          ; Draw
+    TRAP    #15                     ; Trap (Perform action)
+    
+    ; Set Pixel Colors
+    MOVE.L  #BROWN,       D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    ; Reset Pixel Colors
+    MOVE.L  #BROWN,     D1          ; Set Background color
+    MOVE.B  #81,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+    
+
+        ; Set X, Y, Width and Height
+    MOVE.L  HEALTH_X,    D1          ; X
+    MOVE.L  HEALTH_Y,    D2          ; Y
+    ADD.L   #6,D1
+    MOVE.L  D1,    D3
+    ADD.L   #3,D3
+    SUB.L   #HEALTH_PACK_H,   D2      ; Height
+    MOVE.L  D2,    D4
+    SUB.L   #5, D4 
+
+    ; Draw  
+    MOVE.B  #84,        D0          ; Draw
+    TRAP    #15                     ; Trap (Perform action)
+    ; reset thickness
+    MOVE.l  #1,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+
     RTS                             ; Return to subroutine
 
 DRAW_HEALTHPACK_DONE:
