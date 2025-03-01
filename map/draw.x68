@@ -49,6 +49,15 @@ draw:
 
     jsr followCam
     jsr drawBg
+
+    ; draw tree test
+    move.l #100, d1
+    move.l #200, d2
+    jsr drawMapTree
+    move.l #520, d1
+    move.l #300, d2
+    jsr drawMapTree
+
     jsr drawEnemyHill
     jsr drawEnemies
     jsr drawEnemyDoor
@@ -108,27 +117,16 @@ endDrawPause:
     rts
 
 drawHealth:
-    move.l #color4, d1
-    jsr setPenColour
-    move.l #color2, d1
-    jsr setFillColour
-
     move.l healthTlX, d1
     move.l healthTlY, d2
 
-    move.l healthBrX, d3
+    ;move.l healthBrX, d3
     move.l healthBrY, d4
-    jsr drawUiRect
 
-    ; DRAW FULL PART OF HP BAR
-    move.l healthtlX, d3
-    add.l currentHealth, d3
+    lea maxHealth, a2
+    lea currentHealth, a3
 
-    move.l #color3, d1 ; change colour
-    jsr setFillColour
-
-    move.l healthTlX, d1 ; set value in d1 back to what its supposed to be
-    jsr drawUiRect
+    jsr drawModularHbar
     rts
 
 drawText:
@@ -183,7 +181,7 @@ drawBg:
     jsr drawUiRect
     rts
 
-drawPlayer:
+drawPlayerOld:
     ; Set white
     MOVE.L #color5, d1
     jsr setPenColour
@@ -200,7 +198,80 @@ drawPlayer:
     
     ; Draw Player
     jsr drawRect
+
+    ; draw booty
+    add.l #15, d2
+    add.l #15, d4
+    sub.l #2, d1
+    add.l #2, d3
+    jsr drawRect
     RTS
+
+drawPlayer:
+    ; Set white
+    MOVE.L #color5, d1
+    jsr setPenColour
+    move.l #color1, d1
+    jsr setFillColour
+    
+    ; set rect values
+    move.l playerX, d1
+    move.l playerY, d2
+    move.l playerX, d3
+    move.l playerY, d4
+    add.l #enemyW, d3
+    add.l #enemyH, d4
+
+    jsr drawRect
+
+    move.l playerX, d1
+    move.l playerY, d2
+    move.l playerX, d3
+    move.l playerY, d4
+
+
+    ; DRAW LINES
+
+    ; left lines
+    sub.l #3, d3
+    sub.l #7, d4
+    jsr drawLine
+
+    add.l #5, D2
+    sub.l #3, d3
+    add.l #12, d4
+    jsr drawLine
+
+    add.l #7, D2
+    add.l #3, d3
+    add.l #14, d4
+    jsr drawLine
+
+    ; prepare for right lines
+    move.l playerX, d1
+    move.l playerY, d2
+    move.l playerX, d3
+    move.l playerY, d4
+    add.l #enemyW, d1
+    add.l #enemyW, d3
+
+    ; right lines
+    add.l #3, d3
+    sub.l #7, d4
+    jsr drawLine
+
+    add.l #5, D2
+    add.l #3, d3
+    add.l #12, d4
+    jsr drawLine
+
+    add.l #7, D2
+    sub.l #3, d3
+    add.l #14, d4
+    jsr drawLine
+
+
+    rts
 
 drawEnemies:
     jsr setRedEnemy
@@ -241,7 +312,6 @@ setBlueEnemy:
 
 drawEnemy:
     
-
     ; set rect values
     jsr prepareEnemyDraw
     add.l #enemyW, d3
@@ -372,6 +442,147 @@ drawCell:
     ; done
     RTS
 
+drawModularHbar:
+    ;HOW TO USE:
+    ;   - place d1, d2, and d4 correctly (topleft X and Y, bottomright Y)
+    ;   - place max value address in a2
+    ;   - place current value address in a3
+    ; d3 values (bottom-right X) determined by address values
+
+    ;---------------------------------EMPTY BAR
+
+    ; store topleft X in d3
+    move.l d1, d3
+
+    ; change colours
+    move.l #green, d1
+    jsr setPenColour
+    move.l #brown, d1
+    jsr setFillColour
+
+    ; create rect
+    move.l d3, d1 ; return d3 to d1
+    add.l (a2), d3
+    jsr drawUiRect
+
+    ;---------------------------------FULL BAR
+
+    ; store topleft X in d3
+    move.l d1, d3
+    
+    ; change colours
+    move.l #green, d1
+    jsr setPenColour
+    move.l #green, d1
+    jsr setFillColour
+
+    ; create rect
+    move.l d3, d1 ; return d3 to d1
+    add.l (a3), d3
+    jsr drawUiRect
+
+    rts
+
+drawMapTree:
+
+    ; origin in d1, d2: top left of trunk
+    
+    ; store d1 in d5
+    move.l d1, d5
+
+    ; Set Pixel Colors
+    MOVE.L  #TRUNKO,     D1          ; Set Background color
+    jsr setPenColour
+
+    MOVE.L  #trunki,     D1
+    jsr setFillColour
+
+    move.l d5, d1
+    
+    ; left trunk
+    MOVE.L  d1, d3
+    move.l d2, d4
+
+    ; adjust
+    add.l #40, d4
+    add.l #20, d3
+    
+    jsr drawRect
+    ;rts
+
+   ; Set Pixel Colors
+    MOVE.L  #brown,     D1          ; Set Background color
+    jsr setPenColour
+
+    MOVE.L  #GREEN1,     D1
+    jsr setFillColour
+
+    ; TOP LEFT VALUES ARE STILL AVAILABLE
+    move.l d5, d1
+
+    ;----------------------LEAF 1
+    sub.L #30,D1
+    sub.L #40,D2
+    add.L #30,D3
+    sub.L #20,D4
+    jsr drawRect
+    
+    move.l d1, d5
+   
+      ; Set Pixel Colors
+    ;MOVE.L  #GREEN2,     D1          ; Set Background color
+    ;jsr setPenColour                    ; Trap (Perform action)
+
+    MOVE.L  #GREEN3,     D1
+    jsr setFillColour
+
+    ;----------------------LEAF 2
+    move.l d5, d1
+
+    ;add.L #10,D1
+    sub.L #10,D2
+    sub.l #20,d4
+    ;sub.L #10,D3
+    jsr drawRect
+    rts
+
+          ; Set Pixel Colors
+    MOVE.L  #GREEN3,     D1          ; Set Background color
+    jsr setPenColour                     ; Trap (Perform action)
+
+    MOVE.L  #GREEN3,     D1
+    jsr setFillColour
+
+    ;----------------------LEAF 3
+    MOVE.L  #284,D1
+    MOVE.L  #65,D2
+    MOVE.L  #368,D3
+    MOVE.L  #150,D4
+    MOVE.B  #87,D0
+    TRAP    #15
+    
+          ; Set Pixel Colors
+    MOVE.L  #GREEN4,     D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  #GREEN4,     D1
+    MOVE.B  #81,        D0
+    TRAP    #15
+
+    ;----------------------LEAF 4
+    MOVE.L  #340,D1
+    MOVE.L  #76,D2
+    MOVE.L  #423,D3
+    MOVE.L  #158,D4
+    MOVE.B  #87,D0
+    TRAP    #15
+    
+
+    
+
+    RTS
+
 drawEnemyHill:
     move.l #brown, d1
     jsr setPenColour
@@ -476,6 +687,7 @@ drawAntHill: ; d1 thru 4 are already assigned
 affectHillTimer dc.w 0
 hillShakeScale equ 2
 affectHill:
+    jsr PLAY_HITHURT
     move.w #5, affectHillTimer
     tst.w enemyDir
 

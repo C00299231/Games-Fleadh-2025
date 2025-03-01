@@ -184,7 +184,7 @@ wpressed:
     move.l playerY, d3 ; check boundary with proposed movement
     sub.l #playerYspeed, D3
     cmp.l celltlY, d3
-    beq endMovement
+    ble endMovement
 
     sub.l #playerYspeed, playerY
     rts
@@ -192,7 +192,7 @@ apressed:
     move.l playerX, d3 ; check boundary with proposed movement
     sub.l #playerXspeed, D3
     cmp.l celltlX, d3
-    beq endMovement
+    ble endMovement
 
     sub.l #playerXspeed, playerX
     rts
@@ -201,7 +201,7 @@ spressed:
     add.l #playerYspeed, D3
     add.l #playerH, d3 ; player size taken into consideration
     cmp.l cellBrY, d3
-    beq endMovement
+    bge endMovement
 
     add.l #playerYspeed, playerY
     rts
@@ -210,7 +210,7 @@ dpressed:
     add.l #playerXspeed, D3
     add.l #playerW, d3 ; player size taken into consideration
     cmp.l cellBrX, d3
-    beq endMovement
+    bge endMovement
 
     add.l #playerXspeed, playerX
     rts

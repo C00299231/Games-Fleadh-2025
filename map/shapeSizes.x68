@@ -1,7 +1,7 @@
 ; this file contains some const values
 
-playerW equ 08
-playerH equ 08
+playerW equ 06
+playerH equ 10
 
 enemyH equ 12
 enemyW equ 6
