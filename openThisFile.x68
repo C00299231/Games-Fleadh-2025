@@ -35,7 +35,6 @@ nextInit:
     
 	move.b #$00, isPaused
 
-   
 	
 	clr.l d2
 	move #tcFont, d0
@@ -94,6 +93,7 @@ aaes
  include "score.x68"
 
 	end start
+
 
 
 

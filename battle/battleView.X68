@@ -168,6 +168,7 @@ INITRUN:
     MOVE.B  #4,         backToMapCount
     CLR.L   D1
     
+    MOVE.B  (a6),   hillHP
     ; Init brute
     ; Initial Position for BRUTE
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
