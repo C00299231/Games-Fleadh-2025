@@ -14,21 +14,20 @@ colorRed equ $00463ebd
 
 WHITE           EQU     $00FFFFFF
 BLACK           EQU     $00000000
-RED             EQU     $00463EDB
-BLUE            EQU     $00FF0000
-GREEN           EQU     $0056864B
-LIFEGREEN       EQU     $0044FF44
-DIRT           EQU      $0019506D        ; Brown   
-BROWN            EQU    $0019191E         ; Brown   
-SKY             EQU     $00E2D8BC         ; Sky Blue
-WING            EQU     $00E2D833
-ACORN           EQU     $00075A96
-ACORNHAT        EQU     $00043A60
-
-; FROM COLOURS2 - FOR COMPATIBILITY
+RED             EQU     $004641E6
 DEEPRED         equ     $00352F75
+BLUE            EQU     $00D77034
 DEEPBLUE        EQU     $003F1F26
+GREEN           EQU     $00568D61
+LIFEGREEN       EQU     $0064D997
 DEEPGREEN       EQU     $001E2322
+DIRT            EQU     $006591AD        ; light brown
+MIDBROWN        EQU     $0039568D
+BROWN           EQU     $00191A21        ; dark Brown
+SKY             EQU     $00E2DAD0        ; Sky Blue
+WING            EQU     $00DEE3A5
+ACORN           EQU     $0039568D
+ACORNHAT        EQU     $00191A21
 
 ; tree
 TRUNKO          EQU     $00083677

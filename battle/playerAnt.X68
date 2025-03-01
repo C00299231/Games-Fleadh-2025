@@ -4,7 +4,7 @@ PLYR_W_INIT EQU         27          ; Players initial Width
 PLYR_H_INIT EQU         13          ; Players initial Height
 
 PLYR_DFLT_V EQU         00          ; Default Player Velocity
-PLYR_JUMP_V EQU         -19          ; Player Jump Velocity
+PLYR_JUMP_V EQU         -18          ; Player Jump Velocity
 PLYR_DFLT_G EQU         01          ; Player Default Gravity
 
 INIT_PLAYER:
@@ -65,9 +65,9 @@ MOVE_PLAYER_LEFT:
 
     MOVE.B  #LOOKLEFT,        PLAYER_DIR
     MOVE.L  PLAYER_X,   D1          ; Fetch Player X Position
-    SUB.L   #02,        D1          ; Move Player Left
+    SUB.L   #03,        D1          ; Move Player Left
     MOVE.L  D1,         PLAYER_X    ; Update Players X Position
-    SUB.L   #02,        ATTACK_X
+    SUB.L   #03,        ATTACK_X
     RTS                             ; Return to subroutine    
 
 ; Move Player to the right
@@ -78,9 +78,28 @@ MOVE_PLAYER_RIGHT:
     ENDI
     MOVE.B  #LOOKRIGHT,        PLAYER_DIR
     MOVE.L  PLAYER_X,   D1          ; Fetch Player X Position
-    ADD.L   #02,        D1          ; Move Player Right
+    ADD.L   #03,        D1          ; Move Player Right
     MOVE.L  D1,         PLAYER_X    ; Update Players X Position
-    ADD.L   #02,        ATTACK_X
+    ADD.L   #03,        ATTACK_X
+    RTS                             ; Return to subroutine
+
+*-----------------------------------------------------------
+* Subroutine    : Jump
+* Description   : Perform a Jump
+*-----------------------------------------------------------
+JUMP:
+    TST.B  isPaused
+    IF <NE> THEN
+        RTS
+    ENDI
+    CMP.L   #GND_TRUE,PLYR_ON_GND   ; Player is on the Ground ?
+    BEQ     PERFORM_JUMP            ; Do Jump
+    BRA     JUMP_DONE               ;
+PERFORM_JUMP:
+    BSR     PLAY_JUMP               ; Play jump sound
+    MOVE.L  #PLYR_JUMP_V,PLYR_VELOCITY ; Set the players velocity to true
+    RTS                             ; Return to subroutine
+JUMP_DONE:
     RTS                             ; Return to subroutine
 
 ; draw all player relevant data
@@ -127,24 +146,26 @@ DRAW_PLAYER:
     MOVE.B  #87,        D0          ; Draw Player
     TRAP    #15                     ; Trap (Perform action)
 
-*-------------- draw antena -----------------*    
     ; change thickness
-    MOVE.l  #3,D1
-    MOVE.B  #93,D0
-    TRAP    #15
+        MOVE.l  #3,D1
+        MOVE.B  #93,D0
+        TRAP    #15
+*-------------- draw antena -----------------*    
+    ; draw if not currently attacking melee
+    tst.b   CURRENTLYATTACKING
+    IF  <EQ>    THEN
+        MOVE.L  PLAYER_X,D1
+        ADD.L   #22,D1
+        MOVE.L  PLAYER_Y,D2
+        SUB.L   #PLYR_H_INIT,D2
+        MOVE.L  D1,D3
+        ADD.L   #10,D3
+        MOVE.L  D2,D4
+        SUBI.L  #7,D4
 
-    MOVE.L  PLAYER_X,D1
-    ADD.L   #22,D1
-    MOVE.L  PLAYER_Y,D2
-    SUB.L   #PLYR_H_INIT,D2
-    MOVE.L  D1,D3
-    ADD.L   #10,D3
-    MOVE.L  D2,D4
-    SUBI.L  #7,D4
-
-    MOVE.B  #84,D0
-    TRAP    #15
-
+        MOVE.B  #84,D0
+        TRAP    #15
+    ENDI
 *-------------- draw leg 1 -----------------*
     MOVE.L  PLAYER_X,D1
     MOVE.L  PLAYER_Y,D2
@@ -209,8 +230,7 @@ IS_ATTACKING:
     BNE     DRAW_ATTACK
     RTS
 DRAW_ATTACK:
-
-    ; Set Pixel Colors
+ ; Set Pixel Colors
     MOVE.L  #WHITE,     D1          ; Set Background color
     MOVE.B  #80,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
@@ -219,13 +239,51 @@ DRAW_ATTACK:
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
+    MOVE.l  #3,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    MOVE.L  PLAYER_X,D1
+    ADD.L   #22,D1
+    MOVE.L  PLAYER_Y,D2
+    SUB.L   #7,D2
+    MOVE.L  D1,D3
+    MOVE.L  D2,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+    ; Set Pixel Colors
+    MOVE.L  #BLACK,     D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+    ; Reset Pixel Colors
+    MOVE.L  #BLACK,     D1          ; Set Background color
+    MOVE.B  #81,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    MOVE.L  PLAYER_X,D1
+    ADD.L   #22,D1
+    MOVE.L  PLAYER_Y,D2
+    SUB.L   #10,D2
+    MOVE.L  D1,D3
+    MOVE.L  D2,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+    MOVE.l  #1,D1
+    MOVE.B  #93,D0
+    TRAP    #15
     MOVE.L  ATTACK_X,   D1          ; X
     MOVE.L  ATTACK_Y,   D2
+    SUB.L   #9,D2
     
     MOVE.L  ATTACK_X,   D3
     ADD.L   #ATTACK_WIDTH,   D3      ; Width
-    MOVE.L  ATTACK_Y,   D4 
-    SUB.L   #ATTACK_HEIGHT,   D4      ; Height          ; Y
+    SUB.L   #8,D3
+    MOVE.L  D2,   D4 
+    SUB.L   #3,   D4      ; Height          ; Y
     
     ; Draw Player
     MOVE.B  #87,        D0          ; Draw Player
@@ -302,6 +360,16 @@ DRAW_RESPAWN:
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     MOVE.L  D1,         PLAYER_Y    ; Players Y Position
 
+    ; reset player velocity and attack
+    MOVE.B  #0,     CURRENTLYATTACKING
+    CLR.W   ATTACK_COOLDOWN
+    CLR.W   ATTACK_TIME
+    MOVE.L  #0,PLYR_VELOCITY
+
+    ; push enemies back for fairness
+    ADD.L   #50, ENEMY_X
+    ADD.L   #50, FLYINGENEMY_X
+    ADD.L   #50, BRUTE_X
 MOVE_RESPAWNED:
     MOVE.L  D5, PLAYER_X
 
@@ -321,11 +389,16 @@ MOVE_RESPAWNED:
     BSR     DRAW_BACKGROUND        
     BSR     DRAW_HILL 
     BSR     DRAW_PLYR_DATA          ; Draw Draw Score, HUD, Player X and Y
-    BSR     DRAW_PLAYER             ; Draw Player
+    BSR     DRAW_TREES
+    BSR     DRAW_ENTRANCE_HOLE
     BSR     DRAW_ENEMY              ; Draw Enemy
     BSR     DRAW_FLYENEMY
+    BSR     DRAW_BRUTEENEMY
     BSR     DRAW_HEALTHPACK
+    BSR     DRAW_PLAYER             ; Draw Player
+    BSR     DRAW_ENTRANCE
     BSR     DRAW_FLOOR              ; Draw Floor
+    BSR     drawHillHealth         ; draw hill hp
     BSR     drawPause        
 
 

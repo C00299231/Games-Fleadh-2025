@@ -182,41 +182,44 @@ key2pressed: ; main menu
 ; MOVEMENT INPUT: MUST STAY WITHIN CELL BOUNDARIES
 wpressed:
     move.l playerY, d3 ; check boundary with proposed movement
-    sub.l #1, D3
+    sub.l #playerYspeed, D3
     cmp.l celltlY, d3
     beq endMovement
 
-    sub.l #1, playerY
+    sub.l #playerYspeed, playerY
     rts
 apressed:
     move.l playerX, d3 ; check boundary with proposed movement
-    sub.l #1, D3
+    sub.l #playerXspeed, D3
     cmp.l celltlX, d3
     beq endMovement
 
-    sub.l #1, playerX
+    sub.l #playerXspeed, playerX
     rts
 spressed:
     move.l playerY, d3 ; check boundary with proposed movement
-    add.l #1, D3
+    add.l #playerYspeed, D3
     add.l #playerH, d3 ; player size taken into consideration
     cmp.l cellBrY, d3
     beq endMovement
 
-    add.l #1, playerY
+    add.l #playerYspeed, playerY
     rts
 dpressed:
     move.l playerX, d3 ; check boundary with proposed movement
-    add.l #1, D3
+    add.l #playerXspeed, D3
     add.l #playerW, d3 ; player size taken into consideration
     cmp.l cellBrX, d3
     beq endMovement
 
-    add.l #1, playerX
+    add.l #playerXspeed, playerX
     rts
 
 endMovement:
     rts
+
+playerXspeed equ 3
+playerYspeed equ 2
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~

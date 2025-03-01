@@ -242,10 +242,10 @@ zone3pen ds.l 01
 zone4pen ds.l 01
 
 resetZonePens:
-    move.l #brown, zone1pen
-    move.l #brown, zone2pen
-    move.l #brown, zone3pen
-    move.l #brown, zone4pen
+    move.l #midbrown, zone1pen
+    move.l #midbrown, zone2pen
+    move.l #midbrown, zone3pen
+    move.l #midbrown, zone4pen
     rts
 
 enterHill:
