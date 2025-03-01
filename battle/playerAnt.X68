@@ -360,6 +360,16 @@ DRAW_RESPAWN:
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     MOVE.L  D1,         PLAYER_Y    ; Players Y Position
 
+    ; reset player velocity and attack
+    MOVE.B  #0,     CURRENTLYATTACKING
+    CLR.W   ATTACK_COOLDOWN
+    CLR.W   ATTACK_TIME
+    MOVE.L  #0,PLYR_VELOCITY
+
+    ; push enemies back for fairness
+    ADD.L   #50, ENEMY_X
+    ADD.L   #50, FLYINGENEMY_X
+    ADD.L   #50, BRUTE_X
 MOVE_RESPAWNED:
     MOVE.L  D5, PLAYER_X
 
@@ -379,11 +389,16 @@ MOVE_RESPAWNED:
     BSR     DRAW_BACKGROUND        
     BSR     DRAW_HILL 
     BSR     DRAW_PLYR_DATA          ; Draw Draw Score, HUD, Player X and Y
-    BSR     DRAW_PLAYER             ; Draw Player
+    BSR     DRAW_TREES
+    BSR     DRAW_ENTRANCE_HOLE
     BSR     DRAW_ENEMY              ; Draw Enemy
     BSR     DRAW_FLYENEMY
+    BSR     DRAW_BRUTEENEMY
     BSR     DRAW_HEALTHPACK
+    BSR     DRAW_PLAYER             ; Draw Player
+    BSR     DRAW_ENTRANCE
     BSR     DRAW_FLOOR              ; Draw Floor
+    BSR     drawHillHealth         ; draw hill hp
     BSR     drawPause        
 
 

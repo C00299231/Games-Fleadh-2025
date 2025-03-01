@@ -899,7 +899,8 @@ DRAW_TREES:
     MOVE.B  #81,        D0
     TRAP    #15
     
-    MOVE.L  #320,D1
+    ; left trunk
+    MOVE.L  #330,D1
     MOVE.L  #241,D2
     MOVE.L  #340,D3
     MOVE.L  #137,D4
@@ -907,21 +908,25 @@ DRAW_TREES:
     MOVE.B  #84,D0
     TRAP    #15
     
+    ;top trunk
     MOVE.L  #368,D1
     MOVE.L  D4,D2
     MOVE.B  #85,D0
     TRAP    #15
     
-    MOVE.L  #385,D1
+    ; right trunk
+    MOVE.L  #375,D1
     MOVE.L  #241,D2
     MOVE.B  #85,D0
     TRAP    #15
     
-    MOVE.L  #320,D1
+    ; bottom of trunk
+    MOVE.L  #330,D1
     MOVE.L  #241,D2
     MOVE.B  #85,D0
     TRAP    #15
     
+    ; fill in trunk of tree
     MOVE.L  #TRUNKI,     D1
     MOVE.B  #81,        D0
     TRAP    #15
@@ -931,6 +936,7 @@ DRAW_TREES:
     MOVE.B  #89,D0
     TRAP    #15
    
+   ; reset pen size
     MOVE.L  #1,D1
     MOVE.L  #93,D0
     TRAP    #15
@@ -1032,7 +1038,7 @@ DRAW_PLYR_DATA:
     
     ; Player Velocity
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1303,     D1          ; Col 05, Row 03
+    MOVE.W  #$1703,     D1          ; Col 05, Row 03
     TRAP    #15                     ; Trap (Perform action)
     MOVE.B  #03,        D0          ; Display number at D1.L
     EOR.L   D1,D1
@@ -1056,7 +1062,6 @@ DRAW_PLYR_DATA:
     ;MOVE.B  BRUTE_HP,D1        ; Move X to D1.L
     ;TRAP    #15                     ; Trap (Perform action)
 
-    ; Player On Ground Message
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$0204,     D1          ; Col 10, Row 03
     TRAP    #15                     ; Trap (Perform action)
@@ -1064,9 +1069,8 @@ DRAW_PLYR_DATA:
     MOVE    #13,        D0          ; No Line feed
     TRAP    #15                     ; Trap (Perform action)
     
-    ; Player On Ground
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1504,     D1          ; Col 06, Row 04
+    MOVE.W  #$1704,     D1          ; Col 06, Row 04
     TRAP    #15                     ; Trap (Perform action)
     MOVE.B  #03,        D0          ; Display number at D1.L
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
@@ -1117,7 +1121,7 @@ DRAW_PLYR_DATA:
     
     ; Show antHealth msg
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0A02,     D1          ; Col 30, Row 1
+    MOVE.W  #$1702,     D1          ; Col 30, Row 1
     TRAP    #15                     ; Trap (Perform action)   
     EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.B  antHealth,      D1          ; Move Key Pressed to D1
