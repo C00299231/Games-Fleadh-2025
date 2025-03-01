@@ -9,7 +9,7 @@ enemy3x dc.l 0
 enemy3y dc.l 130
 ;ENEMY 4
 enemy4x dc.l 0
-enemy4y dc.l 185
+enemy4y dc.l 10
 
 enemyIndex dc.b 1
 
@@ -17,39 +17,59 @@ enemyIndex dc.b 1
 currentSpawnX ds.l 01
 currentSpawnY ds.l 01
 
-yFlag0 dc.l 150
-yFlag1 ds.l 01
-yFlag2 ds.l 01
+; ENEMY PATH FLAGS:
+;   yflag0 hard-coded
+;   NEXT FLAGS DUPED
+;   first 2 x flags auto determined by hill y, one with offset
+;   y flag determined by y post + offset
+;   x flag same as first
 
-xFlag1 ds.l 01
-xFlag2
+;   LAYOUT:
+;       yflagTop: manual
+;       xFlag1: auto
+;       xFlag2: xflag1 with offset
+;       yFlagBottom: auto
+yFlagTop dc.l 150
+yFlagbottom dc.l 0
+
+xFlagLeft dc.l 0
+xFlagFarLeft dc.l 0
+xFlagRight dc.l 0
+xFlagFarRight dc.l 0
 
 xFlagOffset equ 40
+yFlagOffset equ 60
 
+initStarts: ; start pos and flags
+    ;FLAGS TO EDIT:
+    ;   xflag1
+    ;   xflag2
+    ;   yflagbottom
 
-initStarts:
     ; set enemy spawn to top middle
     move.l centerX, enemyStartX
     move.l #0, enemyStartY
 
-    
-    move.l cellTlY, d2
-    add.l zoneHrad, d2
+    ; yFlagBottom
     move.l cellBrY, d3
     sub.l zoneHrad, d3
+    sub.l #yFlagOffset, d3 ; Y middle of zone 2 in d3
+    move.l d3, yFlagBottom ; set yFlagBottom
 
-    move.l d2, yFlag1
-    move.l d3, yFlag2
+    ; left x flags
+    move.l cellTlX, d2
+    add.l zoneWrad, d2  ; X middle of zone 1 in d2
+    move.l d2, xFlagLeft ; set xFlag1
+    sub.L #xFlagOffset, d2
+    move.l d2, xFlagFarLeft ; set xFlag2
 
-    move.l centerX, d2
-    sub.l cellXradius, d2
-    sub.l #xFlagOffset, d2
-    move.l d2, xFlag1
-
-    move.l centerX, d2
-    add.l cellXradius, d2
-    add.l #xFlagOffset, d2
-    move.l d2, xFlag2
+    ; right x flags
+    move.l cellBrX, d2
+    sub.l zoneWrad, d2  ; X middle of zone 1 in d2
+    move.l d2, xFlagRight ; set xFlag1
+    add.L #xFlagOffset, d2
+    move.l d2, xFlagFarRight ; set xFlag2
+    
     rts
 
 

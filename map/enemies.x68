@@ -49,10 +49,10 @@ enemyColCheck:
     beq enemyRightColCheck
 
     cmpi #2, enemyDir
-    beq enemyRightColCheck
+    beq enemyBottomRightColCheck
 
     cmpi #3, enemyDir
-    beq enemyLeftColCheck
+    beq enemyBottomLeftColCheck
 
     ; no valid direction. nothing we can do atp
     rts
@@ -66,18 +66,20 @@ processEnemyTl:
     move.l enemyX, d2
     move.l enemyY, d3
 
-    ; first, check not reached flag0
-    cmp.l yFlag0, d3
+    ; first, check NOT reached flag0
+    cmp.l yFlagTop, d3
     if <lt> then
         ; go down
         add.l #enemyYspeed, enemyY
         bra endProcess
     endi
+
+    ; PAST TOP Y FLAG
     
     ; then, check not reached xflag, but past yFlag
-    cmp.l xFlag1, d2
+    cmp.l xFlagLeft, d2
     if <ge> then
-        cmp.l yFlag0, d3
+        cmp.l yFlagtop, d3
         if <le> then
             ; go left
             sub.l #enemyXspeed, enemyX
@@ -85,16 +87,24 @@ processEnemyTl:
         endi
     endi
 
-    ; finally, check not reached yflag1
-    cmp.l yFlag1, d3
+    ; next, check not reached next yflag
+    cmp.l yFlagBottom, d3
     if <lt> then
         ; go down
         add.l #enemyYspeed, enemyY
         bra endProcess
     endi
 
-    ; past all flags, go right
-    add.l #enemyXspeed, enemyX
+    ; finally, check past X near flag
+    cmp.l xFlagLeft, d3
+    if <lt> then
+        ; go right
+        add.l #enemyXspeed, enemyX
+        bra endProcess
+    endi
+
+    ; past all flags, go down
+    add.l #enemyYspeed, enemyY
 
     bra endProcess
 
@@ -107,18 +117,20 @@ processEnemytr:
     move.l enemyX, d2
     move.l enemyY, d3
 
-    ; first, check not reached flag0
-    cmp.l yFlag0, d3
+    ; first, check NOT reached flag0
+    cmp.l yFlagTop, d3
     if <lt> then
         ; go down
         add.l #enemyYspeed, enemyY
         bra endProcess
     endi
+
+    ; PAST TOP Y FLAG
     
     ; then, check not reached xflag, but past yFlag
-    cmp.l xFlag2, d2
+    cmp.l xFlagRight, d2
     if <le> then
-        cmp.l yFlag0, d3
+        cmp.l yFlagtop, d3
         if <le> then
             ; go right
             add.l #enemyXspeed, enemyX
@@ -126,16 +138,24 @@ processEnemytr:
         endi
     endi
 
-    ; finally, check not reached yflag1
-    cmp.l yFlag1, d3
+    ; next, check not reached next yflag
+    cmp.l yFlagBottom, d3
     if <lt> then
         ; go down
         add.l #enemyYspeed, enemyY
         bra endProcess
     endi
 
-    ; past all flags, go left
-    sub.l #enemyXspeed, enemyX
+    ; finally, check past X near flag
+    cmp.l xFlagLeft, d3
+    if <gt> then
+        ; go left
+        sub.l #enemyXspeed, enemyX
+        bra endProcess
+    endi
+
+    ; past all flags, go down
+    add.l #enemyYspeed, enemyY
 
     bra endProcess
 
@@ -150,18 +170,20 @@ processEnemybr:
     move.l enemyX, d2
     move.l enemyY, d3
 
-    ; first, check not reached flag0
-    cmp.l yFlag0, d3
+    ; first, check NOT reached flag0
+    cmp.l yFlagTop, d3
     if <lt> then
         ; go down
         add.l #enemyYspeed, enemyY
         bra endProcess
     endi
+
+    ; PAST TOP Y FLAG
     
     ; then, check not reached xflag, but past yFlag
-    cmp.l xFlag2, d2
+    cmp.l xFlagFarRight, d2
     if <le> then
-        cmp.l yFlag0, d3
+        cmp.l yFlagtop, d3
         if <le> then
             ; go right
             add.l #enemyXspeed, enemyX
@@ -169,16 +191,24 @@ processEnemybr:
         endi
     endi
 
-    ; finally, check not reached yflag1
-    cmp.l yFlag2, d3
+    ; next, check not reached next yflag
+    cmp.l yFlagBottom, d3
     if <lt> then
         ; go down
         add.l #enemyYspeed, enemyY
         bra endProcess
     endi
 
-    ; past all flags, go left
-    sub.l #enemyXspeed, enemyX
+    ; finally, check past X near flag
+    cmp.l xFlagRight, d2
+    if <gt> then
+        ; go left
+        sub.l #enemyXspeed, enemyX
+        bra endProcess
+    endi
+
+    ; past all flags, go down
+    add.l #enemyYspeed, enemyY
 
     bra endProcess
 
@@ -191,18 +221,20 @@ processEnemyBl:
     move.l enemyX, d2
     move.l enemyY, d3
 
-    ; first, check not reached flag0
-    cmp.l yFlag0, d3
+    ; first, check NOT reached flag0
+    cmp.l yFlagTop, d3
     if <lt> then
         ; go down
         add.l #enemyYspeed, enemyY
         bra endProcess
     endi
+
+    ; PAST TOP Y FLAG
     
     ; then, check not reached xflag, but past yFlag
-    cmp.l xFlag1, d2
+    cmp.l xFlagFarLeft, d2
     if <ge> then
-        cmp.l yFlag0, d3
+        cmp.l yFlagtop, d3
         if <le> then
             ; go left
             sub.l #enemyXspeed, enemyX
@@ -210,16 +242,24 @@ processEnemyBl:
         endi
     endi
 
-    ; finally, check not reached yflag1
-    cmp.l yFlag2, d3
+    ; next, check not reached next yflag
+    cmp.l yFlagBottom, d3
     if <lt> then
         ; go down
         add.l #enemyYspeed, enemyY
         bra endProcess
     endi
 
-    ; past all flags, go right
-    add.l #enemyXspeed, enemyX
+    ; finally, check past X near flag
+    cmp.l xFlagLeft, d3
+    if <lt> then
+        ; go right
+        add.l #enemyXspeed, enemyX
+        bra endProcess
+    endi
+
+    ; past all flags, go down
+    add.l #enemyYspeed, enemyY
 
     bra endProcess
 
@@ -253,6 +293,37 @@ enemyRightColCheck:
 
     jsr initEnemy
     rts
+
+enemyBottomLeftColCheck:
+    ; check y
+    move.l zone3tlY, d2
+    cmp.l enemyY, d2
+    bgt endColCheck
+
+    ; check x
+    move.l celltlX, d2
+    cmp.l enemyX, d2
+    bgt endColCheck
+
+    jsr initEnemy
+    rts
+
+enemyBottomRightColCheck:
+    ; check y
+    move.l zone3tlY, d2
+    cmp.l enemyY, d2
+    bgt endColCheck
+
+
+    ; check x
+    move.l cellbrx, d2
+    sub.l #enemyw, d2
+    cmp.l enemyX, d2
+    blt endColCheck
+
+    jsr initEnemy
+    rts
+
 endColCheck:
     rts
 

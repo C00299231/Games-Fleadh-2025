@@ -59,9 +59,9 @@ draw:
     jsr drawMapTree
 
     jsr drawEnemyHill
+    jsr drawCell
     jsr drawEnemies
     jsr drawEnemyDoor
-    jsr drawCell
     
     jsr drawPlayer
     jsr drawText
@@ -445,9 +445,8 @@ drawCell:
 drawModularHbar:
     ;HOW TO USE:
     ;   - place d1, d2, and d4 correctly (topleft X and Y, bottomright Y)
-    ;   - place max value address in a2
-    ;   - place current value address in a3
-    ; d3 values (bottom-right X) determined by address values
+    ;   - place max value in d5
+    ;   - place current value in d6
 
     ;---------------------------------EMPTY BAR
 
@@ -462,7 +461,7 @@ drawModularHbar:
 
     ; create rect
     move.l d3, d1 ; return d3 to d1
-    add.l (a2), d3
+    add.l d5, d3
     jsr drawUiRect
 
     ;---------------------------------FULL BAR
@@ -477,8 +476,8 @@ drawModularHbar:
     jsr setFillColour
 
     ; create rect
-    move.l d3, d1 ; return d3 to d1
-    add.l (a3), d3
+    move.l d3, d1 ; return value to d1
+    add.l d6, d3
     jsr drawUiRect
 
     rts
