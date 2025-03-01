@@ -193,12 +193,14 @@ GAME:
     
 GAMELOOP:
 
-
     MOVEQ		#8,d0				* get time in 1/100 ths seconds
 	TRAP		#15
 
 	MOVE.l	d1,-(sp)			* push time on the stack
     MOVE.l	(sp)+,d7			* restore time in 1/100 ths from stack
+    jsr wait_100ms
+    bra continueLoop
+
 wait_100ms:
 	MOVEQ		#8,d0				* get time in 1/100 ths seconds
 	TRAP		#15
@@ -206,8 +208,9 @@ wait_100ms:
 	SUB.l		d7,d1				* subtract previous time from current time
 	CMP.b		#$02,d1			* compare with 9/100ths
 	BMI.s		wait_100ms			* loop if time not up yet
+    rts
 
-
+continueLoop:   ; after wait is done
     BSR     BATTLEINPUT                   ; Check Keyboard Input
     BSR     checkPaused
     BSR     UPDATE                  ; Update positions and points
@@ -1285,12 +1288,12 @@ STOP_SONG:
     
 DRAW_FLYENEMY:
     ; Set Pixel Colors
-    MOVE.L  FLYENEMYCOLOR,       D1          ; Set Background color
+    MOVE.L  #blue,       D1          ; Set Background color
     MOVE.B  #80,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
     ; Reset Pixel Colors
-    MOVE.L  FLYENEMYCOLOR,     D1          ; Set Background color
+    MOVE.L  #blue,     D1          ; Set Background color
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 

@@ -57,10 +57,15 @@ mapNotFirstInit:
     bra loop
 
 loop:
+    
+
     ;jsr clearscreen
     jsr map ; if in map, do map stuff
     ; if in battle, do battle stuff
 
+    ; wait
+
+    jsr wait_100msStart
     bra endLoop
 endLoop:
     tst currentHealth
@@ -76,7 +81,7 @@ map:
     bne paused
 
     ; process
-    jsr increment
+    ;jsr increment
     jsr processEnemies
     ;jsr enemyColCheck
     ;jsr collision

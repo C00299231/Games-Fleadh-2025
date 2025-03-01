@@ -67,7 +67,7 @@ processEnemyTl:
     cmp.l yFlag0, d3
     if <lt> then
         ; go down
-        add.l #1, enemyY
+        add.l #enemyYspeed, enemyY
         bra endProcess
     endi
     
@@ -77,7 +77,7 @@ processEnemyTl:
         cmp.l yFlag0, d3
         if <le> then
             ; go left
-            sub.l #1, enemyX
+            sub.l #enemyXspeed, enemyX
             bra endProcess
         endi
     endi
@@ -86,12 +86,12 @@ processEnemyTl:
     cmp.l yFlag1, d3
     if <lt> then
         ; go down
-        add.l #1, enemyY
+        add.l #enemyYspeed, enemyY
         bra endProcess
     endi
 
     ; past all flags, go right
-    add.l #1, enemyX
+    add.l #enemyXspeed, enemyX
 
     bra endProcess
 
@@ -108,7 +108,7 @@ processEnemytr:
     cmp.l yFlag0, d3
     if <lt> then
         ; go down
-        add.l #1, enemyY
+        add.l #enemyYspeed, enemyY
         bra endProcess
     endi
     
@@ -118,7 +118,7 @@ processEnemytr:
         cmp.l yFlag0, d3
         if <le> then
             ; go right
-            add.l #1, enemyX
+            add.l #enemyXspeed, enemyX
             bra endProcess
         endi
     endi
@@ -127,12 +127,12 @@ processEnemytr:
     cmp.l yFlag1, d3
     if <lt> then
         ; go down
-        add.l #1, enemyY
+        add.l #enemyYspeed, enemyY
         bra endProcess
     endi
 
     ; past all flags, go left
-    sub.l #1, enemyX
+    sub.l #enemyXspeed, enemyX
 
     bra endProcess
 
@@ -151,7 +151,7 @@ processEnemybr:
     cmp.l yFlag0, d3
     if <lt> then
         ; go down
-        add.l #1, enemyY
+        add.l #enemyYspeed, enemyY
         bra endProcess
     endi
     
@@ -161,7 +161,7 @@ processEnemybr:
         cmp.l yFlag0, d3
         if <le> then
             ; go right
-            add.l #1, enemyX
+            add.l #enemyXspeed, enemyX
             bra endProcess
         endi
     endi
@@ -170,12 +170,12 @@ processEnemybr:
     cmp.l yFlag2, d3
     if <lt> then
         ; go down
-        add.l #1, enemyY
+        add.l #enemyYspeed, enemyY
         bra endProcess
     endi
 
     ; past all flags, go left
-    sub.l #1, enemyX
+    sub.l #enemyXspeed, enemyX
 
     bra endProcess
 
@@ -192,7 +192,7 @@ processEnemyBl:
     cmp.l yFlag0, d3
     if <lt> then
         ; go down
-        add.l #1, enemyY
+        add.l #enemyYspeed, enemyY
         bra endProcess
     endi
     
@@ -202,7 +202,7 @@ processEnemyBl:
         cmp.l yFlag0, d3
         if <le> then
             ; go left
-            sub.l #1, enemyX
+            sub.l #enemyXspeed, enemyX
             bra endProcess
         endi
     endi
@@ -211,12 +211,12 @@ processEnemyBl:
     cmp.l yFlag2, d3
     if <lt> then
         ; go down
-        add.l #1, enemyY
+        add.l #enemyYspeed, enemyY
         bra endProcess
     endi
 
     ; past all flags, go right
-    add.l #1, enemyX
+    add.l #enemyXspeed, enemyX
 
     bra endProcess
 
@@ -270,3 +270,5 @@ endInitEnemy:
     sub.l #enemyHalfW, enemyX
     rts
 
+enemyXspeed equ 3
+enemyYspeed equ 2

@@ -5,7 +5,7 @@ DRAW_ENEMY:
     TRAP    #15                     ; Trap (Perform action)
 
     ; Reset Pixel Colors
-    MOVE.L  #colorRed,     D1          ; Set Background color
+    MOVE.L  #red,     D1          ; Set Background color
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 

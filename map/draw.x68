@@ -227,7 +227,7 @@ setRedEnemy:
     ; set colour
     move.l #red, d1
     jsr setPenColour
-    move.l #DEEPRED, d1
+    move.l #red, d1
     jsr setFillColour
     rts
 
@@ -235,7 +235,7 @@ setBlueEnemy:
     ; set colour
     move.l #blue, d1
     jsr setPenColour
-    move.l #DEEPBLUE, d1
+    move.l #blue, d1
     jsr setFillColour
     rts
 

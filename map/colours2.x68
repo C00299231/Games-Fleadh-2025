@@ -16,12 +16,13 @@ WHITE           EQU     $00FFFFFF
 BLACK           EQU     $00000000
 RED             EQU     $004641E6
 DEEPRED         equ     $00352F75
-BLUE            EQU     $00965023       ; NEED LIGHTER BLUE!
+BLUE            EQU     $00D77034
 DEEPBLUE        EQU     $003F1F26
 GREEN           EQU     $00568D61
 LIFEGREEN       EQU     $0064D997
 DEEPGREEN       EQU     $001E2322
-DIRT            EQU     $004B8ECD        ; light brown 
+DIRT            EQU     $006591AD        ; light brown
+MIDBROWN        EQU     $0039568D
 BROWN           EQU     $00191A21        ; dark Brown
 SKY             EQU     $00E2DAD0        ; Sky Blue
 WING            EQU     $00DEE3A5

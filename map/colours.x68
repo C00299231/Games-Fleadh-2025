@@ -25,6 +25,11 @@ WING            EQU     $00E2D833
 ACORN           EQU     $00075A96
 ACORNHAT        EQU     $00043A60
 
+; FROM COLOURS2 - FOR COMPATIBILITY
+DEEPRED         equ     $00352F75
+DEEPBLUE        EQU     $003F1F26
+DEEPGREEN       EQU     $001E2322
+
 ; tree
 TRUNKO          EQU     $00083677
 TRUNKI          EQU     $001f4a82
