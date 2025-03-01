@@ -3,7 +3,7 @@
 ; first init for map
 mapInit:
     move.w #1, lvlType
-    move.w #2, lvlIndex
+    move.w #0, lvlIndex
 
     lea     hillHPArray,a6
 

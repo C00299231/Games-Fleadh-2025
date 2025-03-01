@@ -251,7 +251,7 @@ processEnemyBl:
     endi
 
     ; finally, check past X near flag
-    cmp.l xFlagLeft, d3
+    cmp.l xFlagLeft, d2
     if <lt> then
         ; go right
         add.l #enemyXspeed, enemyX

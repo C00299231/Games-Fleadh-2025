@@ -365,8 +365,9 @@ drawEnemy:
 prepareEnemyDraw:
     move.l enemyX, d1
     move.l enemyY, d2
-    move.l enemyX, d3
-    move.l enemyY, d4
+    sub.l #enemyHalfW, d1
+    move.l d1, d3
+    move.l d2, d4
     rts
 
 drawCell:

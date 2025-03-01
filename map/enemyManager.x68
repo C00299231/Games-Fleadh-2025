@@ -37,7 +37,7 @@ xFlagFarLeft dc.l 0
 xFlagRight dc.l 0
 xFlagFarRight dc.l 0
 
-xFlagOffset equ 40
+xFlagOffset equ 70
 yFlagOffset equ 60
 
 initStarts: ; start pos and flags
