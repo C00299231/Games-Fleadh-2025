@@ -4,7 +4,7 @@ PLYR_W_INIT EQU         27          ; Players initial Width
 PLYR_H_INIT EQU         13          ; Players initial Height
 
 PLYR_DFLT_V EQU         00          ; Default Player Velocity
-PLYR_JUMP_V EQU         -19          ; Player Jump Velocity
+PLYR_JUMP_V EQU         -18          ; Player Jump Velocity
 PLYR_DFLT_G EQU         01          ; Player Default Gravity
 
 INIT_PLAYER:
@@ -81,6 +81,25 @@ MOVE_PLAYER_RIGHT:
     ADD.L   #03,        D1          ; Move Player Right
     MOVE.L  D1,         PLAYER_X    ; Update Players X Position
     ADD.L   #03,        ATTACK_X
+    RTS                             ; Return to subroutine
+
+*-----------------------------------------------------------
+* Subroutine    : Jump
+* Description   : Perform a Jump
+*-----------------------------------------------------------
+JUMP:
+    TST.B  isPaused
+    IF <NE> THEN
+        RTS
+    ENDI
+    CMP.L   #GND_TRUE,PLYR_ON_GND   ; Player is on the Ground ?
+    BEQ     PERFORM_JUMP            ; Do Jump
+    BRA     JUMP_DONE               ;
+PERFORM_JUMP:
+    BSR     PLAY_JUMP               ; Play jump sound
+    MOVE.L  #PLYR_JUMP_V,PLYR_VELOCITY ; Set the players velocity to true
+    RTS                             ; Return to subroutine
+JUMP_DONE:
     RTS                             ; Return to subroutine
 
 ; draw all player relevant data

@@ -1164,24 +1164,6 @@ SET_ON_GROUND:
 SET_OFF_GROUND:
     MOVE.L  #GND_FALSE, PLYR_ON_GND ; Player if off Ground
     RTS                             ; Return to subroutine
-*-----------------------------------------------------------
-* Subroutine    : Jump
-* Description   : Perform a Jump
-*-----------------------------------------------------------
-JUMP:
-    TST.B  isPaused
-    IF <NE> THEN
-        RTS
-    ENDI
-    CMP.L   #GND_TRUE,PLYR_ON_GND   ; Player is on the Ground ?
-    BEQ     PERFORM_JUMP            ; Do Jump
-    BRA     JUMP_DONE               ;
-PERFORM_JUMP:
-    BSR     PLAY_JUMP               ; Play jump sound
-    MOVE.L  #PLYR_JUMP_V,PLYR_VELOCITY ; Set the players velocity to true
-    RTS                             ; Return to subroutine
-JUMP_DONE:
-    RTS                             ; Return to subroutine
 
 *-----------------------------------------------------------
 * Subroutine    : Throw
