@@ -728,7 +728,7 @@ pauseOption1Msg dc.b '[1] exit game',0
 
 ; move to level stuff
 attackMsg1 dc.b 'AN ANTHILL IS UNDER ATTACK!',0
-attackMsg2 dc.b 'MOVE TOWARD IT AND PRESS "ENTER" TO DEFEND IT!',0
+attackMsg2 dc.b 'MOVE TOWARD IT AND PRESS "ENTER/(A)" TO DEFEND IT!',0
 
 *~Font name~Courier New~
 *~Font size~10~

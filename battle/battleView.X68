@@ -2249,9 +2249,9 @@ POWERUP_WAV     DC.B    'powerUP.wav',0     ; Collision Opps
 LEVELCHANGE_WAV DC.B    'levelChange.wav',0 ; Collision Opps
 ROAR_WAV        DC.B    'roar-8-bit.wav',0 ; Collision Opps
 
-BATTLE_SONG_WAV DC.B    'antopia-battle.wav',0
-MAP_SONG_WAV    DC.B    'antopia-map.wav',0
-MENU_SONG_WAV   dc.B    'antopia-menu.wav',0
+BATTLE_SONG_WAV DC.B    'antopia-battle.wav1',0
+MAP_SONG_WAV    DC.B    'antopia-map.wav1',0
+MENU_SONG_WAV   dc.B    'antopia-menu.wav1',0
 
 
 respawnTime         dc.W        0
