@@ -10,7 +10,8 @@ start:
     BSR     POWERUP_LOAD               ; Load Opps (Collision) Sound into Memory
     BSR     LVLCHANGE_LOAD               ; Load Opps (Collision) Sound into Memory
     BSR     HIT_LOAD
-    
+    BSR     ROAR_LOAD
+        
     bra firstInit
 
 firstInit:
@@ -93,6 +94,7 @@ aaes
  include "score.x68"
 
 	end start
+
 
 
 
