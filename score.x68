@@ -26,6 +26,7 @@ tallyScore:
     clr.l d2
     move.b isWin, d2
     mulu #scoreWin, d2
+    clr.L   d3
     move.b DIFFICULTY, d3
     mulu d3, d2
     add.l d2, score
@@ -46,6 +47,7 @@ tallyScore:
     clr.l d2
     move.l totalKills, d2
     mulu #scoreKill, d2
+    clr.L   d3
     move.b DIFFICULTY, d3
     mulu d3, d2
     add.l d2, score
@@ -55,6 +57,7 @@ tallyScore:
     clr.l d2
     move.b totalHillsDefended, d2
     mulu #scoreHillDef, d2
+    clr.L   d3
     move.b DIFFICULTY, d3
     mulu d3, d2
     add.l d2, score
@@ -64,6 +67,7 @@ tallyScore:
     clr.l d2
     move.l perfectDefenceAmount, d2
     mulu #scorePerfectDef, d2
+    clr.L   d3
     move.b DIFFICULTY, d3
     mulu d3, d2
     add.l d2, score

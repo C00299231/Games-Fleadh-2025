@@ -1,12 +1,19 @@
 DIFFICULTY_SELECT: 
-    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
-    BSR CLEAR_SCREEN
-	
+    move.b #tcdbl,d0
+    move.b #17, d1
+    trap    #15
+
+    move.w #3, lvlType
+
+DRAW_DIFFSELECT:
+    BSR     CLEAR_SCREEN
+    
     *------------ fill background --------------*
     MOVE.W      #0,D1
     MOVE.W      #0,d2
     MOVE.B      #89,D0
     TRAP        #15
+    
     
     ; Message
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
@@ -30,6 +37,22 @@ DIFFICULTY_SELECT:
     MOVE.B  #87,        D0          ; Draw box
     TRAP    #15                     ; Trap (Perform action)
     
+    tst.b   selectedIndex
+    IF <EQ> THEN
+        move.l  d1, (sp)+
+        MOVE.L  #WHITE,     D1          ; Set Background color
+        MOVE.B  #80,        D0          ; Task for Background Color
+        TRAP    #15                     ; Trap (Perform action)
+        
+        move.l #87, d0
+        move.l -(sp), d1
+        add.l #10, d1
+        add.l #10, d2
+        sub.l #10, d3
+        sub.l #10, d4
+
+        trap #15
+    ENDI
     ; DRAW MEDIUM BOX
     ; Set Pixel Colors
     MOVE.L  #color5,     D1          ; Set Background color
@@ -44,6 +67,23 @@ DIFFICULTY_SELECT:
     MOVE.B  #87,        D0          ; Draw box
     TRAP    #15                     ; Trap (Perform action)
     
+    cmp.b   #1,selectedIndex
+    IF <EQ> THEN
+        move.l  d1, (sp)+
+        MOVE.L  #WHITE,     D1          ; Set Background color
+        MOVE.B  #80,        D0          ; Task for Background Color
+        TRAP    #15                     ; Trap (Perform action)
+        
+        move.l #87, d0
+        move.l -(sp), d1
+        add.l #10, d1
+        add.l #10, d2
+        sub.l #10, d3
+        sub.l #10, d4
+
+        trap #15
+    ENDI
+
     ; DRAW HARD BOX
     ; Set Pixel Colors
     MOVE.L  #RED,     D1          ; Set Background color
@@ -58,6 +98,24 @@ DIFFICULTY_SELECT:
     MOVE.B  #87,        D0          ; Draw box
     TRAP    #15                     ; Trap (Perform action)
     
+        
+    cmp.b   #2,selectedIndex
+    IF <EQ> THEN
+        move.l  d1, (sp)+
+        MOVE.L  #WHITE,     D1          ; Set Background color
+        MOVE.B  #80,        D0          ; Task for Background Color
+        TRAP    #15                     ; Trap (Perform action)
+        
+        move.l #87, d0
+        move.l -(sp), d1
+        add.l #10, d1
+        add.l #10, d2
+        sub.l #10, d3
+        sub.l #10, d4
+
+        trap #15
+    ENDI
+
     ; Message
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$0D09,     D1          
@@ -156,47 +214,23 @@ DIFFICULTY_SELECT:
 
     ; Message
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1C1E,     D1          
+    MOVE.W  #$171E,     D1          
     TRAP    #15                     ; Trap (Perform action)
     LEA     ENTER_DIFFICULTY_MSG,  A1   ; Message
     MOVE    #13,        D0          ; No Line feed
     TRAP    #15                     ; Trap (Perform action)
-    
-    MOVE.B  #94,        D0
-    TRAP    #15
 
     
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$341E,     D1          
     TRAP    #15                     ; Trap (Perform action)
     ; READ INPUT
-    CLR.L D1
-    MOVE.L #4, D0
-    TRAP #15
-    
-    CMP.L #1, D1
-    IF <EQ> THEN
-        MOVE.B  #5,antsRemaining
-        MOVE.l  #1,EASY_SLOW
-        MOVE.B  #1,DIFFICULTY
-        move.b  #5, maxAntHp
-        BRA mapInit
-    ENDI
-    CMP.L #2, D1
-    IF <EQ> THEN
-        MOVE.B  #5,antsRemaining
-        MOVE.B  #2,DIFFICULTY
-        move.b  #3, maxAntHp
-        BRA mapInit
-    ENDI
-    CMP.L #3, D1
-    IF <EQ> THEN
-        MOVE.B  #1,antsRemaining
-        MOVE.B  #5,DIFFICULTY
-        move.b  #3, maxAntHp
-        BRA mapInit
-    ENDI
-    BRA DIFFICULTY_SELECT
+    bsr     testInput
+
+    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.B  #TC_REDRAW,        D0
+    TRAP    #15
+    BRA DRAW_DIFFSELECT
 
 CLEAR_SCREEN:
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
@@ -204,6 +238,32 @@ CLEAR_SCREEN:
 	TRAP	#15                     ; Trap (Perform action)
 	RTS
 
+checkDifSelected:
+    CMP.b #0, selectedIndex
+    IF <EQ> THEN
+        MOVE.B  #5,antsRemaining
+        MOVE.l  #1,EASY_SLOW
+        MOVE.B  #1,DIFFICULTY
+        move.b  #5, maxAntHp
+        BRA mapInit
+    ENDI
+    CMP.b #1, selectedIndex
+    IF <EQ> THEN
+        MOVE.B  #5,antsRemaining
+        MOVE.l  #0,EASY_SLOW
+        MOVE.B  #2,DIFFICULTY
+        move.b  #3, maxAntHp
+        BRA mapInit
+    ENDI
+    CMP.b #2, selectedIndex
+    IF <EQ> THEN
+        MOVE.l  #0,EASY_SLOW
+        MOVE.B  #1,antsRemaining
+        MOVE.B  #5,DIFFICULTY
+        move.b  #3, maxAntHp
+        BRA mapInit
+    ENDI
+    RTS
 
 
 BOX_SIZE           EQU  150 ; Box size constant
@@ -220,8 +280,9 @@ HARD_MSG1 DC.B '3-HARDCORE', 0
 HARD_MSG2 DC.B 'You are the ', 0 
 HARD_MSG3 DC.B 'Kindom`s last ', 0 
 HARD_MSG4 DC.B 'hope. 1 Life', 0 
-ENTER_DIFFICULTY_MSG DC.B 'Enter difficulty (1-3):', 0
+ENTER_DIFFICULTY_MSG DC.B '-Press `Enter` to choose difficulty-', 0
 
+selectedIndex     dc.b    1
 EASY_SLOW         DC.L    0
 EASY_EXTRAHP      DC.B    0
 HARD_INCREASE     EQU     1

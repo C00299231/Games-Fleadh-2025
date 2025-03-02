@@ -62,7 +62,6 @@ title:
     lea title2msg, a1
     jsr print
     
-    
     bra titleLoop
     
 titleLoop:
@@ -111,6 +110,7 @@ title2msg dc.b 'Press "enter/(A)" to start...',0
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 
