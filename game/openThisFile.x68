@@ -17,10 +17,6 @@ nextInit:
     move.b  #0,enemiesToDefeat
     lea     hillHPArray,a1
     move.l  #$64646464, (a1)
-    ;move.b  #100,(a1)+
-    ;move.b  #100,(a1)+
-    ;move.b  #100,(a1)+
-    ;move.b  #100,(a1)+
     clr.l   perfectDefenceAmount
     clr.l   totalKills
     move.b  #5,antsRemaining
@@ -95,6 +91,7 @@ title2msg dc.b 'Press "enter/(A)" to start...',0
 
  include "battle/battleView.x68"
  include "battle/soundFiles.x68"
+ include "battle/acornThrow.x68"
  
  include "score.x68"
  include "asciiArt.x68"
@@ -110,6 +107,7 @@ title2msg dc.b 'Press "enter/(A)" to start...',0
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 

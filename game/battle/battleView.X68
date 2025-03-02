@@ -1,66 +1,28 @@
 *-----------------------------------------------------------
-* Title      : Game Starter Kit
+* Title      : battle view 
 * Written by : Oliwier Jakubiec
 * Date       : 05/02/2025
-* Description: Project Starter Kit
+* Description: battle main file
 *-----------------------------------------------------------
 
 *-----------------------------------------------------------
-* Section       : Charater Setup
-* Description   : Size of Player and Enemy and properties
-* of these characters e.g Starting Positions and Sizes
+* Section       : EQUs
+* Description   : set up constants
 *-----------------------------------------------------------
-
-THRW_W_INIT EQU         15          ; Players initial Width
-THRW_H_INIT EQU         15          ; Players initial Height
-
-THRW_DFLT_V EQU         00          ; Default Player Velocity
-THRW_JUMP_V EQU         -16          ; Player Jump Velocity
-THRW_DFLT_G EQU         01          ; Player Default Gravity
-
 GND_TRUE    EQU         01          ; Player on Ground True
 GND_FALSE   EQU         00          ; Player on Ground False
-
-GAMEOVER_INDEX   EQU             00          ; Player Run Sound Index  
-JMP_INDEX   EQU             01          ; Player Jump Sound Index  
-HITHURT_INDEX  EQU          02          ; Player Opps Sound Index
-POWERUP_INDEX  EQU          03          ; Player Opps Sound Index
-LEVELCHANGE_INDEX  EQU      04          ; Player Opps Sound Index
-HIT_INDEX  EQU              05  
-ROAR_INDEX  EQU              06
-HILLHURT_INDEX  EQU              07 
-
-SONG_INDEX equ          08
-STING_INDEX EQU 09
 
 ENMY_W_INIT EQU         27          ; Enemy initial Width
 ENMY_H_INIT EQU         13          ; Enemy initial Height
 
-FLY_ENMY_W_INIT  EQU         30          ; Enemy initial Width
-FLY_ENMY_H_INIT  EQU         13          ; Enemy initial Height
+FLY_ENMY_W_INIT  EQU         30          ; flying Enemy initial Width
+FLY_ENMY_H_INIT  EQU         13          ; Enemy flying initial Height
 
 BRUTE_W_INIT EQU         50          ; BRute Enemy initial Width
 BRUTE_H_INIT EQU         25          ; Brute Enemy initial Height
 
 HEALTH_PACK_W    EQU         12          ; Enemy initial Width
 HEALTH_PACK_H    EQU         12          ; Enemy initial Height
-
-LOOKRIGHT   EQU         02          ; Look Right
-LOOKLEFT    EQU         01          ; Look Left
-
-*-----------------------------------------------------------
-* Section       : Keyboard Keys
-* Description   : Spacebar and Escape or two functioning keys
-* Spacebar to JUMP and Escape to Exit Game
-*-----------------------------------------------------------
-SPACEBAR    EQU         $20         ; Spacebar ASCII Keycode
-ESCAPE      EQU         $1B         ; Escape ASCII Keycode
-Rkey           EQU         $52         ; R ASCII Keycode
-Akey           EQU         $41         ; A ASCII Keycode
-Skey           EQU         $53         ; S ASCII Keycode
-Dkey           EQU         $44         ; D ASCII Keycode
-Jkey           EQU         $4A         ; L ASCII Keycode
-Kkey           EQU         $4B         ; K ASCII Keycode
 
 *-----------------------------------------------------------
 * Subroutine    : Initialise
@@ -75,7 +37,7 @@ INITRUN:
 
     bsr PLAY_SONG
 
-    ; Screen Size
+    ; Set up Screen Size
     MOVE.B  #TC_SCREEN, D0          ; access screen information
     MOVE.L  #TC_S_SIZE, D1          ; placing 0 in D1 triggers loading screen size information
     TRAP    #15                     ; interpret D0 and D1 for screen size
@@ -83,18 +45,10 @@ INITRUN:
     SWAP    D1                      ; Swap top and bottom word to retrive screen size
     MOVE.W  D1,         SCREEN_W    ; place screen width in memory location
 
+    ; init player
     BSR     INIT_PLAYER
+    BSR     initThrow
     
-    ; Initialise Player Velocity
-    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.B  #THRW_DFLT_V,D1         ; Init Player Velocity
-    MOVE.L  D1,         THROW_VELOCITY
-
-    ; Initialise Player Gravity
-    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.L  #THRW_DFLT_G,D1         ; Init Player Gravity
-    MOVE.L  D1,         THROW_GRAVITY
-
     ; Initial Position for Enemy
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
@@ -110,66 +64,68 @@ INITRUN:
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
     ADD.L   #100,D1
-    MOVE.L  D1,         FLYINGENEMY_X     ; Enemy X Position
+    MOVE.L  D1,         FLYINGENEMY_X     ; flying Enemy X Position
 
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
-    SUB.W   #60,        D1
-    MOVE.L  D1,         FLYINGENEMY_Y     ; Enemy Y Position
+    SUB.W   #60,        D1          ; sub to move y pos up
+    MOVE.L  D1,         FLYINGENEMY_Y     ; flying Enemy Y Position
     
     ; Initial Position for Health pack
-    MOVE.L  #380,         HEALTH_X     ; Enemy X Position
-    MOVE.L  #90,         HEALTH_Y     ; Enemy Y Position
+    MOVE.L  #380,         HEALTH_X     ; health X Position
+    MOVE.L  #90,         HEALTH_Y     ; health Y Position
 
+    ; Initial health x y
     MOVE.B  maxAntHp,        antHealth
 
-    MOVE.B  #02,        POINTS
+    ; reset draw and spawn health to 0
     MOVE.B  #00,        DRAW_HEALTHPACKS
     MOVE.B  #00,        SPAWN_HEALTHPACKS
 
+    ; move attack x and y to 0,0
     MOVE.L  #0,         ATTACK_X
     MOVE.L  #0,         ATTACK_Y
-    MOVE.L  #-100,      THROW_X
-    MOVE.L  #-100,      THROW_Y
     
+    ; set booleans to false
     MOVE.B  #00,        CURRENTLYATTACKING
-    MOVE.B  #00,        CURRENTLYTHROWING
-    
     MOVE.B  #00,        ENEMY_HIT
     MOVE.B  #00,        FLYENEMY_HIT
 
-    ADD.B   #5,        enemiesToDefeat
+    ; set up the wave enemies count
+    ADD.B   #15,         enemiesToDefeat
     MOVE.B  #0,         ENEMIES_DEFEATED
     MOVE.B  #0,         enemiesPassed
     MOVE.B  #4,         backToMapCount
-    CLR.L   D1
     
+    ; move the current hill no. hp into this hill hp
     MOVE.B  (a6),   hillHP
     
     MOVE.B     #100,    hillHP
+    
     ; Init brute
     ; Initial Position for BRUTE
-    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    EOR.L     D1,D1                      ; Clear contents of D1 
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
     ADD.L   #100,D1
     MOVE.L  D1,         BRUTE_X     
 
-    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
+    EOR.L     D1,D1                      ; Clear contents of D1 
     MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     MOVE.L  D1,         BRUTE_Y     
 
+    ; reset brute bools
     MOVE.B      #0,     BRUTE_DEAD          
     MOVE.B      #0,     BRUTE_HIT           
     MOVE.B      #3,     BRUTE_HP            
 
-    ; Enable the screen back buffer(see easy 68k help)
+    ; Enable the screen back buffer
     MOVE.B  #TC_DBL_BUF,D0          ; 92 Enables Double Buffer
     MOVE.B  #17,        D1          ; Combine Tasks
     TRAP	#15                     ; Trap (Perform action)
         
-    ; Clear the screen (see easy 68k help)
+    ; Clear the screen 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
     TRAP	#15                     ; Trap (Perform action)
@@ -180,11 +136,10 @@ INITRUN:
 * Subroutine    : Game
 * Description   : Game including main GameLoop. GameLoop is like
 * a while loop in that it runs forever until interupted
-* (Input, Update, Draw). The Enemies Run at Player Jump to Avoid
+* (Input, Update, Draw). 
 *-----------------------------------------------------------
 GAME:
 
-    
 GAMELOOP:
 
     MOVEQ		#8,d0				* get time in 1/100 ths seconds
@@ -200,19 +155,19 @@ wait_100ms:
 	TRAP		#15
 
 	SUB.l		d7,d1				* subtract previous time from current time
-	CMP.b		#$02,d1			* compare with 9/100ths
+	CMP.b		#$02,d1			    * compare with 2/100ths
 	BMI.s		wait_100ms			* loop if time not up yet
     rts
 
 continueLoop:   ; after wait is done
     BSR     BATTLEINPUT                   ; Check Keyboard Input
-    BSR     checkPaused
+    BSR     checkPaused             ; check if the game is paused
     BSR     UPDATE                  ; Update positions and points
     BSR     IS_PLAYER_ON_GND        ; Check if player is on ground
     BSR     CHECK_COLLISIONS        ; Check for Collisions
     BSR     DRAWBATTLE                  ; Draw the Scene
-                ; Loop back to GameLoop
-    BRA     GAMELOOP    
+                
+    BRA     GAMELOOP    ; Loop back to GameLoop
     
 *-----------------------------------------------------------
 * Subroutine    : Input
@@ -222,47 +177,50 @@ BATTLEINPUT:
     move.l CURRENT_KEY, D0
     move.l D0,lastkey 
 
-    MOVE.B  #TC_KEYCODE, D0          ; Check for pressed keys
-    ;MOVE.L  #$41444C20, D1          
-    MOVE.L  #runActionKeys, D1          ; Check for A, D, L, and Spacebar
+    MOVE.B  #TC_KEYCODE, D0             ; Check for pressed keys      
+    MOVE.L  #runActionKeys, D1          ; Check for A, D, K, and Spacebar
     TRAP    #15                         ; Trap (Perform action)
-    MOVE.L  D1,         CURRENT_KEY     ; Put Current Key in Memory
+    ; returns the FF in the position of the pressed keys in d1
+    MOVE.L  D1,         CURRENT_KEY     ; Put Current Keys in Memory
 
-    BTST.L  #24,D1
-    IF <NE> THEN
+    ; check if A is pressed
+    BTST.L  #24,D1      ; bit test the 24th bit
+    IF <NE> THEN        ; if its not 0 the move left
         BSR    MOVE_PLAYER_LEFT
     ENDI
-
+    ; check if D is pressed
     MOVE.L  CURRENT_KEY, D1
     BTST.L  #16,D1
     IF <NE> THEN
         BSR    MOVE_PLAYER_RIGHT
     ENDI
 
+    ; check if K is pressed
     MOVE.L  CURRENT_KEY, D1
     BTST.L  #8,D1
     IF <NE> THEN
         BSR    PERFORM_ATTACK
     ENDI
 
+    ; check if space is pressed
     MOVE.L  CURRENT_KEY, D1
     BTST.L  #0,D1
     IF <NE> THEN
         BSR    JUMP
     ENDI
 
+    ; seperate check for keys for other inputs that dont need to be check at the same time
     MOVE.B  #TC_KEYCODE, D0          ; Check for pressed keys
-    MOVE.L  #$1B4a, D1                 ; check K and escape
+    MOVE.L  #$1B4a, D1                 ; check J
     TRAP    #15                     ; Trap (Perform action)
     MOVE.L  D1,         CURRENT_KEY     ; Put Current Key in Memory
 
+    ; if j is pressed do thrown attack
     MOVE.L  CURRENT_KEY, D1
     BTST.L  #0,D1
     IF <NE> THEN
         BSR    PERFORM_THROW
     ENDI
-
-
 
     ; Process Input
     CLR.L   D1                      ; Clear Data Register
@@ -284,7 +242,7 @@ BATTLEINPUT:
 PROCESS_INPUT:
     MOVE.L  D2,         CURRENT_KEY ; Put Current Key in Memory
 
-; pause
+    ; pause
     move.l  d2,         currentKey
     CMP.l   #escapekey,    currentKey ; Is Current Key Escape
     BEQ     escapePressed
@@ -298,14 +256,17 @@ PROCESS_INPUT:
     RTS                             ; Return to subroutine
 
 *----------
+; check if still paused
 checkPaused:
     TST.B  isPaused
     BNE    stillPaused
     RTS
 
+; go back to game loop after drawing
 stillPaused:
     BSR    DRAWBATTLE
     BRA    GAMELOOP
+
 *-----------------------------------------------------------
 * Subroutine    : Update
 * Description   : Main update loop update Player and Enemies
@@ -316,21 +277,20 @@ UPDATE:
     BSR     MOVE_THROW
 
     ; Move the Enemy
-    CLR.L   D1                      ; Clear the contents of D0
-    MOVE.L  ENEMY_X,    D1          ; Move the Enemy X Position to D0
+    CLR.L   D1                      ; Clear the contents of D1
+    MOVE.L  ENEMY_X,    D1          ; Move the Enemy X Position to D1
     CMP.L   #00,        D1
     BLE     RESET_ENEMY_POSITION    ; Reset Enemy if off Screen
-    BSR     MOVE_ENEMY              ; Move the Enemy
 
     ; Move flying enemy
-    CLR.L   D1                      ; Clear the contents of D0
-    MOVE.L  FLYINGENEMY_X,    D1          ; Move the Enemy X Position to D0
+    CLR.L   D1                            ; Clear the contents of D1
+    MOVE.L  FLYINGENEMY_X,    D1          ; Move the flying Enemy X Position to D1
     CMP.L   #00,        D1
-    BLE     RESET_FLYENEMY_POSITION    ; Reset Enemy if off Screen
+    BLE     RESET_FLYENEMY_POSITION       ; Reset flying Enemy if off Screen
     
     ; Move Brute enemy
-    CLR.L   D1                      ; Clear the contents of D0
-    MOVE.L  BRUTE_X,    D1          ; Move the Enemy X Position to D0
+    CLR.L   D1                      ; Clear the contents of D1
+    MOVE.L  BRUTE_X,    D1          ; Move the brute X Position to D1
     CMP.L   #00,        D1
     BLE     RESET_BRUTE_POSITION    ; Reset Enemy if off Screen
     CMP.L   #660,D1
@@ -338,23 +298,29 @@ UPDATE:
         BSR     PLAY_ROAR
     ENDI
 
+    BSR     MOVE_ENEMIES             ; Move the Enemies
 
     ; move health
     BSR     MOVE_HEALTHPACK
+    ; set cooldown over to true
     MOVE.B  #1, healthCooldownOver
+    ; if the cooldown is not over then set it back to false
     CMP.W   #0,healthCooldown
     IF <GT> THEN
         SUBI.W  #1, healthCooldown
         MOVE.B  #0, healthCooldownOver
     ENDI
 
+    ; check the attack cooldown
     BSR     CHECK_ATTACK_COOLDOWN
 
+    ; check to see if the attack time is over
     TST.W   ATTACK_TIME
     BNE     ATTACK_TIME_SUB
     MOVE.B  #00,        CURRENTLYATTACKING
     MOVE.L  #480,        ATTACK_Y
 
+    ; test if hill hurt timer is 0
     TST.B   hillHurtTimer
     IF <NE> THEN
         SUB.B   #1,hillHurtTimer
@@ -362,50 +328,28 @@ UPDATE:
 
     RTS                             ; Return to subroutine  
 
-MOVE_THROW:
-       ; Update the Players Positon based on Velocity and Gravity
-    EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.L  THROW_VELOCITY, D1       ; Fetch Player Velocity
-    MOVE.L  THROW_GRAVITY, D2        ; Fetch Player Gravity
-    ADD.L   D2,         D1          ; Add Gravity to Velocity
-    MOVE.L  D1,         THROW_VELOCITY ; Update Player Velocity
-    ADD.L   THROW_Y,   D1          ; Add Velocity to Player
-    MOVE.L  D1,         THROW_Y    ; Update Players Y Position
-
-    ADDI.L   #4,        THROW_X
-    BSR     CHECK_THROW_DONE
-    
-    RTS
-
-CHECK_THROW_DONE:
-    CMP.L    #350, THROW_Y
-    BGT      RESET_THROW
-    RTS
-
-RESET_THROW:
-    MOVE.B   #00, CURRENTLYTHROWING
-    MOVE.L   #-100, THROW_X
-    MOVE.L   #-100, THROW_Y
-    RTS
-
+; attack cooldown check
 CHECK_ATTACK_COOLDOWN:
     CMP.W   #0, ATTACK_COOLDOWN
     BGT     ATTACK_COOLDOWN_SUB
     RTS
 
+; subtract 2 from the timer
 ATTACK_TIME_SUB:
     SUB.W   #02,        ATTACK_TIME
     RTS   
+; subtract 2 from the cooldown
 ATTACK_COOLDOWN_SUB:
     SUB.W   #02,        ATTACK_COOLDOWN
     RTS                            
 
+; move the health
 MOVE_HEALTHPACK:
     ; check if health is meant to spawn
     TST.B   SPAWN_HEALTHPACKS
     BEQ     CONTINUE
     
-    ; check if health is on the
+    ; check if health is on the ground
     CMP.L   #240,       HEALTH_Y
     BGE     CONTINUE
 
@@ -417,21 +361,26 @@ MOVE_HEALTHPACK:
 * Subroutine    : Move Enemy
 * Description   : Move Enemy Right to Left
 *-----------------------------------------------------------
-MOVE_ENEMY:
+MOVE_ENEMIES:
+    ; check to see which wave it is and update enemy positions accordingly
     CMP.W   #3,lvlIndex
     BEQ     MOVE_ENEMY_L4
     CMP.W   #2,lvlIndex
     BEQ     MOVE_ENEMY_L3
     CMP.W   #1,lvlIndex
     BEQ     MOVE_ENEMY_L2
+    ; else, do wave 1 updates
 
+    ; check if enemy is close to ant hill to start moving down
     CMP.L   #180,FLYINGENEMY_X
     IF <LE> THEN
         ADD.L   #1,FLYINGENEMY_Y
     ENDI
 
+    ; move the enemies left
     SUB.L   #03,        FLYINGENEMY_X
     SUB.L   #02,        ENEMY_X     ; Move enemy by X Value
+    ; if hardcore is active then increase the speed
     CMP.b   #5,         DIFFICULTY
     IF <EQ> THEN
         SUB.L  #HARD_INCREASE, FLYINGENEMY_X
@@ -439,6 +388,7 @@ MOVE_ENEMY:
     ENDI
     RTS
 
+; move enemies a little faster and move brute this wave 
 MOVE_ENEMY_L2:
     MOVE.L  FLYINGENEMY_X, D1
     SUB.L   #02,        d1
@@ -605,23 +555,6 @@ PERFORM_ATTACK:
     MOVE.L   PLAYER_X,ATTACK_X
     ADDI.L   #PLYR_W_INIT,ATTACK_X
     MOVE.L   PLAYER_Y,ATTACK_Y
-    RTS
-
-PERFORM_THROW:
-    TST.B  isPaused
-    IF <NE> THEN
-        RTS
-    ENDI
-    TST.B    CURRENTLYTHROWING
-    BNE      CONTINUE
-    
-    MOVE.B   #01,CURRENTLYTHROWING
-    MOVE.L   PLAYER_X,THROW_X
-    ADDI.L   #PLYR_W_INIT,THROW_X
-    MOVE.L   PLAYER_Y,THROW_Y
-    SUBI.L   #PLYR_H_INIT,THROW_Y
-
-    BSR     PERFORM_THROW_ARC
     RTS
 
 *-----------------------------------------------------------
@@ -1133,28 +1066,6 @@ SET_OFF_GROUND:
     RTS                             ; Return to subroutine
 
 *-----------------------------------------------------------
-* Subroutine    : Throw
-* Description   : Perform a Throw
-*-----------------------------------------------------------
-THROW_ARC:
-    CMP.L   #GND_TRUE,PLYR_ON_GND   ; Player is on the Ground ?
-    BEQ     PERFORM_THROW_ARC    ; Do Jump
-    BRA     ARC_DONE               ;
-PERFORM_THROW_ARC:
-    ;BSR     PLAY_JUMP               ; Play jump sound
-    MOVE.L  #THRW_JUMP_V,THROW_VELOCITY ; Set the players velocity to true
-    RTS                             ; Return to subroutine
-ARC_DONE:
-    RTS                             ; Return to subroutine
-
-*-----------------------------------------------------------
-* Subroutine    : Idle
-* Description   : Perform a Idle
-*----------------------------------------------------------- 
-IDLE:
-    RTS                             ; Return to subroutine
-
-*-----------------------------------------------------------
 * Subroutines   : Sound Load and Play
 * Description   : Initialise game sounds into memory 
 * Current Sounds are RUN, JUMP and Opps for Collision
@@ -1208,19 +1119,6 @@ POWERUP_LOAD:
 
 PLAY_POWERUP:
     MOVE    #POWERUP_INDEX,D1          ; Load Sound INDEX
-    MOVE    #75,        D0          ; Play Sound
-    TRAP    #15                     ; Trap (Perform action)
-    RTS                             ; Return to subroutine
-
-LVLCHANGE_LOAD:
-    LEA     LEVELCHANGE_WAV,   A1          ; Load Wav File into A1
-    MOVE    #LEVELCHANGE_INDEX,D1          ; Assign it INDEX
-    MOVE    #74,        D0          ; Load into memory
-    TRAP    #15                     ; Trap (Perform action)
-    RTS                             ; Return to subroutine
-
-PLAY_LVLCHANGE:
-    MOVE    #LEVELCHANGE_INDEX,D1          ; Load Sound INDEX
     MOVE    #75,        D0          ; Play Sound
     TRAP    #15                     ; Trap (Perform action)
     RTS                             ; Return to subroutine
@@ -2071,10 +1969,6 @@ EXIT:
 * Description   : Messages to Print on Console, names should be
 * self documenting
 *-----------------------------------------------------------
-SCORE_MSG       DC.B    'Score : ', 0       ; Score Message
-KEYCODE_MSG     DC.B    'KeyCode : ', 0     ; Keycode Message
-JUMP_MSG        DC.B    'Jump....', 0       ; Jump Message
-
 
 ENEMIESDEAD_MSG         DC.B    'Enemies Defeated:', 0           
 ENEMYCOUNT_MSG         DC.B    'Wave enemy count:', 0           
@@ -2121,16 +2015,6 @@ LAST_KEY        DS.W    01  ; Reserve Space for Current Key Pressed
 * Section       : Character Data
 * Description   : Player and Enemy Position Memory Locations
 *-----------------------------------------------------------
-PLAYER_X        DS.L    01  ; Reserve Space for Player X Position
-PLAYER_Y        DS.L    01  ; Reserve Space for Player Y Position
-PLAYER_SCORE    DS.L    01  ; Reserve Space for Player Score
-
-PLYR_VELOCITY   DS.L    01  ; Reserve Space for Player Velocity
-PLYR_GRAVITY    DS.L    01  ; Reserve Space for Player Gravity
-PLYR_ON_GND     DS.L    01  ; Reserve Space for Player on Ground
-
-; 1, = left, 0 = right
-PLAYER_DIR      DS.B    01  ; Reserve Space for Player Direction
 
 ENEMY_X         DS.L    01  ; Reserve Space for Enemy X Position
 ENEMY_Y         DS.L    01  ; Reserve Space for Enemy Y Position
@@ -2165,16 +2049,6 @@ ATTACK_Y             DC.L    00
 ATTACK_HEIGHT        EQU     20
 ATTACK_WIDTH         EQU     35 
 
-CURRENTLYTHROWING   DC.B    00
-THROW_COOLDOWN      DC.W    00
-THROW_TIME          DC.W    00
-THROW_X             DC.L    00
-THROW_Y             DC.L    00
-THROW_HEIGHT        EQU     20
-THROW_WIDTH         EQU     35 
-THROW_VELOCITY      DS.L    01  
-THROW_GRAVITY       DS.L    01  
-
 ENEMIES_DEFEATED    DC.B    00
 enemiesPassed       DC.b    00
 enemiesToDefeat     DC.B    00
@@ -2185,33 +2059,13 @@ BRUTE_DEAD          DC.B    00
 BRUTE_HIT           DC.B    00
 BRUTE_HP            DC.b    03
 
-* Widths and heights of player, enemy and healthpack
-; NOT NECESSARY AT THE MOMENT
-*-----------------------------------------------------------
-PLAYER_WIDTH      DC.B        12          ; Player Width
-PLAYER_HEIGHT     DC.B        12          ; Player Height
-
-ENEMY_WIDTH       DC.W        12          ; Enemy Width
-ENEMY_HEIGHT      DC.W        12          ; Enemy Height
-
-FLYENEMY_WIDTH    DC.W        20 
-FLYENEMY_HEIGHT   DC.W        12 
-
-        
-
-
-
+; all timers and cooldowns
 respawnTime         dc.W        0
 backToMapCount      dc.b        3
 healthCooldown      DC.W        0
 hillHurtTimer       dc.b        0
-*---*
 timer           DC.L    0
-
-;    END    START        ; last line of source
-
-
-
+*---*
 
 
 *~Font name~Courier New~

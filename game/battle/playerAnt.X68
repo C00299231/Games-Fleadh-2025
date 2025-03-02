@@ -20,10 +20,6 @@ INIT_PLAYER:
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     MOVE.L  D1,         PLAYER_Y    ; Players Y Position
 
-        ; Set the player starting width and height
-    MOVE.B  #PLYR_W_INIT,        PLAYER_WIDTH ; Players Width
-    MOVE.B  #PLYR_H_INIT,        PLAYER_HEIGHT ; Players Width
-
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
@@ -62,8 +58,6 @@ MOVE_PLAYER_LEFT:
     IF <NE> THEN
         RTS
     ENDI
-
-    MOVE.B  #LOOKLEFT,        PLAYER_DIR
     MOVE.L  PLAYER_X,   D1          ; Fetch Player X Position
     SUB.L   #03,        D1          ; Move Player Left
     MOVE.L  D1,         PLAYER_X    ; Update Players X Position
@@ -76,7 +70,6 @@ MOVE_PLAYER_RIGHT:
     IF <NE> THEN
         RTS
     ENDI
-    MOVE.B  #LOOKRIGHT,        PLAYER_DIR
     MOVE.L  PLAYER_X,   D1          ; Fetch Player X Position
     ADD.L   #03,        D1          ; Move Player Right
     MOVE.L  D1,         PLAYER_X    ; Update Players X Position
@@ -118,14 +111,12 @@ DRAW_PLAYER:
 
     MOVE.L  (a1),   D1          ; X
     MOVE.L  (a2),   D2
-    SUBQ.L  #4,D2
-
-    MOVE.L  (a1),   D3
-    EOR.L   D4,D4
-    MOVE.B   PLAYER_WIDTH,   D4      ; Width
-    ADD.L   D4,D3
-    MOVE.L  (a2),   D4
-    SUB.B   PLAYER_HEIGHT,   D4      ; Height          ; Y
+    MOVE.L  D1,   D3
+    MOVE.L  D2,   D4
+    
+    SUBQ.L  #4,     D2
+    ADD.l   #PLYR_W_INIT,   d3
+    SUB.B   #PLYR_H_INIT,   D4      ; Height          ; Y
     
      ; Draw Player
     MOVE.B  #87,        D0          ; Draw Player
@@ -136,22 +127,20 @@ DRAW_PLAYER:
     MOVE.L  (a2),   D2
     SUBQ.L  #4,D2
     MOVE.L  (a1),   D3
-    EOR.L   D4,D4
-    MOVE.B   PLAYER_WIDTH,   D4      ; Width
-    SUBI.B   #12,D4
-    ADD.L   D4,D3
+    ADD.L   #PLYR_W_INIT, D3
+    SUBI.L   #12,D3
     MOVE.L  (a2),   D4
-    SUB.B   PLAYER_HEIGHT,   D4      ; Height
-    SUB.B   #3,D4
+    SUB.L   #PLYR_H_INIT,   D4      ; Height
+    SUB.L   #3,D4
     
     ; Draw Player
     MOVE.B  #87,        D0          ; Draw Player
     TRAP    #15                     ; Trap (Perform action)
 
     ; change thickness
-        MOVE.l  #3,D1
-        MOVE.B  #93,D0
-        TRAP    #15
+    MOVE.l  #3,D1
+    MOVE.B  #93,D0
+    TRAP    #15
 *-------------- draw antena -----------------*    
     ; draw if not currently attacking melee
     tst.b   CURRENTLYATTACKING
@@ -222,6 +211,7 @@ DRAW_PLAYER:
     MOVE.B  #93,D0
     TRAP    #15
     
+    ; check to see if either attack is happening
     BSR     IS_ATTACKING
     BSR     IS_THROWING
 
@@ -277,15 +267,15 @@ DRAW_ATTACK:
     MOVE.l  #1,D1
     MOVE.B  #93,D0
     TRAP    #15
-    MOVE.L  ATTACK_X,   D1          ; X
+    MOVE.L  ATTACK_X,   D1          
     MOVE.L  ATTACK_Y,   D2
     SUB.L   #9,D2
     
     MOVE.L  ATTACK_X,   D3
-    ADD.L   #ATTACK_WIDTH,   D3      ; Width
+    ADD.L   #ATTACK_WIDTH,   D3      
     SUB.L   #8,D3
     MOVE.L  D2,   D4 
-    SUB.L   #3,   D4      ; Height          ; Y
+    SUB.L   #3,   D4     
     
     ; Draw Player
     MOVE.B  #87,        D0          ; Draw Player
@@ -296,71 +286,17 @@ IS_THROWING:
     TST.B   CURRENTLYTHROWING
     BNE     DRAW_THROW
     RTS
-DRAW_THROW:
-
-    ; Set Pixel Colors
-    MOVE.L  #ACORN,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
-    ; Reset Pixel Colors
-    MOVE.L  #ACORN,     D1          ; Set Background color
-    MOVE.B  #81,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
-
-    MOVE.L  THROW_X,   D1          ; X
-    MOVE.L  THROW_Y,   D2
-    
-    MOVE.L  THROW_X,   D3
-    ADD.L   #THRW_W_INIT,   D3      ; Width
-    MOVE.L  THROW_Y,   D4 
-    SUB.L   #THRW_H_INIT,   D4      ; Height          ; Y
-    
-    ; Draw Acorn
-    MOVE.B  #87,        D0          ; Draw Player
-    TRAP    #15                     ; Trap (Perform action)
-    
-    ; Set Pixel Colors
-    MOVE.L  #ACORNHAT,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
-    ; Reset Pixel Colors
-    MOVE.L  #ACORNHAT,     D1          ; Set Background color
-    MOVE.B  #81,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
-
-    MOVE.L  THROW_X,D1
-    SUB.L   #2,D1
-    ADD.l   #2,D3
-    ADD.L   #1,D4
-    MOVE.L  D4,D2
-    SUB.L   #6,D2
-
-    ; Draw Acorn
-    MOVE.B  #87,        D0          ; Draw Player
-    TRAP    #15                     ; Trap (Perform action)
-
-    MOVE.L  THROW_X,D1
-    ADD.L   #6,D1
-    MOVE.L  D2,D4
-    SUB.l   #5,D2
-    MOVE.L  D1,D3
-    ADD.L   #4,D3
-
-    ; Draw Acorn
-    MOVE.B  #87,        D0          ; Draw Player
-    TRAP    #15                     ; Trap (Perform action)
-
-    RTS                             ; Return to subroutine
-
 *-----------------DRAW respawn -----------------------------*
 DRAW_RESPAWN:
+    ; move current respawn timer to d5
     MOVEQ.L     #0,  D5
     MOVE.W      respawnTime,D5
 
-    EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
-    DIVU    #02,        D1          ; divide by 2 for center on Y Axis
-    MOVE.L  D1,         PLAYER_Y    ; Players Y Position
+    ; reset player y
+    CLR.L     D1                         ; Clear contents of D1
+    MOVE.W  SCREEN_H,   D1               ; Place Screen width in D1
+    DIVU    #02,        D1               ; divide by 2 for center on Y Axis
+    MOVE.L  D1,         PLAYER_Y         ; Players Y Position
 
     ; reset player velocity and attack
     MOVE.B  #0,     CURRENTLYATTACKING
@@ -372,6 +308,8 @@ DRAW_RESPAWN:
     ADD.L   #50, ENEMY_X
     ADD.L   #50, FLYINGENEMY_X
     ADD.L   #50, BRUTE_X
+
+; move the player from the ant hill out
 MOVE_RESPAWNED:
     MOVE.L  D5, PLAYER_X
 
@@ -388,6 +326,7 @@ MOVE_RESPAWNED:
     MOVE.B  #93,D0
     TRAP    #15
 
+    ; draw everything
     BSR     DRAW_BACKGROUND        
     BSR     DRAW_HILL 
     BSR     DRAW_PLYR_DATA          ; Draw Draw Score, HUD, Player X and Y
@@ -403,11 +342,26 @@ MOVE_RESPAWNED:
     BSR     drawHillHealth         ; draw hill hp
     BSR     drawPause        
 
-
+    ; update the respawn timer
     ADDQ.W      #1,respawnTime
     MOVE.W      respawnTime,D5
     CMP.W       #200,respawnTime
     BNE         MOVE_RESPAWNED
     MOVE.W     #0,respawnTime
-    ;else
+
     RTS
+
+* --- player data and variables
+PLAYER_X        DS.L    01  ; Reserve Space for Player X Position
+PLAYER_Y        DS.L    01  ; Reserve Space for Player Y Position
+PLAYER_SCORE    DS.L    01  ; Reserve Space for Player Score
+
+PLYR_VELOCITY   DS.L    01  ; Reserve Space for Player Velocity
+PLYR_GRAVITY    DS.L    01  ; Reserve Space for Player Gravity
+PLYR_ON_GND     DS.L    01  ; Reserve Space for Player on Ground
+
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
