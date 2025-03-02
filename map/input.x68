@@ -55,6 +55,11 @@ testinput:
         BSR battleInput ; happens in run
         rts
     ENDI
+    cmp.w #3, lvlType
+    IF <EQ> THEN
+        BSR diffInput ; happens in diff selection
+    ENDI
+
     
     rts             ; return to loop
 
@@ -99,6 +104,17 @@ menuInput:
 
     ; from here, enterKey is just pressed
     bra DIFFICULTY_SELECT
+diffInput:
+    cmpi.l #Dkey, currentkey
+    beq   rightSelected
+    cmpi.l #Akey, currentkey
+    beq   leftSelected
+
+    cmpi.l #enterKey, currentkey
+    beq    enterPressed
+    ; key is enterKey
+
+    rts
 
 mapinput:
     ; at this point, keycode in currentkey is pressed
@@ -170,6 +186,38 @@ escapePressed:
 escapeJustPressed:
     jsr togglePause
     rts
+enterPressed:
+    move.l currentKey, d2
+    cmp.l lastKey, d2
+    bne enterJustPressed
+    rts
+enterJustPressed:
+    jsr checkDifSelected
+    rts
+
+rightSelected:
+    move.l currentKey, d2
+    cmp.l lastKey, d2
+    bne rightJustPressed
+    rts
+rightJustPressed:
+    cmp.b #2, selectedIndex
+    IF <LT> THEN
+        addi.b #1, selectedIndex
+    ENDI
+    rts
+
+leftSelected:
+    move.l currentKey, d2
+    cmp.l lastKey, d2
+    bne leftJustPressed
+    rts
+leftJustPressed:
+    cmp.b #0, selectedIndex
+    IF <GT> THEN
+        subi.b #1, selectedIndex
+    ENDI
+    rts
 
 key0pressed:
     move.l currentKey, d2
@@ -236,6 +284,7 @@ endMovement:
 
 playerXspeed equ 3
 playerYspeed equ 2
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~

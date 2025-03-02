@@ -62,7 +62,8 @@ title:
     lea title2msg, a1
     jsr print
     
-    
+    move.b #TC_REDRAW
+    trap    #15
     bra titleLoop
     
 titleLoop:
