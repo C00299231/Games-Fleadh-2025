@@ -121,9 +121,7 @@ INITRUN:
     MOVE.L  #380,         HEALTH_X     ; Enemy X Position
     MOVE.L  #90,         HEALTH_Y     ; Enemy Y Position
 
-
-    LEA    LEVELS,      A2
-    MOVE.B  #03,        antHealth
+    MOVE.B  maxAntHp,        antHealth
 
     MOVE.B  #02,        POINTS
     MOVE.B  #00,        DRAW_HEALTHPACKS
@@ -148,7 +146,7 @@ INITRUN:
     
     MOVE.B  (a6),   hillHP
     
-    MOVE.B     #10,    hillHP
+    MOVE.B     #100,    hillHP
     ; Init brute
     ; Initial Position for BRUTE
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
@@ -433,10 +431,18 @@ MOVE_ENEMY:
 
     SUB.L   #03,        FLYINGENEMY_X
     SUB.L   #02,        ENEMY_X     ; Move enemy by X Value
+    CMP.b   #5,         DIFFICULTY
+    IF <EQ> THEN
+        SUB.L  #HARD_INCREASE, FLYINGENEMY_X
+        SUB.L  #HARD_INCREASE, ENEMY_X
+    ENDI
     RTS
 
 MOVE_ENEMY_L2:
-    SUB.L   #02,        FLYINGENEMY_X
+    MOVE.L  FLYINGENEMY_X, D1
+    SUB.L   #02,        d1
+    ADD.L   EASY_SLOW,  d1
+    MOVE.L  d1, FLYINGENEMY_X
     CMP.L   #380,       FLYINGENEMY_Y
     IF <GE> THEN
         SUB.l   #02,    FLYINGENEMY_X
@@ -446,7 +452,10 @@ MOVE_ENEMY_L2:
     IF <LE> THEN
         ADD.L   #1,FLYINGENEMY_Y
     ENDI
-    SUB.L   #04,        ENEMY_X     ; Move enemy by X Value
+    MOVE.L  ENEMY_X, D1
+    SUB.L   #04,        d1
+    ADD.L   EASY_SLOW,  d1
+    MOVE.L  d1, ENEMY_X
     SUB.L   #1,         BRUTE_X
     RTS
 
@@ -455,9 +464,18 @@ MOVE_ENEMY_L3:
     IF <LE> THEN
         ADD.L   #3,FLYINGENEMY_Y
     ENDI
-    SUB.L   #05,        FLYINGENEMY_X
-    SUB.L   #04,        ENEMY_X     ; Move enemy by X Value
-    SUB.L   #2,         BRUTE_X
+    MOVE.L  FLYINGENEMY_X, D1
+    SUB.L   #05,        d1
+    ADD.L   EASY_SLOW,  d1
+    MOVE.L  d1, FLYINGENEMY_X
+    MOVE.L  ENEMY_X, D1
+    SUB.L   #04,        d1
+    ADD.L   EASY_SLOW,  d1
+    MOVE.L  d1, ENEMY_X
+    MOVE.L  BRUTE_X, D1
+    SUB.L   #02,        d1
+    ADD.L   EASY_SLOW,  d1
+    MOVE.L  d1, BRUTE_X
     RTS
 
 MOVE_ENEMY_L4:
@@ -465,9 +483,18 @@ MOVE_ENEMY_L4:
     IF <LE> THEN
         ADD.L   #4,FLYINGENEMY_Y
     ENDI
-    SUB.L   #07,        FLYINGENEMY_X
-    SUB.L   #05,        ENEMY_X     ; Move enemy by X Value
-    SUB.L   #2,         BRUTE_X
+    MOVE.L  FLYINGENEMY_X, D1
+    SUB.L   #07,        d1
+    ADD.L   EASY_SLOW,  d1
+    MOVE.L  d1, FLYINGENEMY_X
+    MOVE.L  ENEMY_X, D1
+    SUB.L   #05,        d1
+    ADD.L   EASY_SLOW,  d1
+    MOVE.L  d1, ENEMY_X
+    MOVE.L  BRUTE_X, D1
+    SUB.L   #02,        d1
+    ADD.L   EASY_SLOW,  d1
+    MOVE.L  d1, BRUTE_X
     RTS
 *-----------------------------------------------------------
 * Subroutine    : Reset Enemy
@@ -1592,11 +1619,6 @@ DRAW_FLOOR:
     MOVE.B  #81,        D0
     TRAP    #15
 
-* -----------------------------------------------------------
-* Find level and draw dirt
-* -----------------------------------------------------------
-    LEA     LEVELS,      A2
-    MOVE.L  PLAYER_SCORE,   D5
     BRA     DRAWDIRT
     
 DRAWDIRT:
@@ -2028,14 +2050,7 @@ SCORE_MSG       DC.B    'Score : ', 0       ; Score Message
 KEYCODE_MSG     DC.B    'KeyCode : ', 0     ; Keycode Message
 JUMP_MSG        DC.B    'Jump....', 0       ; Jump Message
 
-IDLE_MSG        DC.B    'Idle....', 0       ; Idle Message
-UPDATE_MSG      DC.B    'Update....', 0     ; Update Message
-DRAW_MSG        DC.B    'Draw....', 0       ; Draw Message
 
-X_MSG           DC.B    'X:', 0             ; X Position Message
-Y_MSG           DC.B    'Y:', 0             ; Y Position Message
-V_MSG           DC.B    'V:', 0             ; Velocity Position Message
-VARMSG           DC.B    'DRAW', 0             ; Gravity Position Message
 ENEMIESDEAD_MSG         DC.B    'Enemies Defeated:', 0           
 ENEMYCOUNT_MSG         DC.B    'Wave enemy count:', 0           
 
@@ -2062,11 +2077,6 @@ IN_HPACK        DC.B      00                  ; marker for if the player is in t
 DRAW_HEALTHPACKS   DC.B     $00                  ; marker for if the healthpacks are showing
 SPAWN_HEALTHPACKS   DC.B    $00                  ; marker for if the healthpacks are spawning
 healthCooldownOver  DC.B    $00
-
-LEVEL_02        DC.W    2000
-LEVEL_03        DC.W    10000
-
-LEVELS:         DC.L    7000,4000,2000,1000
 
 *-----------------------------------------------------------
 * Section       : Screen Size
@@ -2114,7 +2124,7 @@ FLYENEMYCOLOR     DC.L        $00FF0000
 
 RANDOM            DS.L        01  ; Reserve Space for Random Number
 antHealth         DC.B        03  ; reserves space for antHealth
-antsRemaining     DC.B        05  ; reserves space for ants
+antsRemaining     DC.B        00  ; reserves space for ants
 maxHillHp         DC.B        100
 maxAntHp         DC.B        3
 maxRemainingAnts         DC.B        5
@@ -2191,6 +2201,7 @@ hillHurtTimer       dc.b        0
 timer           DC.L    0
 
 ;    END    START        ; last line of source
+
 
 
 

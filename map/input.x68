@@ -79,7 +79,7 @@ menuInput:
 
     cmpi.l #enterKey, currentkey
     if <ne> then
-        rts ; key is not enterKey
+        bra DIFFICULTY_SELECT
     endi
 
     ; key is enterKey
@@ -87,8 +87,7 @@ menuInput:
     cmpi.l #enterkey, lastkey
 
     ; enterKey is just pressed
-    bne mapInit
-    rts
+    bra DIFFICULTY_SELECT
 
 mapinput:
     ; at this point, keycode in currentkey is pressed
