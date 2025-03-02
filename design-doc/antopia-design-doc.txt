@@ -1,0 +1,18 @@
+Antopia ($41 $6E $74 $6F $70 $69 $61)
+
+Game Overview:
+Ah, the old world of ants, ahhhh the LEA'ing the memories $3000. You're just a regular ant, trying to save your colony from evil soldier ants. But here's the kicker - it's all written in Assembly. Think of it as taking the $68 $69 $67 $68 $20 $72 $6F $61 $64 (high road) and doing things the old-fashioned way. a "small world with big Data Registers, Address Registers, Memory Updates, Cycle Times and Programme Counter challenges" kind of way.
+
+Gameplay Mechanics:
+You're not just running around watching Soldier Ants take over your Ant Hill Homes (Adam knows there is a housing crisis at the moment, even for Ants! if the government could just Assemble a few more houses!, must teach them politicians about Entry Points; and Returning from Jollies over Patrick's weekend - proper RTS like!). You're fighting for & defending your colony – all with your tiny little ant legs. It's a strategy-action game with a whole lot of tiny combat action (Oliwier spends his days now close to sandbanks, laptop fans sucking in sand dunes, watching ants scrapping behavior, a bit like turnout time at the Skeff). Basically, it's like a tactical war game … but with ants, not drunken students!.
+
+Art and Design:
+Ascii art, minimalistic design, and rectangles. Lots of rectangles. You'll never look at a $27's the same way again! You'll zoom around a microscopic world, making every $2B and $2D count.
+
+Technology:
+68K Assembly, baby! We're doing everything from the ground up. Optimised to the max, this game won't just run, it'll buzz (possible copyright infringement on one of the other teams, shush!!!!).
+
+Levels and $45 $6E $76 $69 $72 $6F $6E $6D $65 $6E $74 (correct spelling finally!):
+The colony's a mess, and you've got to clean it up. Battle through encounters with enemy soldier ants. It's all about surviving the small world of the ant colony. And let's face it - it's a big deal in such a tiny memory-addressable space.
+
+Enjoy our game, and don't forget to go out tonight to watch the $27's !!! or to support Adam in the upcoming Presidential Election or to pick up Oliwier a flask a tae and a few ham and tomato sandwiches, in Gorey on the way to Courtown, so he can stay at the beach watching Ants behaving like Eejits!
