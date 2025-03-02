@@ -141,7 +141,7 @@ scoreScreen:
     jsr scoreScreenInbetween
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$020B,     D1        
+    MOVE.W  #$020d,     D1        
     TRAP    #15                     ; Trap (Perform action)
     lea scoreContinueMsg, a1
     jsr print
@@ -155,33 +155,42 @@ scoreScreen:
 
 scoreScreenInbetween:
     jsr PLAY_HIT
-    move.l scoreLineDelay, d3
+    move.l #scoreLineDelay, d3
     jsr newDelay
     rts
 
 getEnter:
+    move.l currentKey, lastKey
 
-    ; set d1 to $0000 0000
-    move.l #0, d1
+    ; set d1 to enter
+    move.l #enterKey, d1
 
     ; put "get input" code into d0
-    move.b #tcinp, d0
+    move.l #tcinp, d0
     trap #15
-    move.b d1, currentkey
-    trap #15
-    
-    ; AT THIS POINT, CURRENT KEY CONTAINS THE CURRENT KEY PRESSED
-    ; AND D1 CONTAINS WHETHER OR NOT IT IS STILL PRESSED
     
     ; test if no input
-    cmpi.b #0, d1
+    cmpi.l #0, d1
+    if <eq> then
+        bra noEnter
+    endi
+
+    ; from here, enter is currently pressed
+
+    move.l #enterKey, currentKey
+
+    cmpi.l #enterKey, lastKey
     beq getEnter
 
-    cmp.b #enterKey, currentKey
-    bne getEnter
+    ; from here, enter is JUST pressed
 
     ; go home
+    jsr clearscreen
     bra firstInit
+
+noEnter:
+    move.l #0, currentKey
+    bra getEnter
 
 finalScoreMsg dc.b '- FINAL SCORE -',0
     
@@ -192,7 +201,7 @@ scoreHillDefMsg dc.b 'Hills Defended: ',0
 scorePerfectDefMsg dc.b 'Perfect Hill Defence: ',0
 totalScoreMsg       dc.b 'Total Score: ',0
 
-scoreContinueMSg dc.b 'Press "ENTER" to return to title...',0
+scoreContinueMSg dc.b 'Press "ENTER/(A)" to return to title ',0
 
 
 *~Font name~Courier New~

@@ -16,7 +16,7 @@ start:
     bra firstInit
 
 firstInit:
-    jsr enableDoubleBuffer
+    ;jsr enableDoubleBuffer
     bra nextInit
     
 nextInit:
@@ -58,12 +58,16 @@ nextInit:
 title:
     jsr drawBg
     
-    move.w #$220d, d1
+    move.w #$07, d1
     jsr setCursor
-    lea title1msg, a1
-    jsr print
+    ;lea titleArt, a1
+    jsr printArt
     
-    move.w #$1c0f, d1
+    ; draw ants
+    move.l #100, player_x
+    move.l #100, player_y
+    
+    move.w #$1a11, d1
     jsr setCursor
     lea title2msg, a1
     jsr print
@@ -72,9 +76,9 @@ title:
     bra titleLoop
     
 titleLoop:
-     ; Enable back buffer0
-    MOVE.B  #94,        D0
-    TRAP    #15
+     ; get back buffer0
+    ;MOVE.B  #94,        D0
+    ;TRAP    #15
     
     jsr testInput
     
@@ -103,6 +107,7 @@ aaes
  include "battle/battleView.x68"
  
  include "score.x68"
+ include "asciiArt.x68"
 
 	end start
 
@@ -115,6 +120,10 @@ aaes
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
+
+
+
 
 
 *~Font name~Courier New~

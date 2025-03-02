@@ -7,17 +7,19 @@ lvlType dc.w 0
 
 testinput:
     ; getting previous key
-    move.b currentkey, lastkey
+    move.l currentkey, lastkey
 
     
 
     ; set d1 to $0000 0000
-    move.l #0, d1
+    clr.l d1
 
     ; put "get input" code into d0
     move.b #tcinp, d0
     trap #15
-    move.b d1, currentkey
+    clr.l d2
+    move.b d1, d2
+    move.l d2, currentkey
     trap #15
     
     ; AT THIS POINT, CURRENT KEY CONTAINS THE CURRENT/LAST KEY PRESSED,
@@ -26,6 +28,12 @@ testinput:
     ; test if no input
     cmpi.b #0, d1
     beq noinput     ; if no input, move to noinput
+
+    ;jsr printKeyCode
+
+    ; bring currentKey into d2, lastKey into d3
+    move.l currentKey, d2
+    move.l lastKey, d3
     
     jsr commonInput ; happens in any level
 
@@ -47,8 +55,8 @@ testinput:
 
 noinput:
     ; go back to loop
-    move.b #0, currentKey
-    move.b #0, lastkey
+    move.l #0, currentKey
+    move.l #0, lastkey
     rts
 
 inputType dc.w 1
@@ -57,9 +65,9 @@ commonInput:
     ; at this point, keycode in currentkey is pressed
 
     ; OPTIONS
-    cmpi.b #escapeKey, currentkey ; pause
+    cmpi.l #escapeKey, currentKey ; pause
     beq escapepressed
-    cmpi.b #key0, currentKey ; fullscreen
+    cmpi.l #key0, currentKey ; fullscreen
     beq key0pressed
 
     tst.b isPaused
@@ -67,38 +75,41 @@ commonInput:
     RTS
 
 menuInput:
-    cmpi.b #enterKey, currentKey
-    beq mapInit
+    ; at this point, whatever keycode is in currentkey is pressed
+
+    cmpi.l #enterKey, currentkey
+    if <ne> then
+        rts ; key is not enterKey
+    endi
+
+    ; key is enterKey
+
+    cmpi.l #enterkey, lastkey
+
+    ; enterKey is just pressed
+    bne mapInit
     rts
 
 mapinput:
     ; at this point, keycode in currentkey is pressed
 
     ; map buttons
-    cmpi.b #zKey, currentKey
+    cmpi.l #zKey, currentkey
     beq zPressed
 
     ; only move player if correct time
-    move.w playerTime, d5
-    jsr checkIncrement
-    bne endInput
+    ;move.w playerTime, d5
+    ;jsr checkIncrement
+    ;bne endInput
 
     ; only when not paused
 
-    cmpi.b #enterKey, currentKey
+    cmpi.l #enterKey, currentkey
     beq collision
 
     ; movement input
     bsr mapMoveInput
 
-    ;cmpi.b #wkey, currentkey ; W:UP
-    ;beq wpressed
-    ;cmpi.b #akey, currentkey ; A:LEFT
-    ;beq apressed
-    ;cmpi.b #skey, currentkey ; S:DOWN
-    ;beq spressed
-    ;cmpi.b #dkey, currentkey ; D:RIGHT
-    ;beq dpressed
     RTS
 
 mapMoveInput:
@@ -111,19 +122,16 @@ mapMoveInput:
         BSR    wPressed
     ENDI
 
-    ;MOVE.L  CURRENT_KEY, D1
     BTST.L  #16,D1
     IF <NE> THEN
         BSR    aPressed
     ENDI
 
-    ;MOVE.L  CURRENT_KEY, D1
     BTST.L  #8,D1
     IF <NE> THEN
         BSR    sPressed
     ENDI
 
-    ;MOVE.L  CURRENT_KEY, D1
     BTST.L  #0,D1
     IF <NE> THEN
         BSR    dPressed
@@ -132,14 +140,11 @@ mapMoveInput:
     rts
 
 pausedInput:
-    cmpi.b #key1, currentkey
+    cmpi.l #key1, currentkey
     beq key1pressed
 
-    cmpi.b #key2, currentkey
+    cmpi.l #key2, currentkey
     beq key2pressed
-
-    ;cmpi.b #key3, currentkey
-    ;beq key3pressed
 
     rts
 
@@ -148,8 +153,8 @@ endInput:
 
 ; INPUTS
 escapePressed:
-    move.b lastkey, d5
-    cmp.b currentKey, d5
+    move.l currentKey, d2
+    cmp.l lastKey, d2
     bne escapeJustPressed
     rts
 escapeJustPressed:
@@ -157,8 +162,8 @@ escapeJustPressed:
     rts
 
 key0pressed:
-    move.b lastkey, d5
-    cmp.b currentKey, d5
+    move.l currentKey, d2
+    cmp.l lastKey, d2
     bne key0justPressed
     rts
 key0justPressed:
@@ -166,8 +171,8 @@ key0justPressed:
     rts
 
 zPressed:
-    move.b lastkey, d5
-    cmp.b currentKey, d5
+    move.l currentKey, d2
+    cmp.l lastKey, d2
     bne toggleFollow ; z just pressed
     rts
 

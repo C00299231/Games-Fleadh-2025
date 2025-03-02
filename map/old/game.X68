@@ -74,8 +74,8 @@ draw:
 	bra loop                  ; Trap (Perform action)
 
 checkJustPaused:
-	move.b currentkey, d1
-	cmp.b lastkey, d1
+	move.l currentkey, d1
+	cmp.l lastkey, d1
 	bne togglepause
 	rts
 
@@ -101,7 +101,7 @@ pause:
 
 getinput:
     ; Process Input
-    move.b currentkey, lastkey  ; get previous key
+    move.l currentkey, lastkey  ; get previous key
     
     CLR.L   D1                      ; Clear Data Register
     MOVE.B  #tc_usr_inp, D0         ; Listen for Keys

@@ -221,7 +221,7 @@ continueLoop:   ; after wait is done
 *-----------------------------------------------------------
 BATTLEINPUT:
     move.l CURRENT_KEY, D0
-    move.b D0,lastkey 
+    move.l D0,lastkey 
 
     MOVE.B  #TC_KEYCODE, D0          ; Check for pressed keys
     ;MOVE.L  #$41444C20, D1          
@@ -286,11 +286,11 @@ PROCESS_INPUT:
     MOVE.L  D2,         CURRENT_KEY ; Put Current Key in Memory
 
 ; pause
-    move.b  d2,         currentKey
-    CMP.b   #escapekey,    currentKey ; Is Current Key Escape
+    move.l  d2,         currentKey
+    CMP.l   #escapekey,    currentKey ; Is Current Key Escape
     BEQ     escapePressed
 
-    cmpi.b #key0, currentKey ; fullscreen
+    cmpi.l #key0, currentKey ; fullscreen
     beq key0pressed
 
     tst.b   isPaused
@@ -1675,10 +1675,11 @@ HILL_LOST:
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*
-    MOVE.W      #0,D1
-    MOVE.W      #0,d2
-    MOVE.B      #89,D0
-    TRAP        #15
+    ;MOVE.W      #0,D1
+    ;MOVE.W      #0,d2
+    ;MOVE.B      #89,D0
+    ;TRAP        #15
+    jsr drawBg
 
 *------------ Print hill lost message--------------*
 
@@ -1783,11 +1784,12 @@ GAME_OVER:
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*
-    MOVE.W      #0,D1
-    MOVE.W      #0,d2
-    MOVE.B      #89,D0
-    TRAP        #15
-    
+    ;MOVE.W      #0,D1
+    ;MOVE.W      #0,d2
+    ;MOVE.B      #89,D0
+    ;TRAP        #15
+    jsr drawBg
+
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$0F05,     D1           
     TRAP    #15                     ; Trap (Perform action)
@@ -1817,10 +1819,12 @@ GAME_OVER:
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*
-    MOVE.W      #0,D1
-    MOVE.W      #0,d2
-    MOVE.B      #89,D0
-    TRAP        #15
+    ;MOVE.W      #0,D1
+    ;MOVE.W      #0,d2
+    ;MOVE.B      #89,D0
+    ;TRAP        #15
+
+    jsr drawBg
 
     BRA     tallyScore
 
@@ -1857,10 +1861,11 @@ WAVE_DEFEATED:
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*
-    MOVE.W      #0,D1
-    MOVE.W      #0,d2
-    MOVE.B      #89,D0
-    TRAP        #15
+    ;MOVE.W      #0,D1
+    ;MOVE.W      #0,d2
+    ;MOVE.B      #89,D0
+    ;TRAP        #15
+    jsr drawBg
 
 *------------ Print wave defeated message--------------*
 
@@ -1962,10 +1967,11 @@ WIN_SCREEN:
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*
-    MOVE.W      #0,D1
-    MOVE.W      #0,d2
-    MOVE.B      #89,D0
-    TRAP        #15
+    ;MOVE.W      #0,D1
+    ;MOVE.W      #0,d2
+    ;MOVE.B      #89,D0
+    ;TRAP        #15
+    jsr drawBg
     
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$0406,     D1           
@@ -1990,10 +1996,12 @@ WIN_SCREEN:
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*
-    MOVE.W      #0,D1
-    MOVE.W      #0,d2
-    MOVE.B      #89,D0
-    TRAP        #15
+    ;MOVE.W      #0,D1
+    ;MOVE.W      #0,d2
+    ;MOVE.B      #89,D0
+    ;TRAP        #15
+
+    jsr drawBg
 
     BRA     tallyScore
 
@@ -2170,9 +2178,9 @@ LEVELCHANGE_WAV DC.B    'levelChange.wav',0 ; Collision Opps
 ROAR_WAV        DC.B    'roar-8-bit.wav',0 ; Collision Opps
 HILLHURT_WAV        DC.B    'hillHurt.wav',0 ; Collision Opps
 
-BATTLE_SONG_WAV DC.B    'antopia-battle.wav1',0
-MAP_SONG_WAV    DC.B    'antopia-map.wav1',0
-MENU_SONG_WAV   dc.B    'antopia-menu.wav1',0
+BATTLE_SONG_WAV DC.B    'antopia-battle.wav',0
+MAP_SONG_WAV    DC.B    'antopia-map.wav',0
+MENU_SONG_WAV   dc.B    'antopia-menu.wav',0
 
 
 respawnTime         dc.W        0

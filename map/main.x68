@@ -3,7 +3,9 @@
 ; first init for map
 mapInit:
     move.w #1, lvlType
-    move.w #0, lvlIndex
+    move.w #3, lvlIndex
+
+    jsr enableDoubleBuffer
 
     lea     hillHPArray,a6
 
@@ -78,6 +80,7 @@ endLoop:
 
 map:
     jsr draw
+
     jsr testinput
     
     ; test paused
@@ -128,6 +131,7 @@ collision:
 
 paused:
     bra endLoop
+    rts
     
 clearscreen:
 	; Clear the screen
@@ -189,8 +193,8 @@ quitMsg dc.b 'Thank you for playing!',0
 
 inputkeys dc.b 20,87,65,83,68,0
 
-currentkey ds.l 01
-lastkey ds.l 01
+currentkey dc.l 00
+lastkey dc.l 00
 isPaused ds.b 01
 
 playerX ds.l 01

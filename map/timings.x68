@@ -6,7 +6,7 @@ healTime dc.w 40
 enemySpawnTimer dc.w 2000
 
 ; /100 of second delay
-scoreLineDelay dc.l 100
+scoreLineDelay equ 60 ; should be 100!
 
 increment: ; D6 permanently used up
     
@@ -46,8 +46,8 @@ checkIncrementOld: ; d5 has been given check value
     ; thingy contains whether they were equal
     rts
 
-newDelay: ; milliseconds in d1.l
-    move.l #100, d1
+newDelay: ; milliseconds in d3.l
+    move.l d3, d1
     move #23, d0
     trap #15
     rts

@@ -802,6 +802,13 @@ printNum:
     trap #15
     rts
 
+printKeyCode:
+    move.l currentKey, d1
+    move.l #16, d2
+    move.b #15, d0
+    trap #15
+    rts
+
 drawLine:
     ; if not follow, draw like normal
     tst.w isFollow
