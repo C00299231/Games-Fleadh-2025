@@ -390,65 +390,78 @@ MOVE_ENEMIES:
 
 ; move enemies a little faster and move brute this wave 
 MOVE_ENEMY_L2:
-    MOVE.L  FLYINGENEMY_X, D1
-    SUB.L   #02,        d1
-    ADD.L   EASY_SLOW,  d1
-    MOVE.L  d1, FLYINGENEMY_X
+    ; check for easy mode
+    cmp.b   #easyDiff, DIFFICULTY
+    IF <EQ> THEN 
+        ; add 1 to the x to push them back
+        ADD.L  #EASY_DECREASE, FLYINGENEMY_X
+        ADD.L  #EASY_DECREASE, ENEMY_X
+    END
+    ; move enemies left
+    SUB.L   #4,         ENEMY_X
+    SUB.L   #2,         FLYINGENEMY_X
+    SUB.L   #1,         BRUTE_X
+
+    ; move flying enemy faster if its dead
     CMP.L   #380,       FLYINGENEMY_Y
     IF <GE> THEN
         SUB.l   #02,    FLYINGENEMY_X
     ENDI
 
+    ; move flying enemy lower if its near the hill
     CMP.L   #130,      FLYINGENEMY_X
     IF <LE> THEN
         ADD.L   #1,FLYINGENEMY_Y
     ENDI
-    MOVE.L  ENEMY_X, D1
-    SUB.L   #04,        d1
-    ADD.L   EASY_SLOW,  d1
-    MOVE.L  d1, ENEMY_X
-    SUB.L   #1,         BRUTE_X
+ 
     RTS
 
 MOVE_ENEMY_L3:
+    ; move flying enemy lower if its near the hill
     CMP.L   #130,      FLYINGENEMY_X
     IF <LE> THEN
         ADD.L   #3,FLYINGENEMY_Y
     ENDI
-    MOVE.L  FLYINGENEMY_X, D1
-    SUB.L   #05,        d1
-    ADD.L   EASY_SLOW,  d1
-    MOVE.L  d1, FLYINGENEMY_X
-    MOVE.L  ENEMY_X, D1
-    SUB.L   #04,        d1
-    ADD.L   EASY_SLOW,  d1
-    MOVE.L  d1, ENEMY_X
-    MOVE.L  BRUTE_X, D1
-    SUB.L   #02,        d1
-    ADD.L   EASY_SLOW,  d1
-    MOVE.L  d1, BRUTE_X
+
+    ; check for easy mode
+    cmp.b   #easyDiff, DIFFICULTY
+    IF <EQ> THEN 
+        ; add 1 to the x to push them back
+        ADD.L  #EASY_DECREASE, FLYINGENEMY_X
+        ADD.L  #EASY_DECREASE, ENEMY_X
+    END
+    ; move enemies left
+    SUB.L   #4,         ENEMY_X
+    SUB.L   #5,         FLYINGENEMY_X
+    SUB.L   #2,         BRUTE_X
+
     RTS
 
 MOVE_ENEMY_L4:
+    ; move flying enemy lower if its near the hill
     CMP.L   #130,      FLYINGENEMY_X
     IF <LE> THEN
         ADD.L   #4,FLYINGENEMY_Y
     ENDI
-    MOVE.L  FLYINGENEMY_X, D1
-    SUB.L   #07,        d1
-    ADD.L   EASY_SLOW,  d1
-    MOVE.L  d1, FLYINGENEMY_X
-    MOVE.L  ENEMY_X, D1
-    SUB.L   #05,        d1
-    ADD.L   EASY_SLOW,  d1
-    MOVE.L  d1, ENEMY_X
-    MOVE.L  BRUTE_X, D1
-    SUB.L   #02,        d1
-    ADD.L   EASY_SLOW,  d1
-    MOVE.L  d1, BRUTE_X
+
+
+    ; check for easy mode
+    cmp.b   #easyDiff, DIFFICULTY
+    IF <EQ> THEN 
+        ; add 1 to the x to push them back
+        ADD.L  #EASY_DECREASE, FLYINGENEMY_X
+        ADD.L  #EASY_DECREASE, ENEMY_X
+    END
+    ; move enemies left
+    SUB.L   #7,         FLYINGENEMY_X
+    SUB.L   #5,         ENEMY_X
+    SUB.L   #2,         BRUTE_X
+
     RTS
+
+
 *-----------------------------------------------------------
-* Subroutine    : Reset Enemy
+* Subroutine    : Reset Enemies 
 * Description   : Reset Enemy if to passes 0 to Right of Screen
 *-----------------------------------------------------------
 RESET_ENEMY_POSITION:
@@ -463,11 +476,11 @@ RESET_ENEMY_POSITION:
     MOVE.L  D1,         ENEMY_X     ; Enemy X Position
 
     TST.B     ENEMY_HIT
-    IF <EQ> THEN        ; enemy has not been hit
+    IF <EQ> THEN                    ; enemy has not been hit
         BSR   damage_hill
     ENDI
     MOVE.B  #0,         ENEMY_HIT
-    BSR     CHECK_WAVE_CLEARED
+    BSR     CHECK_WAVE_CLEARED      ; check if the wave is cleared
 
     RTS
 
@@ -476,7 +489,7 @@ RESET_FLYENEMY_POSITION:
     MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     SUB.W   #60,        D1
-    MOVE.L  D1,         FLYINGENEMY_Y     ; Enemy Y Position
+    MOVE.L  D1,         FLYINGENEMY_Y     ; fly Enemy Y Position
 
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
@@ -484,11 +497,11 @@ RESET_FLYENEMY_POSITION:
     MOVE.L  D1,         FLYINGENEMY_X     ; FLY Enemy X Position
 
     TST.B     FLYENEMY_HIT
-    IF <EQ> THEN        ; enemy has not been hit
+    IF <EQ> THEN                        ; enemy has not been hit
         BSR   damage_hill
     ENDI
     MOVE.B  #0,         FLYENEMY_HIT
-    BSR     CHECK_WAVE_CLEARED
+    BSR     CHECK_WAVE_CLEARED      ; check if the wave is cleared
 
     RTS
 
@@ -501,57 +514,67 @@ RESET_BRUTE_POSITION:
     EOR.L  D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
     ADD.L   #100,D1
-    MOVE.L  D1,         BRUTE_X     ; Enemy X Position
+    MOVE.L  D1,         BRUTE_X     ; brute  X Position
 
     TST.B     BRUTE_DEAD
-    IF <EQ> THEN        ; big enemy has not been killed
+    IF <EQ> THEN                    ; big enemy has not been killed
         BSR   damage_hill
         BSR   damage_hill        
     ENDI
-    MOVE.B  #3,         BRUTE_HP
-    MOVE.B  #0,         BRUTE_HIT
-    MOVE.B  #0,         BRUTE_DEAD
+    MOVE.B  #3,         BRUTE_HP        ; reset brute hp
+    MOVE.B  #0,         BRUTE_HIT       ; make brute not hit
+    MOVE.B  #0,         BRUTE_DEAD      ; make brute alive
 
-    BSR     CHECK_WAVE_CLEARED
+    BSR     CHECK_WAVE_CLEARED      ;  check if the wave is cleared
 
     RTS
 
+; reset health position
 RESET_HEALTH_POSITION:
     MOVE.B  #01,        DRAW_HEALTHPACKS
     MOVE.L  #90,        HEALTH_Y
     RTS
 
+; check if the wave is cleared
 CHECK_WAVE_CLEARED:
+    ; add 1 to enemies passed
     ADDI.B  #1,         enemiesPassed
+    ; compare enemies passed with the wave reqs
     MOVE.B  enemiesPassed,D1
     CMP.B   enemiesToDefeat,D1
+    ; branch if its equal
     BEQ     WAVE_DEFEATED
     RTS
 
+; damage the hill
 damage_hill:
     sub.b  #10,hillHP
-    CMP.b   #0,hillHP
+    CMP.b   #0,hillHP       ; if 0 then hill is dead
     BLE     HILL_LOST
     BSR     PLAY_HILLHURT
-    sub.l   #15,currentHealth
-    move.b  #10,hillHurtTimer
+    move.b  #10,hillHurtTimer      ; set timer for damage color
     RTS
 
 CONTINUE:
     RTS
 
+; perform attack
 PERFORM_ATTACK:
+    ; if paused then skip
     TST.B  isPaused
     IF <NE> THEN
         RTS
     ENDI
+    ; skip if still attacking
     TST.W    ATTACK_COOLDOWN
     BNE      CONTINUE
     
+    ; set attack data
     MOVE.B   #01, CURRENTLYATTACKING
     MOVE.W   #50, ATTACK_TIME
     MOVE.W   #76, ATTACK_COOLDOWN
 
+    ; move attack x and y to match player
     MOVE.L   PLAYER_X,ATTACK_X
     ADDI.L   #PLYR_W_INIT,ATTACK_X
     MOVE.L   PLAYER_Y,ATTACK_Y
@@ -594,9 +617,9 @@ DRAWBATTLE:
     RTS                             ; Return to subroutine
 
 
-
+; draw hill health bar
 drawHillHealth:
-    move.l  #10,        D1
+    move.l  #10,        D1          
     move.l  #425,       D2
     move.l  #440,       D4
     clr.l   d5
@@ -605,23 +628,24 @@ drawHillHealth:
     move.b     hillHP, D6
     mulu.w  #2,d5
     mulu.w  #2,d6
-    BSR     drawModularHbar
+    BSR     drawModularHbar         ; set d registers and run the draw bar subroutine
         
+    ; set font 
     MOVE.L  #color5,D1
     MOVE.B  #tcFont,D0
     MOVE.L  #00090000,D2
     TRAP    #15
 
+    ;set background 
     MOVE.L  #deepgreen,D1
     MOVE.B  #tcPenFil,D0
     TRAP    #15
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$021B,     D1           02, Row 01
+    MOVE.W  #$021B,     D1          ; col 2 row 1b
     TRAP    #15                     ; Trap (Perform action)
     LEA     hillHP_MSG,  A1          ; Score Message
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)
+    bsr     print
 
     RTS
 drawAntHealth:
