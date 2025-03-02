@@ -109,20 +109,22 @@ DRAW_PLAYER:
     MOVE.B  #80,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
     ; Reset Pixel Colors
-    MOVE.L  #BLACK,     D1          ; Set Background color
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
 *-------------- draw body -----------------*
-    MOVE.L  PLAYER_X,   D1          ; X
-    MOVE.L  PLAYER_Y,   D2
+    LEA     PLAYER_X,   A1
+    LEA     PLAYER_Y,   A2
+
+    MOVE.L  (a1),   D1          ; X
+    MOVE.L  (a2),   D2
     SUBQ.L  #4,D2
 
-    MOVE.L  PLAYER_X,   D3
+    MOVE.L  (a1),   D3
     EOR.L   D4,D4
     MOVE.B   PLAYER_WIDTH,   D4      ; Width
     ADD.L   D4,D3
-    MOVE.L  PLAYER_Y,   D4
+    MOVE.L  (a2),   D4
     SUB.B   PLAYER_HEIGHT,   D4      ; Height          ; Y
     
      ; Draw Player
@@ -130,15 +132,15 @@ DRAW_PLAYER:
     TRAP    #15                     ; Trap (Perform action)
 
 *-------------- draw abdomen -----------------*
-    MOVE.L  PLAYER_X,   D1          ; X
-    MOVE.L  PLAYER_Y,   D2
+    MOVE.L  (a1),   D1          ; X
+    MOVE.L  (a2),   D2
     SUBQ.L  #4,D2
-    MOVE.L  PLAYER_X,   D3
+    MOVE.L  (a1),   D3
     EOR.L   D4,D4
     MOVE.B   PLAYER_WIDTH,   D4      ; Width
     SUBI.B   #12,D4
     ADD.L   D4,D3
-    MOVE.L  PLAYER_Y,   D4
+    MOVE.L  (a2),   D4
     SUB.B   PLAYER_HEIGHT,   D4      ; Height
     SUB.B   #3,D4
     
@@ -154,9 +156,9 @@ DRAW_PLAYER:
     ; draw if not currently attacking melee
     tst.b   CURRENTLYATTACKING
     IF  <EQ>    THEN
-        MOVE.L  PLAYER_X,D1
+        MOVE.L  (a1),D1
         ADD.L   #22,D1
-        MOVE.L  PLAYER_Y,D2
+        MOVE.L  (a2),D2
         SUB.L   #PLYR_H_INIT,D2
         MOVE.L  D1,D3
         ADD.L   #10,D3
@@ -167,8 +169,8 @@ DRAW_PLAYER:
         TRAP    #15
     ENDI
 *-------------- draw leg 1 -----------------*
-    MOVE.L  PLAYER_X,D1
-    MOVE.L  PLAYER_Y,D2
+    MOVE.L  (a1),D1
+    MOVE.L  (a2),D2
     MOVE.L  D1,D3
     ADD.L   #4,D3
     MOVE.L  D2,D4
@@ -178,9 +180,9 @@ DRAW_PLAYER:
     TRAP    #15
 
 *-------------- draw leg 2 -----------------*
-    MOVE.L  PLAYER_X,D1
+    MOVE.L  (a1),D1
     ADD.L   #13,D1
-    MOVE.L  PLAYER_Y,D2
+    MOVE.L  (a2),D2
     MOVE.L  D1,D3
     MOVE.L  D2,D4
     SUBI.L  #4,D4
@@ -189,9 +191,9 @@ DRAW_PLAYER:
     TRAP    #15
 
 *-------------- draw leg 3 -----------------*
-    MOVE.L  PLAYER_X,D1
+    MOVE.L  (a1),D1
     ADD.L   #22,D1
-    MOVE.L  PLAYER_Y,D4
+    MOVE.L  (a2),D4
     MOVE.L  D1,D3
     ADD.L   #3,D3
     MOVE.L  D4,D2
@@ -206,9 +208,9 @@ DRAW_PLAYER:
     TRAP    #15                     ; Trap (Perform action)
 
 *-------------- draw eye -----------------*
-    MOVE.L  PLAYER_X,D1
+    MOVE.L  (a1),D1
     ADD.L   #22,D1
-    MOVE.L  PLAYER_Y,D2
+    MOVE.L  (a2),D2
     SUB.L   #10,D2
     MOVE.L  D1,D3
     MOVE.L  D2,D4
@@ -243,9 +245,9 @@ DRAW_ATTACK:
     MOVE.B  #93,D0
     TRAP    #15
 
-    MOVE.L  PLAYER_X,D1
+    MOVE.L  (a1),D1
     ADD.L   #22,D1
-    MOVE.L  PLAYER_Y,D2
+    MOVE.L  (a2),D2
     SUB.L   #7,D2
     MOVE.L  D1,D3
     MOVE.L  D2,D4
@@ -262,9 +264,9 @@ DRAW_ATTACK:
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
-    MOVE.L  PLAYER_X,D1
+    MOVE.L  (a1),D1
     ADD.L   #22,D1
-    MOVE.L  PLAYER_Y,D2
+    MOVE.L  (a2),D2
     SUB.L   #10,D2
     MOVE.L  D1,D3
     MOVE.L  D2,D4

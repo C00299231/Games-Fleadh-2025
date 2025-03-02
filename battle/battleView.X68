@@ -5,22 +5,6 @@
 * Description: Project Starter Kit
 *-----------------------------------------------------------
 
-
-*-----------------------------------------------------------
-* Section       : Trap Codes
-* Description   : Trap Codes used throughout StarterKit
-*-----------------------------------------------------------
-* Trap CODES
-TC_SCREEN   EQU         33          ; Screen size information trap code
-TC_S_SIZE   EQU         00          ; Places 0 in D1.L to retrieve Screen width and height in D1.L
-                                    ; First 16 bit Word is screen Width and Second 16 bits is screen Height
-TC_KEYCODE  EQU         19          ; Check for pressed keys
-TC_DBL_BUF  EQU         92          ; Double Buffer Screen Trap Code
-TC_CURSR_P  EQU         11          ; Trap code cursor position
-
-TC_REDRAW   EQU         94          ; Redraw Screen
-TC_EXIT     EQU         09          ; Exit Trapcode
-
 *-----------------------------------------------------------
 * Section       : Charater Setup
 * Description   : Size of Player and Enemy and properties
@@ -51,11 +35,11 @@ SONG_INDEX equ          06
 ENMY_W_INIT EQU         27          ; Enemy initial Width
 ENMY_H_INIT EQU         13          ; Enemy initial Height
 
-BRUTE_W_INIT EQU         50          ; BRute Enemy initial Width
-BRUTE_H_INIT EQU         25          ; Brute Enemy initial Height
-
 FLY_ENMY_W_INIT  EQU         30          ; Enemy initial Width
 FLY_ENMY_H_INIT  EQU         13          ; Enemy initial Height
+
+BRUTE_W_INIT EQU         50          ; BRute Enemy initial Width
+BRUTE_H_INIT EQU         25          ; Brute Enemy initial Height
 
 HEALTH_PACK_W    EQU         12          ; Enemy initial Width
 HEALTH_PACK_H    EQU         12          ; Enemy initial Height
@@ -312,28 +296,8 @@ PROCESS_INPUT:
     tst.b   isPaused
     bne     pausedInput
 
-    CMP.W   #3,lvlIndex
-    BEQ     COMPLETE_RESTART
-
-    TST.B   antsRemaining
-    BLE     COMPLETE_RESTART
-
     RTS                             ; Return to subroutine
 
-COMPLETE_RESTART:
-    CMP.L   #Rkey,  CURRENT_KEY ; Is Current Key R
-    IF <EQ> THEN
-        move.w #1, lvlType
-
-        MOVE.L    #color5,D1
-        MOVE.L  #00090000,D2
-        MOVE.B  #tcFont,D0
-        TRAP    #15
-        
-        BRA     nextInit
-    ENDI
-
-    RTS                             ; Return to subroutine
 *----------
 checkPaused:
     TST.B  isPaused
@@ -515,7 +479,7 @@ RESET_ENEMY_POSITION:
     DIVU    #02,        D1          ; divide by 2 for center on Y Axis
     MOVE.L  D1,         ENEMY_Y     ; Enemy Y Position
 
-    EOR.L  D1,D1                      ; Clear contents of D1 (XOR is faster)
+    CLR.L   d1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
     ADD.L   #ENMY_W_INIT,D1
     MOVE.L  D1,         ENEMY_X     ; Enemy X Position
@@ -1685,7 +1649,13 @@ HILL_LOST:
     add.l   d3,totalKills
 
     tst.b   totalHillsDefended
-    beq     GAME_OVER
+    IF <EQ> THEN
+        cmp.w   #3,lvlIndex
+        IF <EQ> THEN
+            beq     GAME_OVER
+        ENDI
+    ENDI
+
     CMP.W   #3,lvlIndex
     BEQ     WIN_SCREEN
 
