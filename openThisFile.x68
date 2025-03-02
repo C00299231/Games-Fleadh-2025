@@ -3,15 +3,8 @@
 
 	org $1000
 start:
-    ; Initialise Sounds
-    BSR     JUMP_LOAD               ; Load Jump Sound into Memory
-    BSR     GAMEOVER_LOAD                ; Load Run Sound into Memory
-    BSR     HITHURT_LOAD               ; Load Opps (Collision) Sound into Memory
-    BSR     POWERUP_LOAD               ; Load Opps (Collision) Sound into Memory
-    BSR     LVLCHANGE_LOAD               ; Load Opps (Collision) Sound into Memory
-    BSR     HIT_LOAD
-    BSR     ROAR_LOAD
-    BSR     HILLHURT_LOAD
+    
+    jsr loadAllSounds
 
     bra nextInit
     
@@ -86,8 +79,7 @@ title1Msg dc.b '- ANT-TOPIA -',0
 
 title2msg dc.b 'Press "enter/(A)" to start...',0
 
-; include other fila
-aaes 
+; include other files 
  include "difficultySelect.x68"
  include "map/main.x68"
  include "map/shapeSizes.x68"
@@ -103,6 +95,7 @@ aaes
  include "map/input.x68"
 
  include "battle/battleView.x68"
+ include "battle/soundFiles.x68"
  
  include "score.x68"
  include "asciiArt.x68"

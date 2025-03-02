@@ -27,10 +27,11 @@ HITHURT_INDEX  EQU          02          ; Player Opps Sound Index
 POWERUP_INDEX  EQU          03          ; Player Opps Sound Index
 LEVELCHANGE_INDEX  EQU      04          ; Player Opps Sound Index
 HIT_INDEX  EQU              05  
-ROAR_INDEX  EQU              07  
-HILLHURT_INDEX  EQU              08  
+ROAR_INDEX  EQU              06
+HILLHURT_INDEX  EQU              07 
 
-SONG_INDEX equ          06
+SONG_INDEX equ          08
+STING_INDEX EQU 09
 
 ENMY_W_INIT EQU         27          ; Enemy initial Width
 ENMY_H_INIT EQU         13          ; Enemy initial Height
@@ -1279,6 +1280,7 @@ PLAY_HILLHURT:
     TRAP    #15                     ; Trap (Perform action)
     RTS                             ; Return to subroutine
 
+; songs
 MAP_SONG_LOAD:
     LEA     MAP_SONG_WAV,   A1          ; Load Wav File into A1
     MOVE    #SONG_INDEX,D1          ; Assign it INDEX
@@ -1300,6 +1302,21 @@ MENU_SONG_LOAD:
     TRAP    #15                     ; Trap (Perform action)
     RTS                             ; Return to subroutine
 
+; stings
+LOSS_STING_LOAD:
+    LEA     LOSS_STING_WAV,   A1          ; Load Wav File into A1
+    MOVE    #STING_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+WIN_STING_LOAD:
+    LEA     WIN_STING_WAV,   A1          ; Load Wav File into A1
+    MOVE    #STING_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
 ; special function to play song in song index
 PLAY_SONG:
     MOVE    #SONG_INDEX,D1          ; Load Sound INDEX
@@ -1311,6 +1328,21 @@ PLAY_SONG:
 ; stop song playing
 STOP_SONG:
     move #SONG_INDEX,d1
+    move.l #2, d2
+    move #77, d0
+    trap #15
+    rts
+
+PLAY_Sting:
+    MOVE    #Sting_INDEX,D1          ; Load Sound INDEX
+    move.l #1, d2
+    MOVE    #77,        D0          ; Play Sound
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+; stop song playing
+STOP_sting:
+    move #stinG_INDEX,d1
     move.l #2, d2
     move #77, d0
     trap #15
@@ -1824,6 +1856,11 @@ GAME_OVER:
     LEA     FALLENKINGDOM_MSG,A1        ; Game Over Message
     BSR     print
 
+    ; play loss sting
+    jsr stop_sting
+    jsr LOSS_STING_LOAD
+    jsr play_sting
+
 
     MOVE.B  #TC_REDRAW,D0          ; Set Cursor Position
     TRAP	#15                     ; Trap (Perform action)
@@ -2000,6 +2037,11 @@ WIN_SCREEN:
     TRAP    #15                     ; Trap (Perform action)
     LEA     WIN_MSG,A1        ; Game Over Message
     BSR     print
+
+    ; play loss sting
+    jsr stop_sting
+    jsr win_STING_LOAD
+    jsr play_sting
 
 
     MOVE.B  #TC_REDRAW,D0          ; Set Cursor Position

@@ -18,6 +18,11 @@ BATTLE_SONG_WAV DC.B    'antopia-battle.wav',0
 MAP_SONG_WAV    DC.B    'antopia-map.wav',0
 MENU_SONG_WAV   dc.B    'antopia-menu.wav',0
 
+; STINGS
+LOSS_STING_WAV  DC.b    'antopia-loss-sting.wav',0
+WIN_STING_WAV   DC.B    'antopia-win-sting.wav',0
+wordOrder dc.b 0
+
 loadAllSounds:
     ; Initialise Sounds
     BSR     JUMP_LOAD
