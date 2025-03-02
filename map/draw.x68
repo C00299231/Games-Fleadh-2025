@@ -14,9 +14,6 @@ initDraw:
     ;WIDTH
     clr.l d1
     move.w healthBarOffsetX, d1
-    ;move.l maxHealth, d2
-    ;divu #2, d2
-    ;add.l maxHealth, d1
     move.l d1, healthTlX
 
     add.l maxhealth, d1
