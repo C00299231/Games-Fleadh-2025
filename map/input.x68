@@ -79,12 +79,13 @@ menuInput:
 
     cmpi.l #enterKey, currentkey
     if <ne> then
-        bra DIFFICULTY_SELECT
+        rts
     endi
 
     ; key is enterKey
 
     cmpi.l #enterkey, lastkey
+
 
     ; enterKey is just pressed
     bra DIFFICULTY_SELECT
