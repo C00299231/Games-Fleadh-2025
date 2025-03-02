@@ -250,12 +250,14 @@ checkDifSelected:
     CMP.b #1, selectedIndex
     IF <EQ> THEN
         MOVE.B  #5,antsRemaining
+        MOVE.l  #0,EASY_SLOW
         MOVE.B  #2,DIFFICULTY
         move.b  #3, maxAntHp
         BRA mapInit
     ENDI
     CMP.b #2, selectedIndex
     IF <EQ> THEN
+        MOVE.l  #0,EASY_SLOW
         MOVE.B  #1,antsRemaining
         MOVE.B  #5,DIFFICULTY
         move.b  #3, maxAntHp
