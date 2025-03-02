@@ -198,7 +198,7 @@ getEnter:
 
     ; go home
     jsr clearscreen
-    bra firstInit
+    bra nextInit
 
 noEnter:
     move.l #0, currentKey

@@ -12,11 +12,7 @@ start:
     BSR     HIT_LOAD
     BSR     ROAR_LOAD
     BSR     HILLHURT_LOAD
-        
-    bra firstInit
 
-firstInit:
-    ;jsr enableDoubleBuffer
     bra nextInit
     
 nextInit:
@@ -27,10 +23,11 @@ nextInit:
 
     move.b  #0,enemiesToDefeat
     lea     hillHPArray,a1
-    move.b  #100,(a1)+
-    move.b  #100,(a1)+
-    move.b  #100,(a1)+
-    move.b  #100,(a1)+
+    move.l  #$64646464, (a1)
+    ;move.b  #100,(a1)+
+    ;move.b  #100,(a1)+
+    ;move.b  #100,(a1)+
+    ;move.b  #100,(a1)+
     clr.l   perfectDefenceAmount
     clr.l   totalKills
     move.b  #5,antsRemaining
@@ -127,3 +124,8 @@ aaes
 
 
 
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~

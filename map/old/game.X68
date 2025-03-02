@@ -106,7 +106,8 @@ getinput:
     CLR.L   D1                      ; Clear Data Register
     MOVE.B  #tc_usr_inp, D0         ; Listen for Keys
     TRAP    #15                     ; Trap (Perform action)
-    MOVE.l  D1, D2          		; Move last key D1 to D2
+	clr.l d2
+    MOVE.b  D1, D2          		; Move last key D1 to D2
     CMP.B   #00, D2          		; Key is pressed
     BEQ     inputprocess            ; Process Key
     TRAP    #15                     ; Trap for Last Key
@@ -116,13 +117,13 @@ getinput:
     RTS                             ; Return to subroutine
 
 inputProcess:
-	MOVE.b  D2, currentkey ; Put Current Key in Memory
+	MOVE.l  D2, currentkey ; Put Current Key in Memory
 	
 	; options input
-	cmp.b #spacebar, currentkey
+	cmp.l #spacebar, currentkey
 	beq checkJustPaused
 	
-	cmp.b #escape, currentkey
+	cmp.l #escape, currentkey
 	beq endGame
 	
 	; movement input
