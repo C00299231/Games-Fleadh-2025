@@ -459,7 +459,8 @@ HEALTH_COLLISION:
     ; skip if still collided
     CMP.B     #$01, IN_HPACK
     BEQ     STILL_COLLIDED
-    CMP.B     #3, antHealth
+    MOVE.b  maxAntHp,d1
+    CMP.B     antHealth, d1
     BEQ     STILL_COLLIDED
 
     CMP.W   #0, healthCooldown

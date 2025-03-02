@@ -87,6 +87,7 @@ title2msg dc.b 'Press "enter/(A)" to start...',0
 
 ; include other fila
 aaes 
+ include "difficultySelect.x68"
  include "map/main.x68"
  include "map/shapeSizes.x68"
  include "map/trapCodes.x68"
@@ -115,6 +116,7 @@ aaes
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 *~Font name~Courier New~

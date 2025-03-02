@@ -26,6 +26,8 @@ tallyScore:
     clr.l d2
     move.b isWin, d2
     mulu #scoreWin, d2
+    move.b DIFFICULTY, d3
+    mulu d3, d2
     add.l d2, score
     move.l d2, finalWin
 
@@ -33,6 +35,10 @@ tallyScore:
     clr.l d2
     move.b antsRemaining, d2
     mulu #scoreLife, d2
+    cmp.b #5, DIFFICULTY
+    IF <EQ> THEN 
+        move.l #1000, d2
+    ENDI
     add.l d2, score
     move.l d2, finalLife
 
@@ -40,6 +46,8 @@ tallyScore:
     clr.l d2
     move.l totalKills, d2
     mulu #scoreKill, d2
+    move.b DIFFICULTY, d3
+    mulu d3, d2
     add.l d2, score
     move.l d2, finalKill
     
@@ -47,6 +55,8 @@ tallyScore:
     clr.l d2
     move.b totalHillsDefended, d2
     mulu #scoreHillDef, d2
+    move.b DIFFICULTY, d3
+    mulu d3, d2
     add.l d2, score
     move.l d2, finalHillDef
 
@@ -54,6 +64,8 @@ tallyScore:
     clr.l d2
     move.l perfectDefenceAmount, d2
     mulu #scorePerfectDef, d2
+    move.b DIFFICULTY, d3
+    mulu d3, d2
     add.l d2, score
     move.l d2, finalPerfectDef
 

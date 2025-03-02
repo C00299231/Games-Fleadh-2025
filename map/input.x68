@@ -68,7 +68,7 @@ commonInput:
 
 menuInput:
     cmpi.b #enterKey, currentKey
-    beq mapInit
+    beq DIFFICULTY_SELECT
     rts
 
 mapinput:
