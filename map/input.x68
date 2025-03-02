@@ -34,21 +34,26 @@ testinput:
     ; bring currentKey into d2, lastKey into d3
     move.l currentKey, d2
     move.l lastKey, d3
-    
-    jsr commonInput ; happens in any level
 
+    jsr commonInput ; happens in game and menu
 
     TST.w lvlType
     IF <EQ> THEN
         BSR menuInput ; happens in menu
+        rts
     endi
+
+    jsr notMenuInput
+
     cmp.w #1, lvlType
     IF <EQ> THEN
         BSR mapInput ; happens in map
+        rts
     endi
     cmp.w #2, lvlType
     IF <EQ> THEN
         BSR battleInput ; happens in run
+        rts
     ENDI
     
     rts             ; return to loop
@@ -64,11 +69,14 @@ inputType dc.w 1
 commonInput:
     ; at this point, keycode in currentkey is pressed
 
+    cmpi.l #key0, currentKey ; fullscreen
+    beq key0pressed
+    rts
+
+notMenuInput:
     ; OPTIONS
     cmpi.l #escapeKey, currentKey ; pause
     beq escapepressed
-    cmpi.l #key0, currentKey ; fullscreen
-    beq key0pressed
 
     tst.b isPaused
     bne pausedInput
@@ -82,12 +90,14 @@ menuInput:
         rts
     endi
 
-    ; key is enterKey
+    ; here, currentkey is enterKey
 
     cmpi.l #enterkey, lastkey
+    if <eq> then
+        rts
+    endi
 
-
-    ; enterKey is just pressed
+    ; from here, enterKey is just pressed
     bra DIFFICULTY_SELECT
 
 mapinput:
@@ -176,12 +186,13 @@ zPressed:
     bne toggleFollow ; z just pressed
     rts
 
-key1pressed: ; quit
+key2pressed: ; quit
     jsr togglePause
     bra end
-key2pressed: ; main menu
+key1pressed: ; main menu
     jsr togglePause
     jsr clearscreen
+    jsr disableDoubleBuffer
     bra start
 
 ; MOVEMENT INPUT: MUST STAY WITHIN CELL BOUNDARIES

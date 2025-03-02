@@ -59,7 +59,7 @@ Rkey           EQU         $52         ; R ASCII Keycode
 Akey           EQU         $41         ; A ASCII Keycode
 Skey           EQU         $53         ; S ASCII Keycode
 Dkey           EQU         $44         ; D ASCII Keycode
-Lkey           EQU         $4C         ; L ASCII Keycode
+Jkey           EQU         $4A         ; L ASCII Keycode
 Kkey           EQU         $4B         ; K ASCII Keycode
 
 *-----------------------------------------------------------
@@ -252,7 +252,7 @@ BATTLEINPUT:
     ENDI
 
     MOVE.B  #TC_KEYCODE, D0          ; Check for pressed keys
-    MOVE.L  #$1B4B, D1                 ; check K and escape
+    MOVE.L  #$1B4a, D1                 ; check K and escape
     TRAP    #15                     ; Trap (Perform action)
     MOVE.L  D1,         CURRENT_KEY     ; Put Current Key in Memory
 
@@ -751,30 +751,20 @@ drawAntsRemaining:
     RTS
 
 DRAW_HILL:
-
-
     ; Set Pixel Colors
-    MOVE.L  #DIRT,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
+    MOVE.L  #brown,     D1
+    jsr SetPenColour
 
-    MOVE.L  #DIRT,     D1
-    MOVE.B  #81,        D0
-    TRAP    #15
+    MOVE.L  #DIRT,     D1          ; Set Background color
+    jsr setFillColour
 
     CMP.B   #0, hillHurtTimer
     IF <NE> THEN
      
         MOVE.L  #MIDBROWN,     D1          ; Set Background color
-        MOVE.B  #80,        D0          ; Task for Background Color
-        TRAP    #15                     ; Trap (Perform action)
-
-        MOVE.L  #MIDBROWN,     D1
-        MOVE.B  #81,        D0
-        TRAP    #15
+        jsr setFillColour
     ENDI
 
-     
     ; Set X, Y, X2, and Y2
     MOVE.L  #0,   D1          ; X
     MOVE.L  #241,  D2          ; Y
@@ -857,10 +847,10 @@ DRAW_ENTRANCE:
     ENDI
 
     ; Set X, Y, X2, and Y2
-    MOVE.L  #0,   D1          ; X
+    MOVE.L  #1,   D1          ; X
     MOVE.L  #241,  D2          ; Y
     MOVE.L  #5,   D3           
-    MOVE.L  #181,   D4     
+    MOVE.L  #210,   D4     
     
     MOVE.B  #87,        D0          ; Draw 
     TRAP    #15                     ; Trap (Perform action)
@@ -907,18 +897,17 @@ DRAW_BACKGROUND:
 
 DRAW_TREES:
     
-    MOVE.L  #4,D1
+    ; set pen width
+    MOVE.L  #1,D1
     MOVE.L  #93,D0
     TRAP    #15
     
     ; Set Pixel Colors
-    MOVE.L  #TRUNKO,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
+    MOVE.L  #trunko,     D1          ; Set Background color
+    jsr setPenColour
 
     MOVE.L  #TRUNKO,     D1
-    MOVE.B  #81,        D0
-    TRAP    #15
+    jsr setFillColour
     
     ; left trunk
     MOVE.L  #330,D1
@@ -949,8 +938,7 @@ DRAW_TREES:
     
     ; fill in trunk of tree
     MOVE.L  #TRUNKI,     D1
-    MOVE.B  #81,        D0
-    TRAP    #15
+    jsr setFillColour
     
     MOVE.L  #340,D1
     MOVE.L  #160,D2
@@ -963,13 +951,11 @@ DRAW_TREES:
     TRAP    #15
 
    ; Set Pixel Colors
-    MOVE.L  #GREEN1,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
+    MOVE.L  #green1,     D1          ; Set Background color
+    jsr setPenColour
 
     MOVE.L  #GREEN1,     D1
-    MOVE.B  #81,        D0
-    TRAP    #15
+    jsr setFillColour
 
 ; 88 for elipse
     MOVE.L  #303,D1
@@ -980,9 +966,9 @@ DRAW_TREES:
     TRAP    #15
    
       ; Set Pixel Colors
-    MOVE.L  #GREEN2,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
+   ; MOVE.L  #GREEN2,     D1          ; Set Background color
+    ;;MOVE.B  #80,        D0          ; Task for Background Color
+    ;TRAP    #15                     ; Trap (Perform action)
 
     MOVE.L  #GREEN2,     D1
     MOVE.B  #81,        D0
@@ -997,9 +983,9 @@ DRAW_TREES:
     TRAP    #15
     
           ; Set Pixel Colors
-    MOVE.L  #GREEN3,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
+    ;MOVE.L  #GREEN3,     D1          ; Set Background color
+   ; MOVE.B  #80,        D0          ; Task for Background Color
+    ;TRAP    #15                     ; Trap (Perform action)
 
     MOVE.L  #GREEN3,     D1
     MOVE.B  #81,        D0
@@ -1014,9 +1000,9 @@ DRAW_TREES:
     TRAP    #15
     
           ; Set Pixel Colors
-    MOVE.L  #GREEN4,     D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
-    TRAP    #15                     ; Trap (Perform action)
+  ;  MOVE.L  #GREEN4,     D1          ; Set Background color
+  ;  MOVE.B  #80,        D0          ; Task for Background Color
+  ;  TRAP    #15                     ; Trap (Perform action)
 
     MOVE.L  #GREEN4,     D1
     MOVE.B  #81,        D0
@@ -1029,9 +1015,6 @@ DRAW_TREES:
     MOVE.L  #158,D4
     MOVE.B  #87,D0
     TRAP    #15
-    
-
-    
 
     RTS
 *-----------------------------------------------------------
@@ -1106,6 +1089,7 @@ DRAW_PLYR_DATA:
     MOVE.B  #03,        D0          ; Display number at D1.L
     TRAP    #15                     ; Trap (Perform action)
 
+    jsr drawBattlePrompts
 
     RTS
 *-----------------------------------------------------------
@@ -1335,8 +1319,7 @@ STOP_SONG:
 
 PLAY_Sting:
     MOVE    #Sting_INDEX,D1          ; Load Sound INDEX
-    move.l #1, d2
-    MOVE    #77,        D0          ; Play Sound
+    MOVE    #75,        D0          ; Play Sound
     TRAP    #15                     ; Trap (Perform action)
     RTS                             ; Return to subroutine
 
@@ -1623,7 +1606,7 @@ DRAW_HEALTHPACK_DONE:
 
 DRAW_FLOOR:
     ; Set Pixel Colors
-    MOVE.L  #GREEN,     D1          ; Set Background color
+    MOVE.L  #brown,     D1          ; Set Background color
     MOVE.B  #80,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
 
@@ -2226,6 +2209,7 @@ hillHurtTimer       dc.b        0
 timer           DC.L    0
 
 ;    END    START        ; last line of source
+
 
 
 

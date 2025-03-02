@@ -4,7 +4,7 @@
     ; big square boundary
     ; 2 square attack zones - top corners
     ; 1 square heal zone - bottom
-
+wordAlign ds.l 01
 initializeCell: ; initialize values for cell and zones
 
     ; this subroutine gathers top-left and bottom-right bounds for the cell,

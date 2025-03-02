@@ -65,7 +65,6 @@ draw:
     
     jsr drawPlayer
     jsr drawText
-    ;jsr drawHealth
     jsr drawPause
     rts
 
@@ -73,9 +72,9 @@ drawPause:
     tst.b isPaused
     beq endDrawPause
 
-    move.l #white, d1
+    move.l #color5, d1
     jsr setPenColour
-    move.l #brown, d1
+    move.l #deepgreen, d1
     jsr setFillColour
 
     ; make sure font is current
@@ -105,11 +104,11 @@ drawPause:
     ; draw options
     move.w #$1c0c, d1
     jsr setCursor
-    lea pauseOption1Msg, a1
+    lea pauseResetKeyMsg, a1
     jsr print
     add.w #$2, d1
     jsr setCursor
-    lea pauseOption2Msg, a1
+    lea pauseQuitKeyMsg, a1
     jsr print
 
     rts
@@ -120,7 +119,6 @@ drawHealth:
     move.l healthTlX, d1
     move.l healthTlY, d2
 
-    ;move.l healthBrX, d3
     move.l healthBrY, d4
 
     move.l maxHealth, d5
@@ -131,8 +129,6 @@ drawHealth:
 
 drawText:
     ; set colours
-    move.l #color5, d1
-    jsr setPenColour
     move.l #DEEPGREEN, d1
     jsr setFillColour
 
@@ -155,6 +151,57 @@ drawText:
     jsr setCursor
     lea attackMsg2, a1
     jsr print
+
+    ; BUTTON PROMPTS
+    move.w #$3803, d1
+
+    jsr setCursor
+    lea pauseKeyMsg, a1
+    jsr printNoCRLF
+
+    addq #1, d1
+    jsr setCursor
+    lea zoomKeyMsg, a1
+    jsr printNoCRLF
+
+    addq #1, d1
+    jsr setCursor
+    lea fsKeyMsg, a1
+    jsr printNoCRLF
+
+
+    ; reset cursor
+    move.l #0, d1
+    jsr setCursor
+    rts
+
+drawBattlePrompts:
+    ; set colours
+    move.l #color5, d1
+    jsr setFontColour
+    move.l #deepgreen, d1
+    jsr setFillColour
+
+    ; BUTTON PROMPTS
+    move.w #$3514, d1
+    jsr setCursor
+    lea pauseKeyMsg, a1
+    jsr printNoCRLF
+
+    add.b #1, d1
+    jsr setCursor
+    lea jumpKeyMsg, a1
+    jsr printNoCRLF
+
+    addq #1, d1
+    jsr setCursor
+    lea atkKeyMsg1, a1
+    jsr printNoCRLF
+
+    addq #1, d1
+    jsr setCursor
+    lea atkKeyMsg2, a1
+    jsr printNoCRLF
 
 
     ; reset cursor
@@ -649,27 +696,34 @@ drawAntHill: ; d1 thru 4 are already assigned
     move.l #dirt, d1
     jsr setFillColour
 
+    ;---------------------------LAYER 1
     move.l d5, d1
     
     jsr drawRect
-    add #5, D1
-    sub #2, D2
-    sub #5, D3
-    sub #12, D4
-    jsr drawRect
-    
-    add #5, D1
-    sub #2, D2
-    sub #5, D3
-    sub #12, D4
-    jsr drawRect
-    
+
+    ;---------------------------LAYER 2
     add #5, D1
     sub #2, D2
     sub #5, D3
     sub #12, D4
     jsr drawRect
 
+    
+    ;---------------------------LAYER 3
+    add #5, D1
+    sub #2, D2
+    sub #5, D3
+    sub #12, D4
+    jsr drawRect
+    
+    ;---------------------------LAYER 4
+    add #5, D1
+    sub #2, D2
+    sub #5, D3
+    sub #12, D4
+    jsr drawRect
+
+    ;---------------------------HOLE
     ; store d1
     move.l d1, d5
     move.l #brown, d1
@@ -771,41 +825,57 @@ endDraw:
     rts
 
 setPenColour:
-    move.b #tcPenClr, d0
+    moveq #tcPenClr, d0
     trap #15
     rts
 
 setFillColour:
-    move.b #tcPenFil, d0
+    moveq #tcPenFil, d0
     trap #15
     rts
 
+setTextColour:
+    moveq #tcFont, d0
+    trap #15
+    rts
+
+safeSetFillColour:
+    moveq #tcPenFil, d0
+    trap #15
+    move.l d5, d1
+    rts
+
 setFontColour:
-    move.b #tcFont, d0
+    moveq #tcFont, d0
     trap #15
     rts
 
 print:
-    move #13, d0
+    moveq #13, d0
+    trap #15
+    rts
+
+printNoCRLF:
+    moveq #14, d0
     trap #15
     rts
 
 printWithNum:
-    move #14, d0
+    moveq #14, d0
     trap #15
     jsr printNum
     jsr crlf
     rts
 
 printNum:
-    move #3, d0
+    moveq #3, d0
     trap #15
     rts
 
 printKeyCode:
     move.l currentKey, d1
     move.l #16, d2
-    move.b #15, d0
+    moveq #15, d0
     trap #15
     rts
 
@@ -825,7 +895,7 @@ drawLine:
     mulu cameraZoom, d3
     mulu cameraZoom, d4
 
-    move.b #tcline, d0
+    moveq #tcline, d0
     trap #15
 
     ; UN-zoom by camera
@@ -841,7 +911,7 @@ drawLine:
     rts
 
 drawUiLine:
-    move.b #tcLine, d0
+    moveq #tcLine, d0
     trap #15
     rts
 
@@ -882,7 +952,7 @@ drawUiRect:
     rts
 
 setCursor:
-    MOVE.B  #tcCrs, d0
+    MOVEq  #tcCrs, d0
     TRAP    #15
     rts
 

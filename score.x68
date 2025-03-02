@@ -172,6 +172,7 @@ scoreScreenInbetween:
     rts
 
 getEnter:
+
     move.l currentKey, lastKey
 
     ; set d1 to enter
