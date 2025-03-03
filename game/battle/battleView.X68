@@ -1481,7 +1481,7 @@ HILL_LOST:
    
     ; delay time
     MOVE.b  #23,D0
-    MOVE.L  #endGameDelay,D1
+    MOVE.L  #100,D1
     TRAP    #15
 
     ; sub from the counter
@@ -1669,7 +1669,7 @@ MAPCOUNTDOWN:
    
     ; delay time
     MOVE.b  #23,D0
-    MOVE.L  #endGameDelay,D1
+    MOVE.L  #100,D1
     TRAP    #15
 
     ; sub 1 from the counter
