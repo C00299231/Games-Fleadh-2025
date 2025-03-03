@@ -215,7 +215,7 @@ DRAW_DIFFSELECT:
 
     ; Message
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$171E,     D1          
+    MOVE.W  #$1217,     D1          
     TRAP    #15                     ; Trap (Perform action)
     LEA     ENTER_DIFFICULTY_MSG,  A1   ; Message
     MOVE    #13,        D0          ; No Line feed
@@ -281,7 +281,7 @@ HARD_MSG1 DC.B '3-HARDCORE', 0
 HARD_MSG2 DC.B 'You are the ', 0 
 HARD_MSG3 DC.B 'Kingdom`s last ', 0 
 HARD_MSG4 DC.B 'hope. 1 Life', 0 
-ENTER_DIFFICULTY_MSG DC.B '-Press `Enter` to choose difficulty-', 0
+ENTER_DIFFICULTY_MSG DC.B '- Press `Enter / (A)` to choose difficulty -', 0
 
 selectedIndex     dc.b    1
 EASY_SLOW         DC.L    0
