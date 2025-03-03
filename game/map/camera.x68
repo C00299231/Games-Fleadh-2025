@@ -8,6 +8,7 @@ cameraZoom dc.w 02
 
 isFollow dc.w 0
 
+; get the position of the camera
 followCam:
     tst isFollow
     beq endFollow
@@ -23,6 +24,7 @@ followCam:
 endFollow:
     rts
 
+; turn on or off follow
 toggleFollow:
     move.w isFollow, d2
     tst.w d2

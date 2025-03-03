@@ -103,7 +103,7 @@ menuInput:
     endi
 
     ; from here, enterKey is just pressed
-    bra DIFFICULTY_SELECT
+    bra move2difficulty
 diffInput:
     cmpi.l #Dkey, currentkey
     beq   rightSelected

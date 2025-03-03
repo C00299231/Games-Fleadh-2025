@@ -3,17 +3,18 @@
 ; first init for map
 mapInit:
     move.w #1, lvlType
-    move.w #0, lvlIndex
+    move.w #3, lvlIndex
 
     jsr enableDoubleBuffer
 
     lea     hillHPArray,a6
 
+    ; quickly play a song
     jsr stop_song
     jsr MAP_SONG_LOAD
     jsr play_song
 	
-	    ; Place the Player at the center of the screen
+	; Place the Player at the center of the screen
     CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  screenW,   D1          ; Place Screen width in D1
     DIVU    #02,        D1          ; divide by 2 for center on X Axis
@@ -27,16 +28,19 @@ mapInit:
     ;add.l cellYoffset, d1
     MOVE.L  D1,         playerY    ; Players Y Position
     
+    ; initialize stuff
     jsr initializeCell
     jsr initStarts
     jsr initDraw
     jsr initAllEnemies
 
+    ; go to loop
 	bra loop
 
 ; subsequent inits for map
 mapNotFirstInit:
 
+    ; go to next hill hp
     move.b  hillHP,(a6)+
 
     ; reset font size and colour
@@ -56,7 +60,6 @@ mapNotFirstInit:
     add.w #1, lvlIndex ; next level
     move.l centerX, playerX
     move.l centerY, playerY
-    ;add.l cellYoffset, playerY
 
     jsr initAllEnemies
 
@@ -64,36 +67,26 @@ mapNotFirstInit:
 
 loop:
     
+    ; do map stuff
+    jsr map
 
-    ;jsr clearscreen
-    jsr map ; if in map, do map stuff
-    ; if in battle, do battle stuff
-
-    ; wait
-
+    ; wait, then go again
     jsr wait_100msStart
-    bra endLoop
-endLoop:
-    tst currentHealth
-    bne end
-    bra loop        ; loop
+    bra loop
 
 map:
     jsr draw
 
     jsr testinput
     
-    ; test paused
+    ; test if paused, ignore process if so
     tst.b isPaused
-    bne paused
+    bne loop
 
-    ; process
-    ;jsr increment
+    ; reset pen colours of anthills
     jsr resetZonePens
     
     jsr processEnemies
-    ;jsr enemyColCheck
-    ;jsr collision
     rts
 
 battle:
@@ -128,10 +121,6 @@ collision:
     ; no collision
 
     rts
-
-paused:
-    bra endLoop
-    rts
     
 clearscreen:
 	; Clear the screen
@@ -140,30 +129,10 @@ clearscreen:
 	TRAP    #15
 	rts
 
-wasteTime:
-    ; value put into d5, keep subtracting 1 until d5 contains 0
-    ; takes a lot of time to process
-    sub #1, d5
-    cmp #0, d5
-    bne wasteTime
-    rts
-
 togglePause:
     move.b isPaused, d5
     not.b d5
     move.b d5, isPaused
-    rts
-
-
-; heal up by one hp
-heal:
-    move.l currentHealth, d2
-    cmp.l maxHealth, d2
-    beq endHeal
-    add.l #1, d2
-    move.l d2, currentHealth
-    bra endHeal
-endHeal:
     rts
 
 takeDmg:

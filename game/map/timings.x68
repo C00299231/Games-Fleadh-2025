@@ -5,8 +5,11 @@ enemyTime dc.w 5
 healTime dc.w 40
 enemySpawnTimer dc.w 2000
 
+
 ; /100 of second delay
-scoreLineDelay equ 60 ; should be 100!
+scoreLineDelay equ 60 ; should be 100(?)
+
+endGameDelay equ 400
 
 increment: ; D6 permanently used up
     
