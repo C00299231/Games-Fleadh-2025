@@ -7,6 +7,9 @@ PLYR_DFLT_V EQU         00          ; Default Player Velocity
 PLYR_JUMP_V EQU         -18          ; Player Jump Velocity
 PLYR_DFLT_G EQU         01          ; Player Default Gravity
 
+GND_TRUE    EQU         01          ; Player on Ground True
+GND_FALSE   EQU         00          ; Player on Ground False
+
 INIT_PLAYER:
 
     ; Place the Player at the center of the screen
@@ -134,7 +137,7 @@ SET_ON_GROUND:
 SET_OFF_GROUND:
     MOVE.L  #GND_FALSE, PLYR_ON_GND ; Player if off Ground
     RTS                             ; Return to subroutine
-    
+
 ; draw all player relevant data
 DRAW_PLAYER:
     ; Set Pixel Colors

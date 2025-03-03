@@ -6,26 +6,7 @@
 *-----------------------------------------------------------
 
 *-----------------------------------------------------------
-* Section       : EQUs
-* Description   : set up constants
-*-----------------------------------------------------------
-GND_TRUE    EQU         01          ; Player on Ground True
-GND_FALSE   EQU         00          ; Player on Ground False
-
-ENMY_W_INIT EQU         27          ; Enemy initial Width
-ENMY_H_INIT EQU         13          ; Enemy initial Height
-
-FLY_ENMY_W_INIT  EQU         30          ; flying Enemy initial Width
-FLY_ENMY_H_INIT  EQU         13          ; Enemy flying initial Height
-
-BRUTE_W_INIT EQU         50          ; BRute Enemy initial Width
-BRUTE_H_INIT EQU         25          ; Brute Enemy initial Height
-
-HEALTH_PACK_W    EQU         12          ; Enemy initial Width
-HEALTH_PACK_H    EQU         12          ; Enemy initial Height
-
-*-----------------------------------------------------------
-* Subroutine    : Initialise
+* Subroutine    : Initialise battle
 * Description   : Initialise game data into memory such as 
 * sounds and screen size
 *-----------------------------------------------------------
@@ -93,7 +74,7 @@ INITRUN:
     MOVE.B  #00,        FLYENEMY_HIT
 
     ; set up the wave enemies count
-    ADD.B   #15,         enemiesToDefeat
+    ADD.B   #enemyPerWave,         enemiesToDefeat
     MOVE.B  #0,         ENEMIES_DEFEATED
     MOVE.B  #0,         enemiesPassed
     MOVE.B  #4,         backToMapCount
@@ -1780,7 +1761,8 @@ antsRem_MSG             DC.B    'Ants Remaining : ',0                   ; ants r
 hillHP_MSG              DC.B    'Hill Health: ',0                       ; hill health message
 wave_MSG                DC.B    'Wave: ',0                              ; wave message
 
-hillHP                  DC.B     100                 
+hillHP                  DC.B     100     
+enemyPerWave            EQU      20            
 IN_ENEMY                DC.B     00                  ; marker for if the player is in the enemy
 IN_HPACK                DC.B     00                  ; marker for if the player is in the health pack
 DRAW_HEALTHPACKS        DC.B     00                  ; marker for if the healthpacks are showing
@@ -1815,8 +1797,20 @@ HEALTH_Y         DS.L    01  ; Reserve Space for Health Y Position
 FLYINGENEMY_X         DS.L    01  ; Reserve Space for Flying Enemy X Position
 FLYINGENEMY_Y         DS.L    01  ; Reserve Space for Flying Enemy Y Position
 
-BRUTE_X         DS.L    01
-BRUTE_Y         DS.L    01
+BRUTE_X          DS.L        01
+BRUTE_Y          DS.L        01
+
+ENMY_W_INIT      EQU         27          ; Enemy initial Width
+ENMY_H_INIT      EQU         13          ; Enemy initial Height
+
+FLY_ENMY_W_INIT  EQU         30          ; flying Enemy initial Width
+FLY_ENMY_H_INIT  EQU         13          ; Enemy flying initial Height
+
+BRUTE_W_INIT     EQU         50          ; BRute Enemy initial Width
+BRUTE_H_INIT     EQU         25          ; Brute Enemy initial Height
+
+HEALTH_PACK_W    EQU         12          ; Enemy initial Width
+HEALTH_PACK_H    EQU         12          ; Enemy initial Height
 
 ENEMY_HIT           DC.B    00
 FLYENEMY_HIT        DC.B    00
