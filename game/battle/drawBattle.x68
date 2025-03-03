@@ -40,7 +40,7 @@ DRAW_HILL:
     CMP.B   #0, hillHurtTimer
     IF <NE> THEN
      
-        MOVE.L  #MIDBROWN,     D1          ; Set Background color
+        MOVE.L  #red,     D1          ; Set Background color
         jsr setFillColour
     ENDI
 

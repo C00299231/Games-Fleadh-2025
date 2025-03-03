@@ -15,18 +15,18 @@ DRAW_WAVE_DATA:
     EOR.L    D2,D2
 
     ; set font and back ground color
-    MOVE.L  #deepgreen,D1
+    MOVE.L  #color5,D1
     MOVE.B  #tcFont,D0
     MOVE.L  #$00120000,D2
     TRAP    #15
 
-    MOVE.L  #SKY,D1
+    MOVE.L  #deepgreen,D1
     MOVE.B  #tcPenFil,D0
     TRAP    #15
 
 * ------Current wave-------*
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0100,     D1          ; col 01, Row 00
+    MOVE.W  #$1a0d,     D1          ; col 01, Row 00
     TRAP    #15                     ; Trap (Perform action)
     LEA     wave_MSG,   A1          
     MOVE    #13,        D0          ; No Line feed
@@ -34,7 +34,7 @@ DRAW_WAVE_DATA:
     
     ; Show wave num msg
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0A00,     D1          ; col 10, Row 0
+    MOVE.W  #$240d,     D1          ; col 10, Row 0
     TRAP    #15                     ; Trap (Perform action)   
     EOR.L   D1,D1                      ; Clear contents of D1 
     MOVE.W  lvlIndex,      D1          ; Move Key Pressed to D1
@@ -43,20 +43,20 @@ DRAW_WAVE_DATA:
     TRAP    #15                     ; Trap (Perform action)
 
 * ------Enemies defeated wave-------*
-    MOVE.L  #deepgreen,D1
+    MOVE.L  #color5,D1
     MOVE.B  #tcFont,D0
     MOVE.L  #$00090000,D2
     TRAP    #15
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0203,     D1          ; col $02, Row 03 
+    MOVE.W  #$341c,     D1          ; col $02, Row 03 
     TRAP    #15                     ; Trap (Perform action)
     LEA     ENEMIESDEAD_MSG,    A1        
     MOVE    #13,        D0          ; No Line feed
     TRAP    #15                     ; Trap (Perform action)
     
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1703,     D1          ; col $17, Row 03
+    MOVE.W  #$471c,     D1          ; col $17, Row 03
     TRAP    #15                     ; Trap (Perform action)
     MOVE.B  #03,        D0          ; Display number at D1.L
     CLR.L   D1                      ; Clear contents of D1 
@@ -67,7 +67,7 @@ DRAW_WAVE_DATA:
 
     ; number of enemies in wave msg
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0202,     D1          ; col $2, Row 02
+    MOVE.W  #$341d,     D1          ; col $2, Row 02
     TRAP    #15                     ; Trap (Perform action)
     LEA     ENEMYCOUNT_MSG,    A1          
     MOVE    #13,        D0          ; No Line feed
@@ -75,7 +75,7 @@ DRAW_WAVE_DATA:
     
     ; number of enemies in wave 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1702,     D1          ; col $17, Row 02
+    MOVE.W  #$471d,     D1          ; col $17, Row 02
     TRAP    #15                     ; Trap (Perform action)
     CLR.L   D1                      ; Clear contents of D1 
     MOVE.B  enemiesToDefeat,     D1          

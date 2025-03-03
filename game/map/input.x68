@@ -9,6 +9,10 @@ testinput:
     ; getting previous key
     move.l currentkey, lastkey
 
+    cmp.w #1, lvlType
+    IF <EQ> THEN
+        BSR mapMoveInput ; happens in map
+    endi
     
 
     ; set d1 to $0000 0000
@@ -25,6 +29,8 @@ testinput:
     ; AT THIS POINT, CURRENT KEY CONTAINS THE CURRENT/LAST KEY PRESSED,
     ; AND D1 CONTAINS WHETHER OR NOT IT IS STILL PRESSED
     
+    
+
     ; test if no input
     cmpi.b #0, d1
     beq noinput     ; if no input, move to noinput
@@ -134,7 +140,7 @@ mapinput:
     beq collision
 
     ; movement input
-    bsr mapMoveInput
+    ;bsr mapMoveInput
 
     RTS
 
