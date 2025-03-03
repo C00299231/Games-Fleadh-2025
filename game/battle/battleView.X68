@@ -162,7 +162,7 @@ wait_100ms:
 continueLoop:   ; after wait is done
     BSR     BATTLEINPUT                   ; Check Keyboard Input
     BSR     checkPaused             ; check if the game is paused
-    BSR     UPDATE                  ; Update positions and points
+    BSR     UPDATE                  ; Update positions 
     BSR     IS_PLAYER_ON_GND        ; Check if player is on ground
     BSR     CHECK_COLLISIONS        ; Check for Collisions
     BSR     DRAWBATTLE                  ; Draw the Scene
@@ -598,114 +598,22 @@ DRAWBATTLE:
     MOVE.B  #93,D0
     TRAP    #15
 
-    BSR     DRAW_BACKGROUND        
-    BSR     DRAW_HILL 
-    BSR     DRAW_TREES
-    BSR     DRAW_ENTRANCE_HOLE
+    ; draw everything
+    BSR     DRAW_BACKGROUND         ; background
+    BSR     DRAW_HILL               ; ant hill
+    BSR     DRAW_TREES              ; tree
+    BSR     DRAW_ENTRANCE_HOLE      ; entrance to ant hill
     BSR     DRAW_ENEMY              ; Draw Enemy
-    BSR     DRAW_FLYENEMY
-    BSR     DRAW_BRUTEENEMY
-    BSR     DRAW_HEALTHPACK
-    BSR     DRAW_ENTRANCE
+    BSR     DRAW_FLYENEMY           ; flying enemy
+    BSR     DRAW_BRUTEENEMY         ; brute
+    BSR     DRAW_HEALTHPACK         ; health apple
+    BSR     DRAW_ENTRANCE           ; entrance the overlaps entrance hole
     BSR     DRAW_PLAYER             ; Draw Player
     BSR     DRAW_FLOOR              ; Draw Floor
-    BSR     DRAW_PLYR_DATA          ; Draw Draw Score, HUD, Player X and Y
-    BSR     drawHillHealth         ; draw hill hp
-    BSR     drawAntHealth
-    BSR     drawAntsRemaining
-    BSR     drawPause
+    BSR     DRAW_HUD                ; Draw hud
+    BSR     drawPause               ; draw if paused
     RTS                             ; Return to subroutine
 
-
-; draw hill health bar
-drawHillHealth:
-    move.l  #10,        D1          
-    move.l  #425,       D2
-    move.l  #440,       D4
-    clr.l   d5
-    clr.l   d6
-    move.b     maxHillHp,  d5
-    move.b     hillHP, D6
-    mulu.w  #2,d5
-    mulu.w  #2,d6
-    BSR     drawModularHbar         ; set d registers and run the draw bar subroutine
-        
-    ; set font 
-    MOVE.L  #color5,D1
-    MOVE.B  #tcFont,D0
-    MOVE.L  #00090000,D2
-    TRAP    #15
-
-    ;set background 
-    MOVE.L  #deepgreen,D1
-    MOVE.B  #tcPenFil,D0
-    TRAP    #15
-
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$021B,     D1          ; col 2 row 1b
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     hillHP_MSG,  A1          ; Score Message
-    bsr     print
-
-    RTS
-drawAntHealth:
-    move.l  #10,        D1
-    move.l  #335,       D2
-    move.l  #350,       D4
-    clr.l   d5
-    clr.l   d6
-    move.b     maxAntHp,  d5
-    move.b     antHealth, D6
-    mulu.w  #50,d5
-    mulu.w  #50,d6
-    BSR     drawModularHbar
-        
-    MOVE.L  #color5,D1
-    MOVE.B  #tcFont,D0
-    MOVE.L  #00090000,D2
-    TRAP    #15
-
-    MOVE.L  #deepgreen,D1
-    MOVE.B  #tcPenFil,D0
-    TRAP    #15
-
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0215,     D1           02, Row 01
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     antHealth_MSG,  A1          ; Score Message
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)
-
-    RTS
-drawAntsRemaining:
-    move.l  #10,        D1
-    move.l  #380,       D2
-    move.l  #395,       D4
-    clr.l   d5
-    clr.l   d6
-    move.b     maxRemainingAnts,  d5
-    move.b     antsRemaining, D6
-    mulu.w  #40,d5
-    mulu.w  #40,d6
-    BSR     drawModularHbar
-        
-    MOVE.L  #color5,D1
-    MOVE.B  #tcFont,D0
-    MOVE.L  #00090000,D2
-    TRAP    #15
-
-    MOVE.L  #deepgreen,D1
-    MOVE.B  #tcPenFil,D0
-    TRAP    #15
-
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0218,     D1           02, Row 01
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     antsRem_MSG,  A1          ; Score Message
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)
-
-    RTS
 
 DRAW_HILL:
     ; Set Pixel Colors
@@ -715,6 +623,7 @@ DRAW_HILL:
     MOVE.L  #DIRT,     D1          ; Set Background color
     jsr setFillColour
 
+    ; darken the hill if its hurt
     CMP.B   #0, hillHurtTimer
     IF <NE> THEN
      
@@ -722,6 +631,7 @@ DRAW_HILL:
         jsr setFillColour
     ENDI
 
+    ; leftmost chunk
     ; Set X, Y, X2, and Y2
     MOVE.L  #0,   D1          ; X
     MOVE.L  #241,  D2          ; Y
@@ -731,6 +641,7 @@ DRAW_HILL:
     MOVE.B  #87,        D0          ; Draw 
     TRAP    #15                     ; Trap (Perform action)
     
+    ; second chunk
      ; Set X, Y, X2, and Y2
     MOVE.L  #0,   D1          ; X
     MOVE.L  #241,  D2          ; Y
@@ -741,6 +652,7 @@ DRAW_HILL:
     MOVE.B  #87,        D0          ; Draw
     TRAP    #15                     ; Trap (Perform action)
 
+    ; third chunk
      ; Set X, Y, X2, and Y2
     MOVE.L  #0,   D1          ; X
     MOVE.L  #241,  D2          ; Y
@@ -751,6 +663,7 @@ DRAW_HILL:
     MOVE.B  #87,        D0          ; Draw 
     TRAP    #15                     ; Trap (Perform action)
 
+    ; last chunk
      ; Set X, Y, X2, and Y2
     MOVE.L  #0,   D1          ; X
     MOVE.L  #241,  D2          ; Y
@@ -761,6 +674,7 @@ DRAW_HILL:
     MOVE.B  #87,        D0          ; Draw 
     TRAP    #15                     ; Trap (Perform action)
 
+    ; change color for top entrance
     MOVE.L  #BLACK,     D1
     MOVE.B  #81,        D0
     TRAP    #15
@@ -780,6 +694,7 @@ DRAW_HILL:
 
     RTS
 
+; draw hill entrance
 DRAW_ENTRANCE:
     ; Set Pixel Colors
     MOVE.L  #DIRT,     D1          ; Set Background color
@@ -790,7 +705,7 @@ DRAW_ENTRANCE:
     MOVE.B  #81,        D0
     TRAP    #15
 
-    
+    ; if the hill is hurt then change the color
     CMP.B   #0, hillHurtTimer
     IF <NE> THEN
             ; Set Pixel Colors
@@ -834,8 +749,10 @@ DRAW_ENTRANCE_HOLE:
     TRAP    #15                     ; Trap (Perform action)
     RTS
 
+
+; draw the background
 DRAW_BACKGROUND:
-    CLR.L       D1
+    ; fill the sky 
     MOVE.L      #SKY,D1
     MOVE.B      #81,D0
     TRAP        #15
@@ -852,6 +769,7 @@ DRAW_BACKGROUND:
 
     RTS
 
+; draw the tree
 DRAW_TREES:
     
     ; set pen width
@@ -914,58 +832,43 @@ DRAW_TREES:
     MOVE.L  #GREEN1,     D1
     jsr setFillColour
 
-; 88 for elipse
+    ; draw leaves 1
     MOVE.L  #303,D1
     MOVE.L  #33,D2
     MOVE.L  #391,D3
     MOVE.L  #118,D4
     MOVE.B  #87,D0
     TRAP    #15
-   
-      ; Set Pixel Colors
-   ; MOVE.L  #GREEN2,     D1          ; Set Background color
-    ;;MOVE.B  #80,        D0          ; Task for Background Color
-    ;TRAP    #15                     ; Trap (Perform action)
 
+    ; draw leaves 2
     MOVE.L  #GREEN2,     D1
     MOVE.B  #81,        D0
     TRAP    #15
 
-; 88 for elipse
     MOVE.L  #338,D1
     MOVE.L  #42,D2
     MOVE.L  #427,D3
     MOVE.L  #133,D4
     MOVE.B  #87,D0
     TRAP    #15
-    
-          ; Set Pixel Colors
-    ;MOVE.L  #GREEN3,     D1          ; Set Background color
-   ; MOVE.B  #80,        D0          ; Task for Background Color
-    ;TRAP    #15                     ; Trap (Perform action)
 
+    ; draw leaves 3
     MOVE.L  #GREEN3,     D1
     MOVE.B  #81,        D0
     TRAP    #15
 
-; 88 for elipse
     MOVE.L  #284,D1
     MOVE.L  #65,D2
     MOVE.L  #368,D3
     MOVE.L  #150,D4
     MOVE.B  #87,D0
     TRAP    #15
-    
-          ; Set Pixel Colors
-  ;  MOVE.L  #GREEN4,     D1          ; Set Background color
-  ;  MOVE.B  #80,        D0          ; Task for Background Color
-  ;  TRAP    #15                     ; Trap (Perform action)
 
+    ; draw leaves 4
     MOVE.L  #GREEN4,     D1
     MOVE.B  #81,        D0
     TRAP    #15
 
-; 88 for elipse
     MOVE.L  #340,D1
     MOVE.L  #76,D2
     MOVE.L  #423,D3
@@ -974,125 +877,10 @@ DRAW_TREES:
     TRAP    #15
 
     RTS
-*-----------------------------------------------------------
-* Subroutine    : Draw game info
-* Description   : Draw info about the current battle e.g. your hp, hill hp, ant remaining, etc.
-*-----------------------------------------------------------
-DRAW_PLYR_DATA:
-    EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
-    EOR.L    D2,D2
-
-    MOVE.L  #deepgreen,D1
-    MOVE.B  #tcFont,D0
-    MOVE.L  #$00120000,D2
-    TRAP    #15
-
-    MOVE.L  #SKY,D1
-    MOVE.B  #tcPenFil,D0
-    TRAP    #15
-
-      ; Show antHealth msg
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0100,     D1           02, Row 06
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     wave_MSG,   A1          ; Draw
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)  
-    
-    ; Show antHealth msg
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0A00,     D1           30, Row 1
-    TRAP    #15                     ; Trap (Perform action)   
-    EOR.L   D1,D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.W  lvlIndex,      D1          ; Move Key Pressed to D1
-    ADD.B   #1,D1
-    MOVE.B  #03,        D0          ; Display the contents of D1
-    TRAP    #15                     ; Trap (Perform action)
-
-    MOVE.L  #deepgreen,D1
-    MOVE.B  #tcFont,D0
-    MOVE.L  #$00090000,D2
-    TRAP    #15
-
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0203,     D1           
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     ENEMIESDEAD_MSG,    A1          ; On Ground Message
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)
-    
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1703,     D1           06, Row 04
-    TRAP    #15                     ; Trap (Perform action)
-    MOVE.B  #03,        D0          ; Display number at D1.L
-    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.B  ENEMIES_DEFEATED,     D1          ; Move Play on Ground ? to D1.L
-    TRAP    #15                     ; Trap (Perform action)
-    
-    ; number of enemies in wave msg
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0202,     D1           
-    TRAP    #15                     ; Trap (Perform action)
-    LEA     ENEMYCOUNT_MSG,    A1          ; On Ground Message
-    MOVE    #13,        D0          ; No Line feed
-    TRAP    #15                     ; Trap (Perform action)
-    
-    ; number of enemies in wave 
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1702,     D1           06, Row 04
-    TRAP    #15                     ; Trap (Perform action)
-    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.B  enemiesToDefeat,     D1          ; Move Play on Ground ? to D1.L
-    MOVE.B  #03,        D0          ; Display number at D1.L
-    TRAP    #15                     ; Trap (Perform action)
-
-    jsr drawBattlePrompts
-
-    RTS
-*-----------------------------------------------------------
-* Subroutine    : Player is on Ground
-* Description   : Check if the Player is on or off Ground
-*-----------------------------------------------------------
-IS_PLAYER_ON_GND:
-    ; Check if Player is on Ground
-    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
-    CLR.L   D2                      ; Clear contents of D2 (XOR is faster)
-    MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1  
-    DIVU    #02,        D1          ; divide by 2 for center on Y Axis
-    MOVE.L  PLAYER_Y,   D2          ; Player Y Position
-    CMP     D1,         D2          ; Compare middle of Screen with Players Y Position 
-    BGE     SET_ON_GROUND           ; The Player is on the Ground Plane
-    BLT     SET_OFF_GROUND          ; The Player is off the Ground
-    RTS                             ; Return to subroutine
-
-
-*-----------------------------------------------------------
-* Subroutine    : On Ground
-* Description   : Set the Player On Ground
-*-----------------------------------------------------------
-SET_ON_GROUND:
-    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
-    DIVU    #02,        D1          ; divide by 2 for center on Y Axis
-    MOVE.L  D1,         PLAYER_Y    ; Reset the Player Y Position
-    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
-    MOVE.L  #00,        D1          ; Player Velocity
-    MOVE.L  D1,         PLYR_VELOCITY ; Set Player Velocity
-    MOVE.L  #GND_TRUE,  PLYR_ON_GND ; Player is on Ground
-    RTS
-
-*-----------------------------------------------------------
-* Subroutine    : Off Ground
-* Description   : Set the Player Off Ground
-*-----------------------------------------------------------
-SET_OFF_GROUND:
-    MOVE.L  #GND_FALSE, PLYR_ON_GND ; Player if off Ground
-    RTS                             ; Return to subroutine
 
 *-----------------------------------------------------------
 * Subroutines   : Sound Load and Play
 * Description   : Initialise game sounds into memory 
-* Current Sounds are RUN, JUMP and Opps for Collision
 *-----------------------------------------------------------
 GAMEOVER_LOAD:
     LEA     GAMEOVER_WAV,    A1          ; Load Wav File into A1
@@ -1425,13 +1213,14 @@ DRAW_FLYENEMY:
 
     RTS  
 
+; draw the health 
 DRAW_HEALTHPACK:
 
-    TST.B   healthCooldownOver
+    TST.B   healthCooldownOver         ; check if the cooldown is over
     BEQ     DRAW_HEALTHPACK_DONE
-    CMP.B   #00,     SPAWN_HEALTHPACKS
+    CMP.B   #00,     SPAWN_HEALTHPACKS  ; check if health pack is spawning
     BEQ     DRAW_HEALTHPACK_DONE
-    CMP.B   #00,     DRAW_HEALTHPACKS
+    CMP.B   #00,     DRAW_HEALTHPACKS   ; check if to draw the health
     BEQ     DRAW_HEALTHPACK_DONE
     
     ; Set Pixel Colors
@@ -1470,7 +1259,8 @@ DRAW_HEALTHPACK:
     MOVE.l  #2,D1
     MOVE.B  #93,D0
     TRAP    #15
-        ; Set X, Y, Width and Height
+
+    ; Set X, Y, Width and Height
     MOVE.L  HEALTH_X,    D1          ; X
     MOVE.L  HEALTH_Y,    D2          ; Y
     SUB.L   #HEALTH_PACK_H,   D2      ; Height
@@ -1496,7 +1286,7 @@ DRAW_HEALTHPACK:
     TRAP    #15                     ; Trap (Perform action)
     
 
-        ; Set X, Y, Width and Height
+    ; Set X, Y, Width and Height
     MOVE.L  HEALTH_X,    D1          ; X
     MOVE.L  HEALTH_Y,    D2          ; Y
     ADD.L   #6,D1
@@ -1517,15 +1307,17 @@ DRAW_HEALTHPACK:
 
     RTS                             ; Return to subroutine
 
+; subroutine if the healthpack is not meant to be drawn
 DRAW_HEALTHPACK_DONE:
-    MOVE.L  #-1, HEALTH_Y
-    MOVE.W  healthCooldown,D2
+    MOVE.L  #-1, HEALTH_Y       ; move off screen
+    MOVE.W  healthCooldown,D2   ; if the healthcooldown is over then move back on screen 
     CMP.W   #0,  D2
     IF <EQ> THEN
         BSR     RESET_HEALTH_POSITION
     ENDI
     RTS
 
+; draw the ground
 DRAW_FLOOR:
     ; Set Pixel Colors
     MOVE.L  #brown,     D1          ; Set Background color
@@ -1558,6 +1350,7 @@ DRAW_FLOOR:
 
     BRA     DRAWDIRT
     
+; draw the dirt
 DRAWDIRT:
     ; Set X, Y, X2, and Y2
     MOVE.L  #0,   D1          ; X
@@ -1600,13 +1393,14 @@ CHECK_COLLISIONS:
 * Description   : checks how the wave concluded
 *-----------------------------------------------------------
 
+; runs if hill hp went to 0
 HILL_LOST:
-
-
+    ; add enemies killed to total 
     clr.l   d3
     move.b  ENEMIES_DEFEATED, d3
     add.l   d3,totalKills
 
+    ; if 0 hills were defended and its the last wave then go to game_over
     tst.b   totalHillsDefended
     IF <EQ> THEN
         cmp.w   #3,lvlIndex
@@ -1615,6 +1409,7 @@ HILL_LOST:
         ENDI
     ENDI
 
+    ; if its the last wave then go to win screen
     CMP.W   #3,lvlIndex
     BEQ     WIN_SCREEN
 
@@ -1634,16 +1429,12 @@ HILL_LOST:
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*
-    ;MOVE.W      #0,D1
-    ;MOVE.W      #0,d2
-    ;MOVE.B      #89,D0
-    ;TRAP        #15
     jsr drawBg
 
 *------------ Print hill lost message--------------*
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0803,     D1           
+    MOVE.W  #$0803,     D1          ; col 8, row 3 
     TRAP    #15                     ; Trap (Perform action)
     LEA     HILLLOST_MSG,A1        ; Game Over Message
     BSR     print
@@ -1651,13 +1442,13 @@ HILL_LOST:
 *------------print amount of enemies defeated--------------*
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0606,     D1           02, Row 01
+    MOVE.W  #$0606,     D1          ; col 06, Row 06
     TRAP    #15                     ; Trap (Perform action)
     LEA     ENEMIESDEAD_MSG,  A1          ; Score Message
     BSR     print
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1B06,     D1           09, Row 01
+    MOVE.W  #$1B06,     D1          ;col 27, Row 06
     TRAP    #15                     ; Trap (Perform action)
     MOVE.B  #03,        D0          ; Display number at D1.L
     MOVEQ.L #0,D1
@@ -1667,13 +1458,13 @@ HILL_LOST:
 *------------print hill health --------------*
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0607,     D1           02, Row 01
+    MOVE.W  #$0607,     D1          ;col 6, Row 07
     TRAP    #15                     ; Trap (Perform action)
     LEA     hillHP_MSG,  A1          ; Score Message
     BSR     print
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1B07,     D1           09, Row 01
+    MOVE.W  #$1B07,     D1          ;col 27, Row 07
     TRAP    #15                     ; Trap (Perform action)
     MOVEQ.L #0,D1
     MOVE.B  hillHP,D1         ; Move Score to D1.L
@@ -1689,14 +1480,14 @@ HILL_LOST:
 
     ; Restart
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$070C,     D1           09, Row 01
+    MOVE.W  #$070C,     D1          ;col 7, Row 012
     TRAP    #15                     ; Trap (Perform action)
     LEA     BACK_TO_MAP_MSG,  A1          ; Score Message
     MOVE    #13,        D0          ; No Line feedF=
     TRAP    #15                     ; Trap (Perform action)
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1F0C,     D1           09, Row 01
+    MOVE.W  #$1F0C,     D1          ;col 31, Row 012
     TRAP    #15                     ; Trap (Perform action)
     MOVEQ.L #0,D1
     MOVE.B  backToMapCount,D1         ; Move Score to D1.L
@@ -1712,21 +1503,22 @@ HILL_LOST:
     MOVE.L  #100,D1
     TRAP    #15
 
+    ; sub from the counter
     SUB.B   #01,backToMapCount
+    ; if the counter is 0 then go back to map
     TST.B   backToMapCount
     BEQ     mapNotFirstInit
 
+    ; reset current health
     MOVE.l  #200,currentHealth
     bsr     initDraw
     ; back to top
     BRA     HILL_LOST
 
-INPUTLOOP:
-    BSR     BATTLEINPUT
-    BRA     INPUTLOOP
-
+; game over screen
 GAME_OVER:
     
+    ; clear screen
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
     TRAP	#15                     ; Trap (Perform action)
@@ -1743,10 +1535,6 @@ GAME_OVER:
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*
-    ;MOVE.W      #0,D1
-    ;MOVE.W      #0,d2
-    ;MOVE.B      #89,D0
-    ;TRAP        #15
     jsr drawBg
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
@@ -1783,32 +1571,35 @@ GAME_OVER:
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*
-    ;MOVE.W      #0,D1
-    ;MOVE.W      #0,d2
-    ;MOVE.B      #89,D0
-    ;TRAP        #15
 
     jsr drawBg
 
     BRA     tallyScore
 
+; wave cleared screen
 WAVE_DEFEATED:
 
+    ; add 1 to total hills defended
     addi.b #1, totalHillsDefended
 
+    ; add kills to total
     clr.l   d3
     move.b  ENEMIES_DEFEATED, d3
     add.l   d3,totalKills
 
+    ; if the hp of the hill is full add 1 to perfect defences
     move.b  hillHP,d3
-    move.b  maxHillHp,d4
+    move.b  #maxHillHp,d4
     cmp.b   d4,d3
     IF <EQ> THEN
         addi.l  #1,perfectDefenceAmount
     ENDI
+
+    ; if last wave go to win screen
     CMP.W   #3,lvlIndex
     BEQ     WIN_SCREEN
     
+    ; clear screen
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
     TRAP	#15                     ; Trap (Perform action)
@@ -1825,16 +1616,12 @@ WAVE_DEFEATED:
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*
-    ;MOVE.W      #0,D1
-    ;MOVE.W      #0,d2
-    ;MOVE.B      #89,D0
-    ;TRAP        #15
     jsr drawBg
 
 *------------ Print wave defeated message--------------*
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0E03,     D1           
+    MOVE.W  #$0E03,     D1           ;col 14, Row 03
     TRAP    #15                     ; Trap (Perform action)
     LEA     HILLDEFENDED_MSG,A1        ; Game Over Message
     BSR     print
@@ -1842,32 +1629,32 @@ WAVE_DEFEATED:
 *------------print amount of enemies defeated--------------*
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0606,     D1           02, Row 01
+    MOVE.W  #$0606,     D1          ;col 6, Row 06
     TRAP    #15                     ; Trap (Perform action)
     LEA     ENEMIESDEAD_MSG,  A1          ; Score Message
     BSR     print
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1B06,     D1           09, Row 01
+    MOVE.W  #$1B06,     D1          ;col 27, Row 06
     TRAP    #15                     ; Trap (Perform action)
     MOVE.B  #03,        D0          ; Display number at D1.L
     MOVEQ.L #0,D1
-    MOVE.B  ENEMIES_DEFEATED,D1         ; Move Score to D1.L
+    MOVE.B  ENEMIES_DEFEATED,D1         ; Move enemies killed to D1.L
     TRAP    #15                     ; Trap (Perform action)
     
 *------------print hill health --------------*
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0607,     D1           02, Row 01
+    MOVE.W  #$0607,     D1          ;col 6, Row 07
     TRAP    #15                     ; Trap (Perform action)
     LEA     hillHP_MSG,  A1          ; Score Message
     BSR     print
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1B07,     D1           09, Row 01
+    MOVE.W  #$1B07,     D1          ;col 27, Row 07
     TRAP    #15                     ; Trap (Perform action)
     MOVEQ.L #0,D1
-    MOVE.B  hillHP,D1         ; Move Score to D1.L
+    MOVE.B  hillHP,D1               ; Move hill hp to D1.L
     MOVE.B  #03,        D0          ; Display number at D1.L
     TRAP    #15                     ; Trap (Perform action)
     
@@ -1880,10 +1667,10 @@ WAVE_DEFEATED:
 
     ; Restart
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$070C,     D1           09, Row 01
+    MOVE.W  #$070C,     D1          ;col 7, Row 012
     TRAP    #15                     ; Trap (Perform action)
     LEA     BACK_TO_MAP_MSG,  A1          ; Score Message
-    MOVE    #13,        D0          ; No Line feedF=
+    MOVE    #13,        D0          ; No Line feedFeed
     TRAP    #15                     ; Trap (Perform action)
 
 MAPCOUNTDOWN:
@@ -1891,10 +1678,11 @@ MAPCOUNTDOWN:
     MOVE.W  #$1F0C,     D1           09, Row 01
     TRAP    #15                     ; Trap (Perform action)
     MOVEQ.L #0,D1
-    MOVE.B  backToMapCount,D1         ; Move Score to D1.L
-    MOVE.B  #03,        D0          ; Display number at D1.L
+    MOVE.B  backToMapCount,D1         ; Move counter to D1.L
+    MOVE.B  #03,        D0          ; Display counter at D1.L
     TRAP    #15                     ; Trap (Perform action)
     
+    ; redraw
     MOVE.B  #TC_REDRAW,        D0
     TRAP    #15
    
@@ -1903,18 +1691,22 @@ MAPCOUNTDOWN:
     MOVE.L  #100,D1
     TRAP    #15
 
+    ; sub 1 from the counter
     SUB.B   #01,backToMapCount
+    ; check if counter is done and branch to map
     TST.B   backToMapCount
     BEQ     mapNotFirstInit
-
-    bsr     initDraw
-    MOVE.l  #200,currentHealth
+    
+    bsr     initDraw    
+    MOVE.l  #200,currentHealth  ; reset current health
     ; back to top
     BRA     MAPCOUNTDOWN
 
-
+; win screen after 4 rounds
 WIN_SCREEN:
+    ; set isWin to true
     move.b #1, isWin
+    ; clear screen
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
     TRAP	#15                     ; Trap (Perform action)
@@ -1931,10 +1723,6 @@ WIN_SCREEN:
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*
-    ;MOVE.W      #0,D1
-    ;MOVE.W      #0,d2
-    ;MOVE.B      #89,D0
-    ;TRAP        #15
     jsr drawBg
     
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
@@ -1948,7 +1736,7 @@ WIN_SCREEN:
     jsr win_STING_LOAD
     jsr play_sting
 
-
+    ; redraw
     MOVE.B  #TC_REDRAW,D0          ; Set Cursor Position
     TRAP	#15                     ; Trap (Perform action)
 
@@ -1960,33 +1748,16 @@ WIN_SCREEN:
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
     trap    #15
 
+    ; change text colour
     MOVE.L  #color1,     D1
     MOVE.B  #81,        D0          ; Set Text Color
     TRAP    #15                     ; Trap (Perform action)
 
 *------------ fill background --------------*
-    ;MOVE.W      #0,D1
-    ;MOVE.W      #0,d2
-    ;MOVE.B      #89,D0
-    ;TRAP        #15
-
     jsr drawBg
 
+    ; go to tally score
     BRA     tallyScore
-
-
-EXIT:
-    
-    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$FF00,     D1          ; Fill Screen Clear
-    TRAP	#15                     ; Trap (Perform action)
-
-    MOVE.B  #TC_REDRAW,        D0
-    TRAP    #15
-
-    MOVE.B  #TC_EXIT,   D0          ; Exit Code
-    TRAP    #15                     ; Trap (Perform action)
-    SIMHALT
 
 *-----------------------------------------------------------
 * Section       : Messages
@@ -1994,32 +1765,27 @@ EXIT:
 * self documenting
 *-----------------------------------------------------------
 
-ENEMIESDEAD_MSG         DC.B    'Enemies Defeated:', 0           
-ENEMYCOUNT_MSG         DC.B    'Wave enemy count:', 0           
+ENEMIESDEAD_MSG         DC.B    'Enemies Defeated:', 0                  ; enemies defeated message
+ENEMYCOUNT_MSG          DC.B    'Wave enemy count:', 0                  ; wave enemies message
 
-EXIT_MSG        DC.B    'Exiting....', 0    ; Exit Message
-HILLLOST_MSG    DC.B    'ANT HILL HAS BEEN OVERRUN!', 0      ; Game Over Message
-WIN_MSG    DC.B    'THE ENEMY ARMY HAS BEEN DEFEATED!', 0      ; Game Over Message
-HILLDEFENDED_MSG    DC.B    'WAVE COMPLETE!', 0      ; Game Over Message
-FALLENKINGDOM_MSG    DC.B    'YOUR ANT KINGDOM HAS FALLEN', 0      ; Game Over Message
-GAMEOVER_MSG    DC.B    'GAME OVER!', 0      ; Game Over Message
-BACK_TO_MAP_MSG    DC.B    'Returning to map in ...', 0      ; Game Over Message
-RESTART_MSG    DC.B    'Press R to restart', 0      ; Game Over Message
-TREET          DC.B     '##',0
+HILLLOST_MSG            DC.B    'ANT HILL HAS BEEN OVERRUN!', 0         ; ant hill lost message
+WIN_MSG                 DC.B    'THE ENEMY ARMY HAS BEEN DEFEATED!', 0  ; win message  
+HILLDEFENDED_MSG        DC.B    'WAVE COMPLETE!', 0                     ; hill defended message
+FALLENKINGDOM_MSG       DC.B    'YOUR ANT KINGDOM HAS FALLEN', 0        ; game over message
+GAMEOVER_MSG            DC.B    'GAME OVER!', 0                         ; game over  
+BACK_TO_MAP_MSG         DC.B    'Returning to map in ...', 0            ; return to map counter message
 
-PRESSSTART      DC.B    'Enter 1 to start',0
-TITLEMSG        DC.B    'ANT DEFENDER',0
-antHealth_MSG       DC.B    'Health : ',0        ; health message
-antsRem_MSG       DC.B    'Ants Remaining : ',0        ; health message
-hillHP_MSG       DC.B    'Hill Health: ',0        ; health message
-wave_MSG       DC.B    'Wave: ',0        ; health message
+antHealth_MSG           DC.B    'Health : ',0                           ; health message
+antsRem_MSG             DC.B    'Ants Remaining : ',0                   ; ants remaining message
+hillHP_MSG              DC.B    'Hill Health: ',0                       ; hill health message
+wave_MSG                DC.B    'Wave: ',0                              ; wave message
 
-hillHP          DC.B      100
-IN_ENEMY        DC.B      00                  ; marker for if the player is in the enemy
-IN_HPACK        DC.B      00                  ; marker for if the player is in the health pack
-DRAW_HEALTHPACKS   DC.B     $00                  ; marker for if the healthpacks are showing
-SPAWN_HEALTHPACKS   DC.B    $00                  ; marker for if the healthpacks are spawning
-healthCooldownOver  DC.B    $00
+hillHP                  DC.B     100                 
+IN_ENEMY                DC.B     00                  ; marker for if the player is in the enemy
+IN_HPACK                DC.B     00                  ; marker for if the player is in the health pack
+DRAW_HEALTHPACKS        DC.B     00                  ; marker for if the healthpacks are showing
+SPAWN_HEALTHPACKS       DC.B     00                  ; marker for if the healthpacks are spawning
+
 
 *-----------------------------------------------------------
 * Section       : Screen Size
@@ -2052,20 +1818,28 @@ FLYINGENEMY_Y         DS.L    01  ; Reserve Space for Flying Enemy Y Position
 BRUTE_X         DS.L    01
 BRUTE_Y         DS.L    01
 
-ENEMYCOLOR        DC.L        $000000FF
-FLYENEMYCOLOR     DC.L        $00FF0000
+ENEMY_HIT           DC.B    00
+FLYENEMY_HIT        DC.B    00
+BRUTE_DEAD          DC.B    00
+BRUTE_HIT           DC.B    00
+BRUTE_HP            DC.b    03
 
-RANDOM            DS.L        01  ; Reserve Space for Random Number
+*-----------------------------------------------------------
+* Section       : health data
+* Description   : health related data
+*-----------------------------------------------------------
 antHealth         DC.B        03  ; reserves space for antHealth
 antsRemaining     DC.B        00  ; reserves space for ants
-maxHillHp         DC.B        100
-maxAntHp         DC.B        3
-maxRemainingAnts         DC.B        5
-totalHillsDefended       DC.b        0
+maxHillHp         EQU        100  ; set max hill hp
+maxAntHp          DC.B        3   ; reserve space for max ant health
+maxRemainingAnts         DC.B        5  ; reserve space for max ants remaining
+totalHillsDefended       DC.b        0  ; space for hills defended
 
-POINTS            DC.B        02          ; Points added
-
-CURRENTLYATTACKING   DC.B    00
+*-----------------------------------------------------------
+* Section       : melee attack 
+* Description   : data for melee attack 
+*-----------------------------------------------------------
+CURRENTLYATTACKING   DC.B    00     
 ATTACK_COOLDOWN      DC.W    00
 ATTACK_TIME          DC.W    00
 ATTACK_X             DC.L    00
@@ -2077,22 +1851,12 @@ ENEMIES_DEFEATED    DC.B    00
 enemiesPassed       DC.b    00
 enemiesToDefeat     DC.B    00
 
-ENEMY_HIT           DC.B    00
-FLYENEMY_HIT        DC.B    00
-BRUTE_DEAD          DC.B    00
-BRUTE_HIT           DC.B    00
-BRUTE_HP            DC.b    03
-
 ; all timers and cooldowns
-respawnTime         dc.W        0
-backToMapCount      dc.b        3
-healthCooldown      DC.W        0
-hillHurtTimer       dc.b        0
-timer           DC.L    0
-*---*
+respawnTime             dc.W        0
+backToMapCount          dc.b        3
+healthCooldown          DC.W        0
+hillHurtTimer           dc.b        0
+timer                   DC.L        0
+healthCooldownOver      DC.B        0
 
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
+*---------- END---------------*

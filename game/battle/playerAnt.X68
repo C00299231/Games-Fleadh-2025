@@ -95,6 +95,46 @@ PERFORM_JUMP:
 JUMP_DONE:
     RTS                             ; Return to subroutine
 
+*-----------------------------------------------------------
+* Subroutine    : Player is on Ground
+* Description   : Check if the Player is on or off Ground
+*-----------------------------------------------------------
+IS_PLAYER_ON_GND:
+    ; Check if Player is on Ground
+    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
+    CLR.L   D2                      ; Clear contents of D2 (XOR is faster)
+    MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1  
+    DIVU    #02,        D1          ; divide by 2 for center on Y Axis
+    MOVE.L  PLAYER_Y,   D2          ; Player Y Position
+    CMP     D1,         D2          ; Compare middle of Screen with Players Y Position 
+    BGE     SET_ON_GROUND           ; The Player is on the Ground Plane
+    BLT     SET_OFF_GROUND          ; The Player is off the Ground
+    RTS                             ; Return to subroutine
+
+
+*-----------------------------------------------------------
+* Subroutine    : On Ground
+* Description   : Set the Player On Ground
+*-----------------------------------------------------------
+SET_ON_GROUND:
+    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.W  SCREEN_H,   D1          ; Place Screen width in D1
+    DIVU    #02,        D1          ; divide by 2 for center on Y Axis
+    MOVE.L  D1,         PLAYER_Y    ; Reset the Player Y Position
+    CLR.L   D1                      ; Clear contents of D1 (XOR is faster)
+    MOVE.L  #00,        D1          ; Player Velocity
+    MOVE.L  D1,         PLYR_VELOCITY ; Set Player Velocity
+    MOVE.L  #GND_TRUE,  PLYR_ON_GND ; Player is on Ground
+    RTS
+
+*-----------------------------------------------------------
+* Subroutine    : Off Ground
+* Description   : Set the Player Off Ground
+*-----------------------------------------------------------
+SET_OFF_GROUND:
+    MOVE.L  #GND_FALSE, PLYR_ON_GND ; Player if off Ground
+    RTS                             ; Return to subroutine
+    
 ; draw all player relevant data
 DRAW_PLAYER:
     ; Set Pixel Colors
@@ -327,20 +367,19 @@ MOVE_RESPAWNED:
     TRAP    #15
 
     ; draw everything
-    BSR     DRAW_BACKGROUND        
-    BSR     DRAW_HILL 
-    BSR     DRAW_PLYR_DATA          ; Draw Draw Score, HUD, Player X and Y
-    BSR     DRAW_TREES
-    BSR     DRAW_ENTRANCE_HOLE
+    BSR     DRAW_BACKGROUND         ; background
+    BSR     DRAW_HILL               ; ant hill
+    BSR     DRAW_TREES              ; tree
+    BSR     DRAW_ENTRANCE_HOLE      ; entrance to ant hill
     BSR     DRAW_ENEMY              ; Draw Enemy
-    BSR     DRAW_FLYENEMY
-    BSR     DRAW_BRUTEENEMY
-    BSR     DRAW_HEALTHPACK
+    BSR     DRAW_FLYENEMY           ; flying enemy
+    BSR     DRAW_BRUTEENEMY         ; brute
+    BSR     DRAW_HEALTHPACK         ; health apple
+    BSR     DRAW_ENTRANCE           ; entrance the overlaps entrance hole
     BSR     DRAW_PLAYER             ; Draw Player
-    BSR     DRAW_ENTRANCE
     BSR     DRAW_FLOOR              ; Draw Floor
-    BSR     drawHillHealth         ; draw hill hp
-    BSR     drawPause        
+    BSR     DRAW_HUD                ; Draw hud
+    BSR     drawPause               ; draw if paused
 
     ; update the respawn timer
     ADDQ.W      #1,respawnTime
