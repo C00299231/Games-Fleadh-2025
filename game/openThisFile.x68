@@ -3,7 +3,6 @@
 
 	org $1000
 start:
-    
     jsr loadAllSounds
 
     bra nextInit
@@ -166,6 +165,8 @@ titleBgStartPos dc.l 320
  include "asciiArt.x68"
 
 	end start
+
+
 
 
 
