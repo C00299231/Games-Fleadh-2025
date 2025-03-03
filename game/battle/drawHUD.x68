@@ -92,7 +92,7 @@ drawHillHealth:
     move.l  #440,       D4
     clr.l   d5
     clr.l   d6
-    move.b     maxHillHp,  d5
+    move.l     #maxHillHp,  d5
     move.b     hillHP, D6
     mulu.w  #2,d5
     mulu.w  #2,d6
