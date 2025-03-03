@@ -9,10 +9,11 @@ DRAW_DIFFSELECT:
     BSR     CLEAR_SCREEN
     
     *------------ fill background --------------*
-    MOVE.W      #0,D1
-    MOVE.W      #0,d2
-    MOVE.B      #89,D0
-    TRAP        #15
+    jsr drawBg
+
+    move.l #color5, d1
+    clr.l d2
+    jsr setFontColour
     
     
     ; Message
@@ -278,7 +279,7 @@ MEDIUM_MSG3 DC.B 'Normal enemies', 0
 MEDIUM_MSG4 DC.B 'Standard lives', 0 
 HARD_MSG1 DC.B '3-HARDCORE', 0 
 HARD_MSG2 DC.B 'You are the ', 0 
-HARD_MSG3 DC.B 'Kindom`s last ', 0 
+HARD_MSG3 DC.B 'Kingdom`s last ', 0 
 HARD_MSG4 DC.B 'hope. 1 Life', 0 
 ENTER_DIFFICULTY_MSG DC.B '-Press `Enter` to choose difficulty-', 0
 

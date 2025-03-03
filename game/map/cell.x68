@@ -1,9 +1,5 @@
 ; this file contains cell data
 
-; cell contains:
-    ; big square boundary
-    ; 2 square attack zones - top corners
-    ; 1 square heal zone - bottom
 wordAlign ds.l 01
 initializeCell: ; initialize values for cell and zones
 
@@ -245,6 +241,7 @@ zone2shake dc.l 0
 zone3shake dc.l 0
 zone4shake dc.l 0
 
+; reset all pen colours of anthills in map
 resetZonePens:
     tst affectHillTimer
     if <NE> then

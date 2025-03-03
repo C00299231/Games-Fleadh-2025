@@ -1479,9 +1479,9 @@ HILL_LOST:
     MOVE.B  #TC_REDRAW,        D0
     TRAP    #15
    
-    ; delay by 1sec
+    ; delay time
     MOVE.b  #23,D0
-    MOVE.L  #100,D1
+    MOVE.L  #endGameDelay,D1
     TRAP    #15
 
     ; sub from the counter
@@ -1539,9 +1539,9 @@ GAME_OVER:
     MOVE.B  #TC_REDRAW,D0          ; Set Cursor Position
     TRAP	#15                     ; Trap (Perform action)
 
-     ; delay by 1sec
+     ; delay time
     MOVE.b  #23,D0
-    MOVE.L  #150,D1
+    MOVE.L  #endGameDelay,D1
     TRAP    #15
     MOVE.b  #TC_CURSR_P,d0
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
@@ -1667,9 +1667,9 @@ MAPCOUNTDOWN:
     MOVE.B  #TC_REDRAW,        D0
     TRAP    #15
    
-    ; delay by 1sec
+    ; delay time
     MOVE.b  #23,D0
-    MOVE.L  #100,D1
+    MOVE.L  #endGameDelay,D1
     TRAP    #15
 
     ; sub 1 from the counter
@@ -1721,9 +1721,9 @@ WIN_SCREEN:
     MOVE.B  #TC_REDRAW,D0          ; Set Cursor Position
     TRAP	#15                     ; Trap (Perform action)
 
-     ; delay by 1sec
+     ; delay time
     MOVE.b  #23,D0
-    MOVE.L  #150,D1
+    MOVE.L  #endGameDelay,D1
     TRAP    #15
     MOVE.b  #TC_CURSR_P,d0
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
@@ -1872,3 +1872,10 @@ timer                   DC.L        0
 healthCooldownOver      DC.B        0
 
 *---------- END---------------*
+
+
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~

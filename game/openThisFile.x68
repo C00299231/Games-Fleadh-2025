@@ -9,6 +9,9 @@ start:
     bra nextInit
     
 nextInit:
+    ; resetBackground
+    move.l #320, titleBgStartPos
+
     ; song
     jsr stop_song
     jsr MENU_SONG_LOAD
@@ -42,16 +45,19 @@ nextInit:
 	bra title
 
 title:
-    jsr drawBg
+    jsr drawTitleBg
     
+    ; change colours
+    clr.l d2
+    move.l #deepgreen, d1
+    jsr setFontColour
+    move.l #sky, d1
+    jsr setFillColour
+
+    ; print messages
     move.w #$07, d1
     jsr setCursor
-    ;lea titleArt, a1
     jsr printArt
-    
-    ; draw ants
-    move.l #100, player_x
-    move.l #100, player_y
     
     move.w #$1a11, d1
     jsr setCursor
@@ -60,19 +66,81 @@ title:
     
     bra titleLoop
     
-titleLoop:
-     ; get back buffer0
-    ;MOVE.B  #94,        D0
-    ;TRAP    #15
-    
+titleLoop:    
     jsr testInput
     
     bra titleLoop
+
+move2difficulty:
+    jsr enableDoubleBuffer
+    lea titleBgStartPos, a2
+
+move2difficultyLoop: ; make the screen go down
+    jsr getBackBuffer
+
+    sub.l #3, (a2)
+
+    jsr drawTitleBg
+    
+    move.l #1, d3
+    jsr newDelay
+
+    cmp.l #$FFFFFFD8, (a2)
+    ble DIFFICULTY_SELECT
+
+    bra move2difficultyLoop
+
+
+drawTitleBg:
+    ;----------------------SKY
+    ; set colours
+    move.l #sky, d1
+    jsr setPenColour
+    move.l #sky, d1
+    jsr setFillColour
+
+    ; clear d3 and d4 (screen W and H are words)
+    clr.l d3
+    clr.l d4
+
+    ; put the stuff in the registers, draw rect
+    move.l #0, d1
+    move.l #0, d2
+    move.w screenW, d3
+    move.w screenH, d4
+    jsr drawUiRect
+
+    ;----------------------GRASS
+    ; set colours
+    move.l #green, d1
+    jsr setPenColour
+    move.l #green, d1
+    jsr setFillColour
+
+    ; put the stuff in the registers, draw rect
+    move.l #0, d1
+    move.l titleBgStartPos, d2
+    jsr drawUiRect
+
+    ;----------------------DIRT
+    ; set colours
+    move.l #deepgreen, d1
+    jsr setPenColour
+    move.l #deepgreen, d1
+    jsr setFillColour
+
+    ; put the stuff in the registers, draw rect
+    move.l #0, d1
+    add.l #40, d2
+    jsr drawUiRect
+    rts
 
 
 title1Msg dc.b '- ANT-TOPIA -',0
 
 title2msg dc.b 'Press "enter/(A)" to start...',0
+
+titleBgStartPos dc.l 320
 
 ; include other files 
  include "difficultySelect.x68"
@@ -98,19 +166,6 @@ title2msg dc.b 'Press "enter/(A)" to start...',0
  include "asciiArt.x68"
 
 	end start
-
-
-
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
-
-
-
 
 
 

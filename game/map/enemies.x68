@@ -18,7 +18,6 @@ enemyY ds.l 01
 initEnemy:
     jsr affectHill
 
-
     move.l enemyStartX, enemyX
     move.l enemyStartY, enemyY
     jsr endInitEnemy
@@ -41,6 +40,7 @@ processEnemy:
 
 enemyColCheck:
     move.w enemyDir, d2
+
     ; colCheck based on direction
     cmpi #0, enemyDir
     beq enemyLeftColCheck
@@ -344,5 +344,6 @@ endInitEnemy:
     sub.l #enemyHalfW, enemyX
     rts
 
+; enemy goes faster on x; orthographic view
 enemyXspeed equ 3
 enemyYspeed equ 2
