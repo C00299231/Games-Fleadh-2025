@@ -20,10 +20,6 @@ nextInit:
     move.b  #0,enemiesToDefeat
     lea     hillHPArray,a1
     move.l  #$64646464, (a1)
-    ;move.b  #100,(a1)+
-    ;move.b  #100,(a1)+
-    ;move.b  #100,(a1)+
-    ;move.b  #100,(a1)+
     clr.l   perfectDefenceAmount
     clr.l   totalKills
     move.b  #5,antsRemaining
@@ -163,11 +159,18 @@ titleBgStartPos dc.l 320
 
  include "battle/battleView.x68"
  include "battle/soundFiles.x68"
+ include "battle/acornThrow.x68"
  
  include "score.x68"
  include "asciiArt.x68"
 
 	end start
+
+
+
+
+
+
 
 *~Font name~Courier New~
 *~Font size~10~

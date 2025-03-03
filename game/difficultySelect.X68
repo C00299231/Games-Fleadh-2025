@@ -287,4 +287,8 @@ selectedIndex     dc.b    1
 EASY_SLOW         DC.L    0
 EASY_EXTRAHP      DC.B    0
 HARD_INCREASE     EQU     1
+EASY_DECREASE     EQU     1
 DIFFICULTY        DC.b    0
+easyDiff              EQU     1
+normalDiff              EQU     2
+hardDiff              EQU     5
