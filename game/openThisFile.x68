@@ -92,6 +92,7 @@ title2msg dc.b 'Press "enter/(A)" to start...',0
  include "battle/battleView.x68"
  include "battle/soundFiles.x68"
  include "battle/acornThrow.x68"
+ include "battle/drawHUD.x68"
  
  include "score.x68"
  include "asciiArt.x68"
@@ -107,6 +108,8 @@ title2msg dc.b 'Press "enter/(A)" to start...',0
 *~Font size~10~
 *~Tab type~1~
 *~Tab size~4~
+
+
 
 
 

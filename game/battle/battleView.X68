@@ -377,7 +377,7 @@ MOVE_ENEMY_L2:
         ; add 1 to the x to push them back
         ADD.L  #EASY_DECREASE, FLYINGENEMY_X
         ADD.L  #EASY_DECREASE, ENEMY_X
-    END
+    ENDI
     ; move enemies left
     SUB.L   #4,         ENEMY_X
     SUB.L   #2,         FLYINGENEMY_X
@@ -410,7 +410,7 @@ MOVE_ENEMY_L3:
         ; add 1 to the x to push them back
         ADD.L  #EASY_DECREASE, FLYINGENEMY_X
         ADD.L  #EASY_DECREASE, ENEMY_X
-    END
+    ENDI
     ; move enemies left
     SUB.L   #4,         ENEMY_X
     SUB.L   #5,         FLYINGENEMY_X
@@ -432,7 +432,7 @@ MOVE_ENEMY_L4:
         ; add 1 to the x to push them back
         ADD.L  #EASY_DECREASE, FLYINGENEMY_X
         ADD.L  #EASY_DECREASE, ENEMY_X
-    END
+    ENDI
     ; move enemies left
     SUB.L   #7,         FLYINGENEMY_X
     SUB.L   #5,         ENEMY_X
@@ -1817,6 +1817,24 @@ FLYENEMY_HIT        DC.B    00
 BRUTE_DEAD          DC.B    00
 BRUTE_HIT           DC.B    00
 BRUTE_HP            DC.b    03
+
+JUMP_WAV        DC.B    'jump.wav',0        
+GAMEOVER_WAV    DC.B    'gameOver.wav',0    
+HITHURT_WAV     DC.B    'hitHurt.wav',0     
+HIT_WAV         DC.B    'hit.wav',0         
+POWERUP_WAV     DC.B    'powerUP.wav',0     
+ROAR_WAV        DC.B    'roar-8-bit.wav',0 
+HILLHURT_WAV        DC.B    'hillHurt.wav',0 
+
+; songs
+BATTLE_SONG_WAV DC.B    'antopia-battle.wav',0
+MAP_SONG_WAV    DC.B    'antopia-map.wav',0
+MENU_SONG_WAV   dc.B    'antopia-menu.wav',0
+
+; STINGS
+LOSS_STING_WAV  DC.b    'antopia-loss-sting.wav',0
+WIN_STING_WAV   DC.B    'antopia-win-sting.wav',0
+wordOrder dc.b 0
 
 *-----------------------------------------------------------
 * Section       : health data

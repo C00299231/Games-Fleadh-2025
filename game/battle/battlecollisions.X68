@@ -423,9 +423,6 @@ COLLISION_CHECK_DONE:               ; No Collision Update points
     CLR.B   BRUTE_HIT
     CLR.B   IN_HPACK
     CLR.L   D1
-    MOVE.B  POINTS,    D1          ; Move points upgrade to D1
-    ADD.L   PLAYER_SCORE,D1         ; Add to current player score
-    MOVE.L  D1, PLAYER_SCORE        ; Update player score in memory
     RTS                             ; Return to subroutine
 
 
@@ -488,6 +485,7 @@ STOP_HPACK_SPAWN:
 STILL_COLLIDED:
     RTS
     
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
