@@ -27,3 +27,166 @@ loadAllSounds:
     BSR     ROAR_LOAD
     BSR     HILLHURT_LOAD
     rts
+
+*-----------------------------------------------------------
+* Subroutines   : Sound Load and Play
+* Description   : Initialise game sounds into memory 
+*-----------------------------------------------------------
+GAMEOVER_LOAD:
+    LEA     GAMEOVER_WAV,    A1          ; Load Wav File into A1
+    MOVE    #GAMEOVER_INDEX, D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+PLAY_GAMEOVER:
+    bsr STOP_SONG
+    MOVE    #GAMEOVER_INDEX, D1          ; Load Sound INDEX
+    MOVE    #75,        D0          ; Play Sound
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+JUMP_LOAD:
+    LEA     JUMP_WAV,   A1          ; Load Wav File into A1
+    MOVE    #JMP_INDEX, D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+PLAY_JUMP:
+    MOVE    #JMP_INDEX, D1          ; Load Sound INDEX
+    MOVE    #75,        D0          ; Play Sound
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+HITHURT_LOAD:
+    LEA     HITHURT_WAV,   A1          ; Load Wav File into A1
+    MOVE    #HITHURT_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+PLAY_HITHURT:
+    MOVE    #HITHURT_INDEX,D1          ; Load Sound INDEX
+    MOVE    #75,        D0          ; Play Sound
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+POWERUP_LOAD:
+    LEA     POWERUP_WAV,   A1          ; Load Wav File into A1
+    MOVE    #POWERUP_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+PLAY_POWERUP:
+    MOVE    #POWERUP_INDEX,D1          ; Load Sound INDEX
+    MOVE    #75,        D0          ; Play Sound
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+HIT_LOAD:
+    LEA     HIT_WAV,   A1          ; Load Wav File into A1
+    MOVE    #HIT_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+PLAY_HIT:
+    MOVE    #HIT_INDEX,D1          ; Load Sound INDEX
+    MOVE    #75,        D0          ; Play Sound
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+ROAR_LOAD:
+    LEA     ROAR_WAV,   A1          ; Load Wav File into A1
+    MOVE    #ROAR_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+PLAY_ROAR:
+    MOVE    #ROAR_INDEX,D1          ; Load Sound INDEX
+    MOVE    #75,        D0          ; Play Sound
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+HILLHURT_LOAD:
+    LEA     HILLHURT_WAV,   A1          ; Load Wav File into A1
+    MOVE    #HILLHURT_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+PLAY_HILLHURT:
+    MOVE    #HILLHURT_INDEX,D1          ; Load Sound INDEX
+    MOVE    #75,        D0          ; Play Sound
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+; songs
+MAP_SONG_LOAD:
+    LEA     MAP_SONG_WAV,   A1          ; Load Wav File into A1
+    MOVE    #SONG_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+BATTLE_SONG_LOAD:
+    LEA     BATTLE_SONG_WAV,   A1          ; Load Wav File into A1
+    MOVE    #SONG_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+MENU_SONG_LOAD:
+    LEA     MENU_SONG_WAV,   A1          ; Load Wav File into A1
+    MOVE    #SONG_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+; stings
+LOSS_STING_LOAD:
+    LEA     LOSS_STING_WAV,   A1          ; Load Wav File into A1
+    MOVE    #STING_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+WIN_STING_LOAD:
+    LEA     WIN_STING_WAV,   A1          ; Load Wav File into A1
+    MOVE    #STING_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+; special function to play song in song index
+PLAY_SONG:
+    MOVE    #SONG_INDEX,D1          ; Load Sound INDEX
+    move.l #1, d2
+    MOVE    #77,        D0          ; Play Sound
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+; stop song playing
+STOP_SONG:
+    move #SONG_INDEX,d1
+    move.l #2, d2
+    move #77, d0
+    trap #15
+    rts
+
+PLAY_Sting:
+    MOVE    #Sting_INDEX,D1          ; Load Sound INDEX
+    MOVE    #75,        D0          ; Play Sound
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
+; stop song playing
+STOP_sting:
+    move #stinG_INDEX,d1
+    move.l #2, d2
+    move #77, d0
+    trap #15
+    rts

@@ -37,8 +37,10 @@ tallyScore:
     move.b antsRemaining, d2
     mulu #scoreLife, d2
     cmp.b #5, DIFFICULTY
-    IF <EQ> THEN 
-        move.l #1000, d2
+    IF <EQ> THEN
+        clr.l d2
+        move.b antsRemaining, d2 
+        mulu.w #1000, d2
     ENDI
     add.l d2, score
     move.l d2, finalLife

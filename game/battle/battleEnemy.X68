@@ -247,3 +247,163 @@ DRAW_BRUTEENEMY:
     TRAP    #15
 
     RTS                             ; Return to subroutine
+
+DRAW_FLYENEMY:
+    ; Set Pixel Colors
+    MOVE.L  #blue,       D1          ; Set Background color
+    MOVE.B  #80,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+    ; Reset Pixel Colors
+    MOVE.L  #blue,     D1          ; Set Background color
+    MOVE.B  #81,        D0          ; Task for Background Color
+    TRAP    #15                     ; Trap (Perform action)
+
+        *-------------- draw FLYINGENEMY body -----------------*
+    MOVE.L  FLYINGENEMY_X,   D1          ; X
+    MOVE.L  FLYINGENEMY_Y,   D2
+    SUBQ.L  #4,D2
+
+    MOVE.L  FLYINGENEMY_X,   D3
+    ADD.L   #FLY_ENMY_W_INIT, D3  
+    MOVE.L  FLYINGENEMY_Y,   D4
+    SUB.L   #FLY_ENMY_H_INIT,   D4      ; Height          ; Y
+    
+     ; Draw 
+    MOVE.B  #87,        D0          ; Draw enemy
+    TRAP    #15                     ; Trap (Perform action)
+
+*-------------- draw FLYINGENEMY abdomen -----------------*
+    MOVE.L  FLYINGENEMY_X,   D1          ; X
+    MOVE.L  D1,   D3
+    ADD.L   #FLY_ENMY_W_INIT,D1
+    MOVE.L  FLYINGENEMY_Y,   D2
+    SUBQ.L  #4,D2
+    MOVE.L  FLYINGENEMY_X,   D3
+    ADDI.L   #12,D3
+    
+    MOVE.L  FLYINGENEMY_Y,   D4
+    SUB.L   #FLY_ENMY_H_INIT,   D4      ; Height          ; Y
+    SUB.B   #3,D4
+    
+    ; Draw 
+    MOVE.B  #87,        D0          ; Draw enemy
+    TRAP    #15                     ; Trap (Perform action)
+
+*-------------- draw FLYINGENEMY antena -----------------*    
+    ; change thickness
+    MOVE.l  #3,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    MOVE.L  FLYINGENEMY_X,D1
+    ADD.L   #3,D1
+    MOVE.L  FLYINGENEMY_Y,D2
+    SUB.L   #FLY_ENMY_H_INIT,D2
+    MOVE.L  D1,D3
+    SUB.L   #10,D3
+    MOVE.L  D2,D4
+    SUBI.L  #7,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw FLYINGENEMY leg 1 -----------------*
+    MOVE.L  FLYINGENEMY_X,D1
+    MOVE.L  FLYINGENEMY_Y,D2
+    MOVE.L  D1,D3
+    ADD.L   #4,D3
+    MOVE.L  D2,D4
+    SUBI.L  #4,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw FLYINGENEMY leg 2 -----------------*
+    MOVE.L  FLYINGENEMY_X,D1
+    ADD.L   #13,D1
+    MOVE.L  FLYINGENEMY_Y,D2
+    MOVE.L  D1,D3
+    MOVE.L  D2,D4
+    SUBI.L  #4,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw FLYINGENEMY leg 3 -----------------*
+    MOVE.L  FLYINGENEMY_X,D1
+    ADD.L   #22,D1
+    MOVE.L  FLYINGENEMY_Y,D4
+    MOVE.L  D1,D3
+    ADD.L   #3,D3
+    MOVE.L  D4,D2
+    SUBI.L  #4,D2
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw FLYINGENEMY Wing 1 -----------------*
+    ; Set Pixel Colors
+    MOVE.L  #WING,     D1          ; Set Pen color
+    MOVE.B  #80,        D0          ; Task for Pen Color
+    TRAP    #15                     ; Trap (Perform action)
+    
+    ; change thickness
+    MOVE.l  #5,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    MOVE.L  FLYINGENEMY_X,D1
+    ADD.L   #15,D1
+    MOVE.L  FLYINGENEMY_Y,d2
+    SUB.L   #FLY_ENMY_H_INIT,D2
+    MOVE.L  D1,D3
+    SUB.L   #9,D3
+    MOVE.L  D2,D4
+    SUB.L   #10,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+*-------------- draw FLYINGENEMY Wing 2 -----------------*
+    MOVE.L  FLYINGENEMY_X,D1
+    ADD.L   #15,D1
+    MOVE.L  FLYINGENEMY_Y,d2
+    SUB.L   #FLY_ENMY_H_INIT,D2
+    MOVE.L  D1,D3
+    ADD.L   #9,D3
+    MOVE.L  D2,D4
+    SUB.L   #10,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+
+*-------------- draw FLYINGENEMY eye -----------------*
+    ; Set Pixel Colors
+    MOVE.L  #BLACK,     D1          ; Set Pen color
+    MOVE.B  #80,        D0          ; Task for Pen Color
+    TRAP    #15                     ; Trap (Perform action)
+    
+    ; change thickness
+    MOVE.l  #3,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    MOVE.L  FLYINGENEMY_X,D1
+    ADD.L   #3,D1
+    MOVE.L  FLYINGENEMY_Y,D2
+    SUB.L   #10,D2
+    MOVE.L  D1,D3
+    ADDQ.L  #1,D3
+    MOVE.L  D2,D4
+
+    MOVE.B  #84,D0
+    TRAP    #15
+
+    ; reset pen
+    MOVE.l  #1,D1
+    MOVE.B  #93,D0
+    TRAP    #15
+
+    RTS  
