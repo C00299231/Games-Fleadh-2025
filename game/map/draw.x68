@@ -62,6 +62,7 @@ draw:
     
     jsr drawPlayer
     jsr drawText
+    jsr drawAchievement
     jsr drawPause
     rts
 
@@ -190,15 +191,15 @@ drawBattlePrompts:
     lea jumpKeyMsg, a1
     jsr printNoCRLF
 
-    addq #1, d1
-    jsr setCursor
-    lea atkKeyMsg1, a1
-    jsr printNoCRLF
-
-    addq #1, d1
-    jsr setCursor
-    lea atkKeyMsg2, a1
-    jsr printNoCRLF
+    ;addq #1, d1
+    ;jsr setCursor
+    ;lea atkKeyMsg1, a1
+    ;jsr printNoCRLF
+;
+    ;addq #1, d1
+    ;jsr setCursor
+    ;lea atkKeyMsg2, a1
+    ;jsr printNoCRLF
 
 
     ; reset cursor
@@ -428,10 +429,13 @@ drawCell:
     move.l cellbrY, d4
     jsr drawRect
 
+    move.l #brown, d1
+    jsr setPenColour
+
     ;---------------draw zone 1
     ; change colours
     move.l zone1pen, d1
-    jsr setPenColour
+    jsr setFillColour
     
     move.l zone1tlX, d1
     move.l zone1tlY, d2
@@ -445,7 +449,7 @@ drawCell:
     ;---------------draw zone 2
     ; change colours
     move.l zone2pen, d1
-    jsr setPenColour
+    jsr setFillColour
 
     move.l zone2tlX, d1
     move.l zone2tlY, d2
@@ -459,7 +463,7 @@ drawCell:
     ;---------------draw zone 3
     ; change colours
     move.l zone3pen, d1
-    jsr setPenColour
+    jsr setFillColour
 
     move.l zone3tlX, d1
     move.l zone3tlY, d2
@@ -473,7 +477,7 @@ drawCell:
     ;---------------draw zone 4
     ; change colours
     move.l zone4pen, d1
-    jsr setPenColour
+    jsr setFillColour
 
     move.l zone4tlX, d1
     move.l zone4tlY, d2
@@ -690,8 +694,8 @@ drawAntHill: ; d1 thru 4 are already assigned
     ; store d1
     move.l d1, d5
 
-    move.l #dirt, d1
-    jsr setFillColour
+    move.l #brown, d1
+    jsr setPenColour
 
     ;---------------------------LAYER 1
     move.l d5, d1
@@ -743,28 +747,28 @@ affectHill:
     tst.w enemyDir
 
     if <eq> then
-        move.l #midbrown, zone1pen
+        move.l #red, zone1pen
         move.l #hillShakeScale, zone1shake
         rts
     endi
 
     cmp.w #1, enemyDir
     if <eq> then
-        move.l #midbrown, zone2pen
+        move.l #red, zone2pen
         move.l #hillShakeScale, zone2shake
         rts
     endi
 
     cmp.w #2, enemyDir
     if <eq> then
-        move.l #midbrown, zone3pen
+        move.l #red, zone3pen
         move.l #hillShakeScale, zone3shake
         rts
     endi
 
     cmp.w #3, enemyDir
     if <eq> then
-        move.l #midbrown, zone4pen
+        move.l #red, zone4pen
         move.l #hillShakeScale, zone4shake
         rts
     endi

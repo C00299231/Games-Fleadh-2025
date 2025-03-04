@@ -9,6 +9,10 @@ testinput:
     ; getting previous key
     move.l currentkey, lastkey
 
+    cmp.w #1, lvlType
+    IF <EQ> THEN
+        BSR mapMoveInput ; happens in map
+    endi
     
 
     ; set d1 to $0000 0000
@@ -24,7 +28,7 @@ testinput:
     
     ; AT THIS POINT, CURRENT KEY CONTAINS THE CURRENT/LAST KEY PRESSED,
     ; AND D1 CONTAINS WHETHER OR NOT IT IS STILL PRESSED
-    
+
     ; test if no input
     cmpi.b #0, d1
     beq noinput     ; if no input, move to noinput
@@ -123,10 +127,8 @@ mapinput:
     cmpi.l #zKey, currentkey
     beq zPressed
 
-    ; only move player if correct time
-    ;move.w playerTime, d5
-    ;jsr checkIncrement
-    ;bne endInput
+    cmpi.l #pKey, currentKey
+    beq testKeyPressed
 
     ; only when not paused
 
@@ -134,7 +136,7 @@ mapinput:
     beq collision
 
     ; movement input
-    bsr mapMoveInput
+    ;bsr mapMoveInput
 
     RTS
 
@@ -186,6 +188,10 @@ escapePressed:
 escapeJustPressed:
     jsr togglePause
     rts
+
+testKeyPressed:
+    rts
+
 enterPressed:
     move.l currentKey, d2
     cmp.l lastKey, d2
@@ -241,7 +247,7 @@ key1pressed: ; main menu
     jsr togglePause
     jsr clearscreen
     jsr disableDoubleBuffer
-    bra start
+    bra nextInit
 
 ; MOVEMENT INPUT: MUST STAY WITHIN CELL BOUNDARIES
 wpressed:

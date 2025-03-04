@@ -4,7 +4,8 @@
 	org $1000
 start:
     jsr loadAllSounds
-
+    move.b  #50, d0
+    trap       #15
     bra nextInit
     
 nextInit:
@@ -16,15 +17,22 @@ nextInit:
     jsr MENU_SONG_LOAD
     jsr play_song
 
+    ; reset achievements
+    jsr resetAchievements
+
+    ; reset values 
     move.b  #0,enemiesToDefeat
     lea     hillHPArray,a1
     move.l  #$64646464, (a1)
     clr.l   perfectDefenceAmount
     clr.l   totalKills
-    move.b  #5,antsRemaining
-    move.B  #0,totalHillsDefended
-
-	move.w #0, lvlType
+    move.b  #5,     antsRemaining
+    move.B  #0,     totalHillsDefended
+    move.b  #3,     firstWaveTutAmt
+	move.w  #0,     lvlType
+    move.b  #$FF,   tutorialMeleeTimer
+    move.b  #$FF,   tutorialThrowTimer
+    move.b  #0,     showThrowMSG
     
     MOVE.B  #tcScreen, D0           ; access screen information
     MOVE.L  #tcScreenSize, D1       ; placing 0 in D1 triggers loading screen size information
@@ -63,12 +71,26 @@ title:
     lea title2msg, a1
     jsr print
     
+    clr.l d2
+    move.l #color5, d1
+    jsr setFontColour
+    move.l #deepgreen, d1
+    jsr setFillColour
+
+    ; move the cursor to the bottom
+    move.w #$1f1E,D1
+    jsr setCursor
+    bsr getHighScore    ; branch to get the highscore
+    move.l  highscore,d1    ; load the new highscore into d1
+    lea highscoremsg, a1    ; load the message and then print
+    jsr printWithNum
+
     bra titleLoop
     
 titleLoop:    
-    jsr testInput
+    jsr testInput       ; test for input
     
-    bra titleLoop
+    bra titleLoop       ; branch back to loop
 
 move2difficulty:
     jsr enableDoubleBuffer
@@ -134,10 +156,36 @@ drawTitleBg:
     jsr drawUiRect
     rts
 
+getHighScore:
+
+    ;open the file
+    move.b  #51,d0
+    lea     txt,a1      ; load the file into a1
+    trap    #15         
+    move.l  d1,fileId   ; save the id of the file
+    
+    ; read the file
+    move.l  fileId,d1       ; get the file id
+    move.b  #53,d0  
+    lea     highscoreFile,a1        ; load the memory address that the file points to.
+    move.b  #4,d2                   ; load the amount of bytes to read, 
+    trap    #15                     ;  so 4 bytes for 1 long of score.
+    
+    move.l  (a1),highscore          ; move the score from the file into highscore to display it
+    
+    rts
+
 
 title1Msg dc.b '- ANT-TOPIA -',0
 
 title2msg dc.b 'Press "enter/(A)" to start...',0
+
+highscoremsg dc.w 'Highscore: ',0
+
+highscore   dc.l   0
+txt     dc.b        'highscore.txt',0
+fileId  dc.l        0
+highscoreFile   dc.l    0
 
 titleBgStartPos dc.l 320
 
@@ -163,18 +211,13 @@ titleBgStartPos dc.l 320
  
  include "score.x68"
  include "asciiArt.x68"
+ include "achievements.x68"
 
 	end start
-
-
-
-
-
-
-
-
-
-
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
 
 *~Font name~Courier New~
 *~Font size~10~

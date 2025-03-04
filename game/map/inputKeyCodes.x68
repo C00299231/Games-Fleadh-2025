@@ -21,6 +21,8 @@ akey equ $41
 skey equ $53
 dkey equ $44
 
+pKey equ $50
+
 zkey equ $5a ; toggle follow cam
 
 key0 equ $30 ; toggle fullscreen

@@ -33,7 +33,7 @@ INITRUN:
     ; Initial Position for Enemy
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
-    ADD.L   #100,D1
+    ADD.L   #150,D1
     MOVE.L  D1,         ENEMY_X     ; Enemy X Position
 
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
@@ -44,7 +44,7 @@ INITRUN:
     ; Initial Position for Flying Enemy
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
-    ADD.L   #100,D1
+    ADD.L   #250,D1
     MOVE.L  D1,         FLYINGENEMY_X     ; flying Enemy X Position
 
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
@@ -77,6 +77,7 @@ INITRUN:
     ADD.B   #enemyPerWave,         enemiesToDefeat
     MOVE.B  #0,         ENEMIES_DEFEATED
     MOVE.B  #0,         enemiesPassed
+    MOVE.B  #0,         hillHurtTimer
     MOVE.B  #4,         backToMapCount
     
     ; move the current hill no. hp into this hill hp
@@ -304,26 +305,20 @@ CHECK_COLLISIONS:
 ENEMIESDEAD_MSG         DC.B    'Enemies Defeated:', 0                  ; enemies defeated message
 ENEMYCOUNT_MSG          DC.B    'Wave enemy count:', 0                  ; wave enemies message
 
-HILLLOST_MSG            DC.B    'ANT HILL HAS BEEN OVERRUN!', 0         ; ant hill lost message
-WIN_MSG                 DC.B    'THE ENEMY ARMY HAS BEEN DEFEATED!', 0  ; win message  
-HILLDEFENDED_MSG        DC.B    'WAVE COMPLETE!', 0                     ; hill defended message
-FALLENKINGDOM_MSG       DC.B    'YOUR ANT KINGDOM HAS FALLEN', 0        ; game over message
-GAMEOVER_MSG            DC.B    'GAME OVER!', 0                         ; game over  
-BACK_TO_MAP_MSG         DC.B    'Returning to map in ...', 0            ; return to map counter message
-
 antHealth_MSG           DC.B    'Health : ',0                           ; health message
 antsRem_MSG             DC.B    'Ants Remaining : ',0                   ; ants remaining message
 hillHP_MSG              DC.B    'Hill Health: ',0                       ; hill health message
 wave_MSG                DC.B    'Wave: ',0                              ; wave message
 
 hillHP                  DC.B     100     
-enemyPerWave            EQU      20            
+enemyPerWave            EQU      12            
 IN_ENEMY                DC.B     00                  ; marker for if the player is in the enemy
 IN_HPACK                DC.B     00                  ; marker for if the player is in the health pack
 DRAW_HEALTHPACKS        DC.B     00                  ; marker for if the healthpacks are showing
 SPAWN_HEALTHPACKS       DC.B     00                  ; marker for if the healthpacks are spawning
 
-
+tutorialMeleeMSG        DC.B     'Press k (RB) to swing!',0
+tutorialThrowMSG        DC.B     'Press j (LB) to throw an Acorn!',0   
 *-----------------------------------------------------------
 * Section       : Screen Size
 * Description   : Screen Width and Height
@@ -343,17 +338,17 @@ LAST_KEY        DS.W    01  ; Reserve Space for Current Key Pressed
 * Description   : Player and Enemy Position Memory Locations
 *-----------------------------------------------------------
 
-ENEMY_X         DS.L    01  ; Reserve Space for Enemy X Position
-ENEMY_Y         DS.L    01  ; Reserve Space for Enemy Y Position
+ENEMY_X          DS.L    01  ; Reserve Space for Enemy X Position
+ENEMY_Y          DS.L    01  ; Reserve Space for Enemy Y Position
 
 HEALTH_X         DS.L    01  ; Reserve Space for Health+ X Position
 HEALTH_Y         DS.L    01  ; Reserve Space for Health Y Position
 
-FLYINGENEMY_X         DS.L    01  ; Reserve Space for Flying Enemy X Position
-FLYINGENEMY_Y         DS.L    01  ; Reserve Space for Flying Enemy Y Position
+FLYINGENEMY_X    DS.L    01  ; Reserve Space for Flying Enemy X Position
+FLYINGENEMY_Y    DS.L    01  ; Reserve Space for Flying Enemy Y Position
 
-BRUTE_X          DS.L        01
-BRUTE_Y          DS.L        01
+BRUTE_X          DS.L    01
+BRUTE_Y          DS.L    01
 
 ENMY_W_INIT      EQU         27          ; Enemy initial Width
 ENMY_H_INIT      EQU         13          ; Enemy initial Height
@@ -373,22 +368,26 @@ BRUTE_DEAD          DC.B    00
 BRUTE_HIT           DC.B    00
 BRUTE_HP            DC.b    03
 
-JUMP_WAV        DC.B    'jump.wav',0        
-GAMEOVER_WAV    DC.B    'gameOver.wav',0    
-HITHURT_WAV     DC.B    'hitHurt.wav',0     
-HIT_WAV         DC.B    'hit.wav',0         
-POWERUP_WAV     DC.B    'powerUP.wav',0     
-ROAR_WAV        DC.B    'roar-8-bit.wav',0 
-HILLHURT_WAV        DC.B    'hillHurt.wav',0 
+JUMP_WAV        DC.B    'sounds/jump.wav',0        
+GAMEOVER_WAV    DC.B    'sounds/gameOver.wav',0    
+HITHURT_WAV     DC.B    'sounds/hitHurt.wav',0     
+HIT_WAV         DC.B    'sounds/hit.wav',0         
+POWERUP_WAV     DC.B    'sounds/powerUP.wav',0     
+ROAR_WAV        DC.B    'sounds/roar-8-bit.wav',0 
+HILLHURT_WAV    DC.B    'sounds/hillHurt.wav',0 
 
 ; songs
-BATTLE_SONG_WAV DC.B    'antopia-battle.wav',0
-MAP_SONG_WAV    DC.B    'antopia-map.wav',0
-MENU_SONG_WAV   dc.B    'antopia-menu.wav',0
+BATTLE_SONG_WAV DC.B    'sounds/antopia-battle.wav',0
+MAP_SONG_WAV    DC.B    'sounds/antopia-map.wav',0
+MENU_SONG_WAV   dc.B    'sounds/antopia-menu.wav',0
 
 ; STINGS
-LOSS_STING_WAV  DC.b    'antopia-loss-sting.wav',0
-WIN_STING_WAV   DC.B    'antopia-win-sting.wav',0
+LOSS_STING_WAV  DC.b    'sounds/antopia-loss-sting.wav',0
+WIN_STING_WAV   DC.B    'sounds/antopia-win-sting.wav',0
+ACH_STING_WAV   dc.b    'sounds/antopia-ach-sting.wav',0
+HILL_DEFENDED_STING_WAV dc.b 'sounds/antopia-hill-defend-sting.wav',0
+HILL_LOST_STING_WAV dc.b 'sounds/antopia-hill-loss-sting.wav',0
+
 wordOrder dc.b 0
 
 *-----------------------------------------------------------
@@ -414,25 +413,18 @@ ATTACK_Y             DC.L    00
 ATTACK_HEIGHT        EQU     20
 ATTACK_WIDTH         EQU     35 
 
-ENEMIES_DEFEATED    DC.B    00
-enemiesPassed       DC.b    00
-enemiesToDefeat     DC.B    00
-
+ENEMIES_DEFEATED    DC.B     00
+enemiesPassed       DC.b     00
+enemiesToDefeat     DC.B     00
+firstWaveTutAmt     DC.b     00
+showThrowMSG        dc.B     00
 ; all timers and cooldowns
 respawnTime             dc.W        0
 backToMapCount          dc.b        3
 healthCooldown          DC.W        0
 hillHurtTimer           dc.b        0
-timer                   DC.L        0
 healthCooldownOver      DC.B        0
-
+tutorialMeleeTimer      dc.B        0
+tutorialThrowTimer      dc.B        0
 *---------- END---------------*
 
-
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~

@@ -181,7 +181,21 @@ ATK_PLUS_H_LTE_TO_ATTACK_Y:     ; Less than or Equal ?
     ADD.L   #ATTACK_HEIGHT,D1          ; Add Player Height to D1
     MOVE.L  (a4),    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     ATTACK_COLLISION               ; Collision !
+
+    if <le> then
+        ; SUCCESS
+        ; check achievement beforeHand
+        tst.l PLYR_ON_GND
+        if <eq> then
+            tst.b achAirAttackTrue
+            if <eq> then
+                jsr achAirAttackCheck
+            endi
+        endi
+
+        bra ATTACK_COLLISION
+    endi
+
     BRA     CHECK_ATTACK_FLY_COLLISIONS
 
 *--------------------Checking for ATTACK FLYING collision---------------------
@@ -217,7 +231,21 @@ ATK_PLUS_H_LTE_TO_FLYENEMY_Y:     ; Less than or Equal ?
     ADD.L   #ATTACK_HEIGHT,D1          ; Add Player Height to D1
     MOVE.L  (a4),    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     ATTACK_FLY_COLLISION               ; Collision !
+
+    if <le> then
+        ; SUCCESS
+        ; check achievement beforeHand
+        tst.l PLYR_ON_GND
+        if <eq> then
+            tst.b achAirAttackTrue
+            if <eq> then
+                jsr achAirAttackCheck
+            endi
+        endi
+
+        bra ATTACK_FLY_COLLISION
+    endi
+
     BRA     CHECK_ATTACK_BRUTE_COLLISIONS
 
 *--------------------Checking for ATTACK BRUTE collision---------------------
@@ -257,7 +285,21 @@ ATK_PLUS_H_LTE_TO_BRUTE_Y:     ; Less than or Equal ?
     ADD.L   #ATTACK_HEIGHT,D1          ; Add Player Height to D1
     MOVE.L  (a4),    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     ATTACK_BRUTE_COLLISION               ; Collision !
+    
+    if <le> then
+        ; SUCCESS
+        ; check achievement beforeHand
+        tst.l PLYR_ON_GND
+        if <eq> then
+            tst.b achAirAttackTrue
+            if <eq> then
+                jsr achAirAttackCheck
+            endi
+        endi
+
+        bra ATTACK_BRUTE_COLLISION
+    endi
+
     BRA     CHECK_THROW_COLLISION
 
 *--------------------Checking for THROW collision---------------------
@@ -295,7 +337,16 @@ TRW_PLUS_H_LTE_TO_THROW_Y:     ; Less than or Equal ?
     ADD.L   #THRW_H_INIT,D1          ; Add Player Height to D1
     MOVE.L  (a4),    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     ATTACK_COLLISION               ; Collision !
+
+    ; SUCCESSFUL COLLISION
+    if <le> then
+        add.b #1, achAcornDoubleCount
+        tst.b achAcornDoubleTrue
+        if <eq> then
+            jsr achAcornDoubleCheck
+        endi
+        bra ATTACK_COLLISION
+    endi
     BRA     CHECK_THROW_FLY_COLLISIONS
 
 *--------------------Checking for THROW FLYING collision---------------------
@@ -332,7 +383,16 @@ TRW_PLUS_H_LTE_TO_FLYENEMY_Y:     ; Less than or Equal ?
     ADD.L   #THRW_H_INIT,D1          ; Add Player Height to D1
     MOVE.L  (a4),    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     ATTACK_FLY_COLLISION               ; Collision !
+
+    ; SUCCESSFUL COLLISION
+    if <le> then
+        add.b #1, achAcornDoubleCount
+        tst.b achAcornDoubleTrue
+        if <eq> then
+            jsr achAcornDoubleCheck
+        endi
+        bra ATTACK_FLY_COLLISION
+    endi
     BRA     CHECK_THROW_BRUTE_COLLISIONS
 
 *--------------------Checking for THROW BRUTE collision---------------------
@@ -368,7 +428,16 @@ TRW_PLUS_H_LTE_TO_BRUTE_Y:     ; Less than or Equal ?
     ADD.L   #THROW_HEIGHT,D1          ; Add Player Height to D1
     MOVE.L  (a4),    D2          ; Move Enemy Height to D2  
     CMP.L   D1,         D2          ; Do they OverLap ?
-    BLE     ATTACK_BRUTE_COLLISION               ; Collision !
+
+    ; SUCCESSFUL COLLISION
+    if <le> then
+        addq.b #1, achAcornDoubleCount
+        tst.b achAcornDoubleTrue
+        if <eq> then
+            jsr achAcornDoubleCheck
+        endi
+        bra ATTACK_BRUTE_COLLISION
+    endi
     BRA     COLLISION_CHECK_DONE
 
 
@@ -383,7 +452,22 @@ ATTACK_COLLISION:
     BSR     PLAY_HIT
     MOVE.L  #400, ENEMY_Y
     MOVE.B  #01,  ENEMY_HIT
+    ; test the amount of ground enemies killed
+    tst.b   firstWaveTutAmt
+    ; if its not equal to 0 then decrease the number
+    IF <NE> THEN    
+        subi.b #1, firstWaveTutAmt
+    ENDI
+    ; If a subtract causes the end value to equal 0 then the Z flag is activated
+    ; Branch to set throw message to show up after the first 3 ground enemies are cleared
+    BEQ     setThrowMsg
+
     BSR     CHECK_ENEMIES_CLEARED
+    RTS
+
+setThrowMsg:
+    move.b #1, showThrowMSG
+    BRA     CHECK_ENEMIES_CLEARED
     RTS
 
 ATTACK_FLY_COLLISION:
@@ -400,9 +484,18 @@ ATTACK_BRUTE_COLLISION:
     BNE     STILL_COLLIDED
     BSR     PLAY_HIT
 
+    
+
     SUBQ.B  #1,BRUTE_HP
     TST.B   BRUTE_HP
     IF <EQ> THEN
+
+        ; check achievement
+        tst.b achBruteKillTrue
+        if <eq> then
+            jsr achBruteKillCheck
+        endi
+
         MOVE.L  #400, BRUTE_Y
         MOVE.B  #1,BRUTE_DEAD
         BSR     CHECK_ENEMIES_CLEARED
@@ -413,6 +506,17 @@ ATTACK_BRUTE_COLLISION:
 
 CHECK_ENEMIES_CLEARED:
     ADDI.B  #1,         ENEMIES_DEFEATED
+
+    ; check for achievements
+    tst.b ach10killsTrue
+    if <eq> then
+        jsr ach10killsCheck
+    endi
+    tst.b ach30killsTrue
+    if <eq> then
+        jsr ach30killsCheck
+    endi
+    
     MOVE.B  ENEMIES_DEFEATED,D1
     CMP.B   enemiesToDefeat,D1
     BEQ     WAVE_DEFEATED
@@ -447,15 +551,24 @@ antKilled:
     MOVE.B    #3, antHealth
     SUBQ.b    #1, antsRemaining
     TST.b     antsRemaining
-    BEQ       GAME_OVER
+    BEQ       goToGameOver
     BSR     PLAY_HITHURT               ; Play Opps Wav
     BSR     DRAW_RESPAWN
     RTS
 
+goToGameOver:
+    clr.l   d3
+    move.b  ENEMIES_DEFEATED, d3
+    add.l   d3,totalKills
+    bra     GAME_OVER
+    rts
 HEALTH_COLLISION:
     ; skip if still collided
     CMP.B     #$01, IN_HPACK
     BEQ     STILL_COLLIDED
+
+    
+
     MOVE.b  maxAntHp,d1
     CMP.B     antHealth, d1
     BEQ     STILL_COLLIDED
@@ -465,7 +578,15 @@ HEALTH_COLLISION:
         MOVE.W  #500, healthCooldown
     ENDI
 
+    ; SUCCESS
+
     BSR     PLAY_POWERUP               ; Play Opps Wav
+
+    ; health achievement check
+    tst.b achAppleTrue
+    if <eq> then
+        jsr achAppleCheck
+    endi
 
     ADD.B   #1, antHealth
     CMP.B   #03, antHealth
@@ -485,6 +606,7 @@ STOP_HPACK_SPAWN:
 STILL_COLLIDED:
     RTS
     
+
 
 *~Font name~Courier New~
 *~Font size~10~

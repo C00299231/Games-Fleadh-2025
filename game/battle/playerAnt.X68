@@ -92,6 +92,18 @@ JUMP:
     BEQ     PERFORM_JUMP            ; Do Jump
     BRA     JUMP_DONE               ;
 PERFORM_JUMP:
+    ; jump achievements check
+    tst.b achJumpTrue
+    if <eq> then
+        jsr     achJumpCheck
+    endi
+    add.b #1, ach20jumpsCount
+
+    tst.b ach20jumpsTrue
+    IF <EQ> THEN
+        jsr ach20jumpsCheck
+    endi
+    
     BSR     PLAY_JUMP               ; Play jump sound
     MOVE.L  #PLYR_JUMP_V,PLYR_VELOCITY ; Set the players velocity to true
     RTS                             ; Return to subroutine
@@ -140,6 +152,64 @@ SET_OFF_GROUND:
 
 ; draw all player relevant data
 DRAW_PLAYER:
+    ; load x and y into a1 and a2 for quick access
+    LEA     PLAYER_X,   A1
+    LEA     PLAYER_Y,   A2
+        
+    ; check to show melee msg
+    tst.b   tutorialMeleeTimer
+    IF <NE> THEN
+        ; sub 1 from the timer
+        subi.b #1, tutorialMeleeTimer
+        
+        
+        clr.l   d2
+        move.l  #deepgreen,d1
+        move.B  #tcFont, d0
+        trap    #15
+        ; Set Pixel Colors
+        MOVE.L  #color5,     D1          ; Set Background color
+        MOVE.B  #81,        D0          ; Task for Background Color
+        TRAP    #15                     ; Trap (Perform action)
+
+        ; print the message above the player
+        MOVE.L  (a1),   D1          ; X
+        MOVE.L  (a2),   D2 
+        sub.l #85, d1
+        sub.l #60, d2
+        lea     tutorialMeleeMSG,a1
+        move.b  #95, d0
+        trap    #15
+    ENDI  
+
+    ; check to show melee msg
+    tst.b  showThrowMSG
+    IF <NE> THEN
+        tst.b  tutorialThrowTimer
+        IF <NE> THEN
+            ; sub 1 from the timer
+            subi.b #1, tutorialThrowTimer
+            
+            clr.l   d2
+            move.l  #deepgreen,d1
+            move.B  #tcFont, d0
+            trap    #15
+            ; Set Pixel Colors
+            MOVE.L  #color5,     D1          ; Set Background color
+            MOVE.B  #81,        D0          ; Task for Background Color
+            TRAP    #15                     ; Trap (Perform action)
+
+            ; print the message above the player
+            MOVE.L  (a1),   D1          ; X
+            MOVE.L  (a2),   D2 
+            sub.l #125, d1
+            sub.l #60, d2
+            lea     tutorialThrowMSG,a1
+            move.b  #95, d0
+            trap    #15
+        ENDI
+    ENDI  
+
     ; Set Pixel Colors
     MOVE.L  #BLACK,     D1          ; Set Background color
     MOVE.B  #80,        D0          ; Task for Background Color
@@ -147,11 +217,9 @@ DRAW_PLAYER:
     ; Reset Pixel Colors
     MOVE.B  #81,        D0          ; Task for Background Color
     TRAP    #15                     ; Trap (Perform action)
-
+  
 *-------------- draw body -----------------*
     LEA     PLAYER_X,   A1
-    LEA     PLAYER_Y,   A2
-
     MOVE.L  (a1),   D1          ; X
     MOVE.L  (a2),   D2
     MOVE.L  D1,   D3
@@ -401,6 +469,7 @@ PLAYER_SCORE    DS.L    01  ; Reserve Space for Player Score
 PLYR_VELOCITY   DS.L    01  ; Reserve Space for Player Velocity
 PLYR_GRAVITY    DS.L    01  ; Reserve Space for Player Gravity
 PLYR_ON_GND     DS.L    01  ; Reserve Space for Player on Ground
+
 
 
 *~Font name~Courier New~

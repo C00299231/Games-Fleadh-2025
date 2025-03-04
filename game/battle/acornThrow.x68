@@ -73,6 +73,9 @@ RESET_THROW:
     ; reset acorn pos
     MOVE.L   #-100, THROW_X
     MOVE.L   #-100, THROW_Y
+
+    ; reset achievement value
+    move.b #0, achAcornDoubleCount
     RTS
 
 ; perform the throwing of the acorn

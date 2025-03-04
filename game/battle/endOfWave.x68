@@ -5,18 +5,10 @@ HILL_LOST:
     move.b  ENEMIES_DEFEATED, d3
     add.l   d3,totalKills
 
-    ; if 0 hills were defended and its the last wave then go to game_over
-    tst.b   totalHillsDefended
-    IF <EQ> THEN
-        cmp.w   #3,lvlIndex
-        IF <EQ> THEN
-            beq     GAME_OVER
-        ENDI
-    ENDI
-
-    ; if its the last wave then go to win screen
-    CMP.W   #3,lvlIndex
-    BEQ     WIN_SCREEN
+    ; play loss sting
+    jsr stop_sting
+    jsr HILL_LOST_STING_LOAD
+    jsr play_sting
 
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
@@ -77,7 +69,7 @@ HILL_LOST:
     TRAP    #15                     ; Trap (Perform action)
     
 *------------ print back to map--------------*
-
+DRAWBACKTOMAP:
     MOVE.L  #color5,     D1
     MOVE.B  #21,        D0          ; Set Text Color
     MOVE.L  #$03140000, D2
@@ -105,21 +97,53 @@ HILL_LOST:
    
     ; delay time
     MOVE.b  #23,D0
-    MOVE.L  #endGameDelay,D1
+    MOVE.L  #100,D1
     TRAP    #15
 
     ; sub from the counter
     SUB.B   #01,backToMapCount
-    ; if the counter is 0 then go back to map
-    TST.B   backToMapCount
-    BEQ     mapNotFirstInit
+    bsr     checkGameOver
+   
 
     ; reset current health
     MOVE.l  #200,currentHealth
     bsr     initDraw
     ; back to top
-    BRA     HILL_LOST
+    BRA     DRAWBACKTOMAP
 
+
+; check if all 4 rounds are over if not then go back to map
+checkGameOver:
+    ; if the counter is 0 then go back to map
+    TST.B   backToMapCount
+    IF <EQ> THEN    
+        ; if 0 hills were defended and its the last wave then go to game_over
+        cmp.w   #3,lvlIndex
+        IF <EQ> THEN
+            tst.b   totalHillsDefended
+            IF <EQ> THEN
+                bra GAME_OVER
+            ENDI
+            bra WIN_SCREEN
+        ENDI
+        bra mapNotFirstInit
+       
+    ENDI
+
+    RTS
+
+; check if all 4 rounds are over if not then go back to map
+checkGameWin:
+    ; if the counter is 0 then go back to map
+    TST.B   backToMapCount
+    IF <EQ> THEN    
+        ; if last wave go to win screen
+        CMP.W   #3,lvlIndex
+        BEQ     WIN_SCREEN
+        bra mapNotFirstInit
+    ENDI
+
+    RTS
 ; game over screen
 GAME_OVER:
     
@@ -192,17 +216,24 @@ WAVE_DEFEATED:
     move.b  ENEMIES_DEFEATED, d3
     add.l   d3,totalKills
 
+    ; play win sting
+    jsr stop_sting
+    jsr HILL_DEFENDED_STING_LOAD
+    jsr play_sting
+
     ; if the hp of the hill is full add 1 to perfect defences
     move.b  hillHP,d3
     move.b  #maxHillHp,d4
     cmp.b   d4,d3
     IF <EQ> THEN
         addi.l  #1,perfectDefenceAmount
-    ENDI
 
-    ; if last wave go to win screen
-    CMP.W   #3,lvlIndex
-    BEQ     WIN_SCREEN
+        ; check achievement
+        tst.b achPerfectDefTrue
+        if <eq> then
+            jsr achPerfectDefCheck
+        endi
+    ENDI
     
     ; clear screen
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
@@ -280,7 +311,7 @@ WAVE_DEFEATED:
 
 MAPCOUNTDOWN:
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$1F0C,     D1           09, Row 01
+    MOVE.W  #$1F0C,     D1          ; col 1f, Row 0c
     TRAP    #15                     ; Trap (Perform action)
     MOVEQ.L #0,D1
     MOVE.B  backToMapCount,D1         ; Move counter to D1.L
@@ -293,14 +324,13 @@ MAPCOUNTDOWN:
    
     ; delay time
     MOVE.b  #23,D0
-    MOVE.L  #endGameDelay,D1
+    MOVE.L  #100,D1
     TRAP    #15
 
     ; sub 1 from the counter
     SUB.B   #01,backToMapCount
     ; check if counter is done and branch to map
-    TST.B   backToMapCount
-    BEQ     mapNotFirstInit
+    bsr    checkGameWin
     
     bsr     initDraw    
     MOVE.l  #200,currentHealth  ; reset current health
@@ -363,3 +393,11 @@ WIN_SCREEN:
 
     ; go to tally score
     BRA     tallyScore
+
+; messages
+HILLLOST_MSG            DC.B    'ANT HILL HAS BEEN OVERRUN!', 0         ; ant hill lost message
+WIN_MSG                 DC.B    'THE ENEMY ARMY HAS BEEN DEFEATED!', 0  ; win message  
+HILLDEFENDED_MSG        DC.B    'WAVE COMPLETE!', 0                     ; hill defended message
+FALLENKINGDOM_MSG       DC.B    'YOUR ANT KINGDOM HAS FALLEN', 0        ; game over message
+GAMEOVER_MSG            DC.B    'GAME OVER!', 0                         ; game over  
+BACK_TO_MAP_MSG         DC.B    'Back to game ...', 0            ; return to map counter message

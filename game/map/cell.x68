@@ -251,10 +251,10 @@ resetZonePens:
 
     jsr processShakes
 
-    move.l #brown, zone1pen
-    move.l #brown, zone2pen
-    move.l #brown, zone3pen
-    move.l #brown, zone4pen
+    move.l #dirt, zone1pen
+    move.l #dirt, zone2pen
+    move.l #dirt, zone3pen
+    move.l #dirt, zone4pen
     rts
 
 enterHill:

@@ -24,6 +24,7 @@
     BSR     DRAW_PLAYER             ; Draw Player
     BSR     DRAW_FLOOR              ; Draw Floor
     BSR     DRAW_HUD                ; Draw hud
+    bsr     drawAchievement
     BSR     drawPause               ; draw if paused
     RTS                             ; Return to subroutine
 
@@ -40,7 +41,7 @@ DRAW_HILL:
     CMP.B   #0, hillHurtTimer
     IF <NE> THEN
      
-        MOVE.L  #MIDBROWN,     D1          ; Set Background color
+        MOVE.L  #red,     D1          ; Set Background color
         jsr setFillColour
     ENDI
 
@@ -355,7 +356,7 @@ DRAW_HEALTHPACK:
     
     ; Set Pixel Colors
     MOVE.L  #BROWN,       D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
+    MOVE.B  #80,        D0          ; Task for pen Color
     TRAP    #15                     ; Trap (Perform action)
 
     ; Reset Pixel Colors

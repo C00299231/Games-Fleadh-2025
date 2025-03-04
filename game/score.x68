@@ -6,13 +6,15 @@ scoreHillDef equ 75
 scoreKill equ 5
 scoreLife equ 30 ; ant left alive
 scoreWin equ 100
+scoreAchievement equ 50
 
 ; final score values
-finalPerfectDef ds.l 01
-finalKill ds.l 01
-finalLife ds.l 01
-finalWin ds.L 01
-finalHillDef    dc.l 0
+finalPerfectDef     ds.l 01
+finalKill           ds.l 01
+finalLife           ds.l 01
+finalWin            ds.L 01
+finalHillDef        dc.l 0
+finalAchievements   dc.l 0
 
 ; values
 totalKills dc.l 0
@@ -75,6 +77,16 @@ tallyScore:
     add.l d2, score
     move.l d2, finalPerfectDef
 
+    ; achievements
+    jsr checkAchScore
+    clr.L   d3
+    move.b DIFFICULTY, d3
+    mulu d3, d2
+    move.l d2, finalAchievements
+    add.l d2, score
+
+    ;move.l  #110000,score
+    bsr     writeScore
 
 
 scoreScreen:
@@ -148,9 +160,19 @@ scoreScreen:
 
     jsr scoreScreenInbetween
 
+    ; ACHIEVEMENTS
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$0908,     D1        
+    TRAP    #15                     ; Trap (Perform action)
+    lea scoreAchMsg, a1
+    move.l finalAchievements, d1
+    jsr printWithNum
+
+    jsr scoreScreenInbetween
+
      ; Total score
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0909,     D1        
+    MOVE.W  #$090a,     D1        
     TRAP    #15                     ; Trap (Perform action)
     lea totalScoreMsg, a1
     move.l score, d1
@@ -177,6 +199,55 @@ scoreScreenInbetween:
     jsr newDelay
     rts
 
+writeScore:
+     ; close all files 
+    move.b  #50, d0
+    trap       #15
+    
+    ;open the file
+    move.b  #51,d0
+    lea     txt,a1
+    trap    #15
+    move.l    d1,fileId
+    
+    ; read the file 
+    move.l  fileId,d1
+    move.b  #53,d0  
+    lea     highscoreFile,a1    ; load the buffer for the file
+    move.b  #4,d2
+    trap    #15
+    
+    
+    ; position file to write to it 
+    move.l  fileId,d1
+    move.b  #55, d0
+    move.l  #0, d2      ; file starts at 0 so position to 0 to write to the start
+    trap    #15
+
+    ; write to the file 
+    ; compare the current highscore with the new score
+    move.l  highscore,d1
+    move.l  score,d2
+    cmp.l   d2,d1
+    bgt     skipWrite       ; if the new score is smaller then skip the write
+    move.l  score,(a1)      ; move the score into the first four bytes of the file buffer
+    move.b  #54,d0          
+    move.l  fileId,d1       ; get the file id into d1
+    move.l  #4,d2           ; load 4 into d2 to write just 4 bytes into the file
+    trap    #15             ; trap code
+
+skipWrite:
+    ; close the file specified
+    ; the write operation only now occurs at this stage
+    move.b  #56, d0
+    trap       #15
+    
+     ; close all files now. Good practice to avoid errors
+    move.b  #50, d0
+    trap       #15
+    rts
+
+; check for enter key
 getEnter:
 
     move.l currentKey, lastKey
@@ -211,6 +282,7 @@ noEnter:
     move.l #0, currentKey
     bra getEnter
 
+; messages 
 finalScoreMsg dc.b '- FINAL SCORE -',0
     
 scoreKillMsg dc.b 'Enemies Vanquished: ',0
@@ -218,6 +290,7 @@ scoreLifeMsg dc.b 'Ants Remaining: ',0
 scoreWinMsg  dc.b 'Kingdom Defended: ',0
 scoreHillDefMsg dc.b 'Hills Defended: ',0
 scorePerfectDefMsg dc.b 'Perfect Hill Defence: ',0
+scoreAchMsg dc.b 'Achievements:',0
 totalScoreMsg       dc.b 'Total Score: ',0
 
 scoreContinueMSg dc.b 'Press "ENTER/(A)" to return to title ',0
