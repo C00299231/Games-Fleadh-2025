@@ -190,14 +190,6 @@ escapeJustPressed:
     rts
 
 testKeyPressed:
-
-    cmpi.b #0, achTest
-    
-    if <eq> then
-        lea achTestMsg, a2
-        ;move.b #$FF, achTest
-        jsr getAchievement
-    endi
     rts
 
 enterPressed:
@@ -255,7 +247,7 @@ key1pressed: ; main menu
     jsr togglePause
     jsr clearscreen
     jsr disableDoubleBuffer
-    bra start
+    bra nextInit
 
 ; MOVEMENT INPUT: MUST STAY WITHIN CELL BOUNDARIES
 wpressed:

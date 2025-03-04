@@ -6,6 +6,7 @@ scoreHillDef equ 75
 scoreKill equ 5
 scoreLife equ 30 ; ant left alive
 scoreWin equ 100
+scoreAchievement equ 50
 
 ; final score values
 finalPerfectDef ds.l 01

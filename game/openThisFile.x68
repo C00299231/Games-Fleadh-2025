@@ -16,6 +16,9 @@ nextInit:
     jsr MENU_SONG_LOAD
     jsr play_song
 
+    ; reset achievements
+    jsr resetAchievements
+
     move.b  #0,enemiesToDefeat
     lea     hillHPArray,a1
     move.l  #$64646464, (a1)
@@ -166,18 +169,6 @@ titleBgStartPos dc.l 320
  include "achievements.x68"
 
 	end start
-
-
-
-
-
-
-
-
-
-
-
-
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
