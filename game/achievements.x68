@@ -29,6 +29,22 @@ resetAchievements:
     move.b #0, achBruteKillTrue
     rts
 
+checkAchScore:
+    clr.l d2
+
+    add.b ach10killsTrue, d2
+    add.b ach30killsTrue, d2
+    add.b achJumpTrue, d2
+    add.b ach20jumpsTrue, d2
+    add.b achPerfectDefTrue, d2
+    add.b achAppleTrue, d2
+    add.b achAcornDoubleTrue, d2
+    add.b achAirAttackTrue, d2
+    add.b achBruteKillTrue, d2
+
+    mulu #scoreAchievement, d2
+    rts
+
 achievementMsg dc.b 'ACHIEVEMENT GET!',0
 
 baseAchievementDecay equ 200
@@ -46,7 +62,7 @@ achJumpTrue dc.b 0
 achJumpMsg dc.b 'Went for a hop!',0
 
 ach20jumpsTrue dc.b 0
-ach20jumpsMsg dc.b '20 hops!'0
+ach20jumpsMsg dc.b '20 hops!',0
 ach20jumpsCount dc.b 0
 
 achPerfectDefTrue dc.b 0
@@ -75,7 +91,7 @@ ach10killsCheck:
     cmpi.l #10, d2
     if <eq> then
         ; got 10 kills achievement.
-        move.b #$FF, ach10killsTrue
+        move.b #$01, ach10killsTrue
         lea ach10killsMsg, A2
         jsr getAchievement
     endi
@@ -87,7 +103,7 @@ ach30killsCheck:
     cmpi.l #30, d2
     if <eq> then
         ; got 30 kills achievement.
-        move.b #$FF, ach10killsTrue
+        move.b #$01, ach10killsTrue
         lea ach30killsMsg, A2
         jsr getAchievement
     endi
@@ -95,7 +111,7 @@ ach30killsCheck:
 
 achJumpCheck:
     ; got jump achievement
-    move.b #$FF, achJumpTrue
+    move.b #$01, achJumpTrue
     lea achJumpMsg, a2
     jsr getAchievement
     rts
@@ -105,20 +121,20 @@ ach20jumpsCheck:
     cmpi.b #20, d2
     if <eq> then
         ; got 20 jumps achievement.
-        move.b #$FF, ach20jumpsTrue
+        move.b #$01, ach20jumpsTrue
         lea ach20jumpsMsg, A2
         jsr getAchievement
     endi
     rts
 
 achPerfectDefCheck:
-    move.b #$FF, achPerfectDefTrue
+    move.b #$01, achPerfectDefTrue
     lea achPerfectDefMsg, a2
     jsr getAchievement
     rts
 
 achAppleCheck:
-    move.b #$FF, achAppleTrue
+    move.b #$01, achAppleTrue
     lea achAppleMsg, a2
     jsr getAchievement
     rts
@@ -128,20 +144,20 @@ achAcornDoubleCheck:
     move.b achAcornDoubleCount, d2
     cmp.b #2, d2
     if <eq> then
-        move.b #$FF, achAcornDoubleTrue
+        move.b #$01, achAcornDoubleTrue
         lea achAcornDoubleMsg, a2
         jsr getAchievement
     endi
     rts
 
 achAirAttackCheck:
-    move.b #$FF, achAirAttackTrue
+    move.b #$01, achAirAttackTrue
     lea achAirAttackMsg, a2
     jsr getAchievement
     rts
 
 achBruteKillCheck:
-    move.b #$FF, achBruteKillTrue
+    move.b #$01, achBruteKillTrue
     lea achBruteKillMsg, a2
     jsr getAchievement
     rts
@@ -154,27 +170,32 @@ achBruteKillCheck:
 
 getAchievement:
     ;HOW TO USE:
+    ;   check if the True byte is set
     ;   LEA the relevant achievement message into A2
-    ;   set the achievement bool byte to #$FF
     ;   call srt
 
     move a2, currentAchievement
     move.w #0, achievementDecay
-
-    ; here, play achievement sound
-    jsr STOP_sting
-    jsr ACHIEVE_STING_LOAD
-    jsr play_sting
-
+    move.w #1, firstAchDraw
     rts
 
-; THIS SHOULD ALWAYS RUN
+firstAchDraw dc.w 0
 drawAchievement:
 
     ; check if achievement should be drawn at all
     cmp.w #baseAchievementDecay, achievementDecay
     if <eq> then
         rts
+    endi
+
+    ; here, play achievement sound
+    move.w firstAchDraw, d2
+    tst.w d2
+    if <ne> then
+        jsr STOP_sting
+        jsr ACHIEVE_STING_LOAD
+        jsr play_sting
+        move.w #0, firstAchDraw
     endi
 
     ; set colours
@@ -236,7 +257,9 @@ drawAchievement:
 
 decayAchievement:
     add #1, achievementDecay
+    
     rts
+
 
 
 

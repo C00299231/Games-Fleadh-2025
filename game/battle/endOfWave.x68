@@ -5,6 +5,11 @@ HILL_LOST:
     move.b  ENEMIES_DEFEATED, d3
     add.l   d3,totalKills
 
+    ; play loss sting
+    jsr stop_sting
+    jsr HILL_LOST_STING_LOAD
+    jsr play_sting
+
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
     MOVE.W  #$FF00,     D1          ; Fill Screen Clear
     TRAP	#15                     ; Trap (Perform action)
@@ -210,6 +215,11 @@ WAVE_DEFEATED:
     clr.l   d3
     move.b  ENEMIES_DEFEATED, d3
     add.l   d3,totalKills
+
+    ; play win sting
+    jsr stop_sting
+    jsr HILL_DEFENDED_STING_LOAD
+    jsr play_sting
 
     ; if the hp of the hill is full add 1 to perfect defences
     move.b  hillHP,d3

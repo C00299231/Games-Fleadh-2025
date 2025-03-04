@@ -484,15 +484,18 @@ ATTACK_BRUTE_COLLISION:
     BNE     STILL_COLLIDED
     BSR     PLAY_HIT
 
-    ; check achievement
-    tst.b achBruteKillTrue
-    if <eq> then
-        jsr achBruteKillCheck
-    endi
+    
 
     SUBQ.B  #1,BRUTE_HP
     TST.B   BRUTE_HP
     IF <EQ> THEN
+
+        ; check achievement
+        tst.b achBruteKillTrue
+        if <eq> then
+            jsr achBruteKillCheck
+        endi
+
         MOVE.L  #400, BRUTE_Y
         MOVE.B  #1,BRUTE_DEAD
         BSR     CHECK_ENEMIES_CLEARED

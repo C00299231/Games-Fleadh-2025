@@ -9,11 +9,12 @@ scoreWin equ 100
 scoreAchievement equ 50
 
 ; final score values
-finalPerfectDef ds.l 01
-finalKill ds.l 01
-finalLife ds.l 01
-finalWin ds.L 01
-finalHillDef    dc.l 0
+finalPerfectDef     ds.l 01
+finalKill           ds.l 01
+finalLife           ds.l 01
+finalWin            ds.L 01
+finalHillDef        dc.l 0
+finalAchievements   dc.l 0
 
 ; values
 totalKills dc.l 0
@@ -75,6 +76,14 @@ tallyScore:
     mulu d3, d2
     add.l d2, score
     move.l d2, finalPerfectDef
+
+    ; achievements
+    jsr checkAchScore
+    clr.L   d3
+    move.b DIFFICULTY, d3
+    mulu d3, d2
+    move.l d2, finalAchievements
+    add.l d2, score
 
     ;move.l  #110000,score
     bsr     writeScore
@@ -151,9 +160,19 @@ scoreScreen:
 
     jsr scoreScreenInbetween
 
+    ; ACHIEVEMENTS
+    MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
+    MOVE.W  #$0908,     D1        
+    TRAP    #15                     ; Trap (Perform action)
+    lea scoreAchMsg, a1
+    move.l finalAchievements, d1
+    jsr printWithNum
+
+    jsr scoreScreenInbetween
+
      ; Total score
     MOVE.B  #TC_CURSR_P,D0          ; Set Cursor Position
-    MOVE.W  #$0909,     D1        
+    MOVE.W  #$090a,     D1        
     TRAP    #15                     ; Trap (Perform action)
     lea totalScoreMsg, a1
     move.l score, d1
@@ -271,6 +290,7 @@ scoreLifeMsg dc.b 'Ants Remaining: ',0
 scoreWinMsg  dc.b 'Kingdom Defended: ',0
 scoreHillDefMsg dc.b 'Hills Defended: ',0
 scorePerfectDefMsg dc.b 'Perfect Hill Defence: ',0
+scoreAchMsg dc.b 'Achievements:',0
 totalScoreMsg       dc.b 'Total Score: ',0
 
 scoreContinueMSg dc.b 'Press "ENTER/(A)" to return to title ',0
