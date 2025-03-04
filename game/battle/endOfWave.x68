@@ -135,6 +135,7 @@ checkGameWin:
         ; if last wave go to win screen
         CMP.W   #3,lvlIndex
         BEQ     WIN_SCREEN
+        bra mapNotFirstInit
     ENDI
 
     RTS

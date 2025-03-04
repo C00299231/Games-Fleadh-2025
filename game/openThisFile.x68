@@ -19,15 +19,20 @@ nextInit:
     ; reset achievements
     jsr resetAchievements
 
+    ; reset values 
     move.b  #0,enemiesToDefeat
     lea     hillHPArray,a1
     move.l  #$64646464, (a1)
     clr.l   perfectDefenceAmount
     clr.l   totalKills
-    move.b  #5,antsRemaining
-    move.B  #0,totalHillsDefended
-
-	move.w #0, lvlType
+    move.b  #5,     antsRemaining
+    move.B  #0,     totalHillsDefended
+    move.b  #3,     firstWaveTutAmt
+    move.b  #10,    enemiesToDefeat
+	move.w  #0,     lvlType
+    move.b  #$FF,   tutorialMeleeTimer
+    move.b  #$FF,   tutorialThrowTimer
+    move.b  #0,     showThrowMSG
     
     MOVE.B  #tcScreen, D0           ; access screen information
     MOVE.L  #tcScreenSize, D1       ; placing 0 in D1 triggers loading screen size information

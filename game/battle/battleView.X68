@@ -33,7 +33,7 @@ INITRUN:
     ; Initial Position for Enemy
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
-    ADD.L   #100,D1
+    ADD.L   #150,D1
     MOVE.L  D1,         ENEMY_X     ; Enemy X Position
 
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
@@ -44,7 +44,7 @@ INITRUN:
     ; Initial Position for Flying Enemy
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
     MOVE.W  SCREEN_W,   D1          ; Place Screen width in D1
-    ADD.L   #100,D1
+    ADD.L   #250,D1
     MOVE.L  D1,         FLYINGENEMY_X     ; flying Enemy X Position
 
     EOR.L     D1,D1                      ; Clear contents of D1 (XOR is faster)
@@ -311,13 +311,14 @@ hillHP_MSG              DC.B    'Hill Health: ',0                       ; hill h
 wave_MSG                DC.B    'Wave: ',0                              ; wave message
 
 hillHP                  DC.B     100     
-enemyPerWave            EQU      20            
+enemyPerWave            EQU      12            
 IN_ENEMY                DC.B     00                  ; marker for if the player is in the enemy
 IN_HPACK                DC.B     00                  ; marker for if the player is in the health pack
 DRAW_HEALTHPACKS        DC.B     00                  ; marker for if the healthpacks are showing
 SPAWN_HEALTHPACKS       DC.B     00                  ; marker for if the healthpacks are spawning
 
-
+tutorialMeleeMSG        DC.B     'Press k (RB) to swing!',0
+tutorialThrowMSG        DC.B     'Press j (LB) to throw an Acorn!',0   
 *-----------------------------------------------------------
 * Section       : Screen Size
 * Description   : Screen Width and Height
@@ -413,21 +414,15 @@ ATTACK_WIDTH         EQU     35
 ENEMIES_DEFEATED    DC.B     00
 enemiesPassed       DC.b     00
 enemiesToDefeat     DC.B     00
-
+firstWaveTutAmt     DC.b     00
+showThrowMSG        dc.B     00
 ; all timers and cooldowns
 respawnTime             dc.W        0
 backToMapCount          dc.b        3
 healthCooldown          DC.W        0
 hillHurtTimer           dc.b        0
 healthCooldownOver      DC.B        0
-
+tutorialMeleeTimer      dc.B        0
+tutorialThrowTimer      dc.B        0
 *---------- END---------------*
 
-
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
