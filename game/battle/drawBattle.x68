@@ -24,6 +24,7 @@
     BSR     DRAW_PLAYER             ; Draw Player
     BSR     DRAW_FLOOR              ; Draw Floor
     BSR     DRAW_HUD                ; Draw hud
+    bsr     drawAchievement
     BSR     drawPause               ; draw if paused
     RTS                             ; Return to subroutine
 

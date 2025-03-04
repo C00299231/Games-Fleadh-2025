@@ -217,6 +217,12 @@ WAVE_DEFEATED:
     cmp.b   d4,d3
     IF <EQ> THEN
         addi.l  #1,perfectDefenceAmount
+
+        ; check achievement
+        tst.b achPerfectDefTrue
+        if <eq> then
+            jsr achPerfectDefCheck
+        endi
     ENDI
     
     ; clear screen

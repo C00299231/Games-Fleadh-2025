@@ -92,6 +92,18 @@ JUMP:
     BEQ     PERFORM_JUMP            ; Do Jump
     BRA     JUMP_DONE               ;
 PERFORM_JUMP:
+    ; jump achievements check
+    tst.b achJumpTrue
+    if <eq> then
+        jsr     achJumpCheck
+    endi
+    add.b #1, ach20jumpsCount
+
+    tst.b ach20jumpsTrue
+    IF <EQ> THEN
+        jsr ach20jumpsCheck
+    endi
+    
     BSR     PLAY_JUMP               ; Play jump sound
     MOVE.L  #PLYR_JUMP_V,PLYR_VELOCITY ; Set the players velocity to true
     RTS                             ; Return to subroutine
