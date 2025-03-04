@@ -159,6 +159,7 @@ MOVE_ENEMY_L3:
         ; add 1 to the x to push them back
         ADD.L  #EASY_DECREASE, FLYINGENEMY_X
         ADD.L  #EASY_DECREASE, ENEMY_X
+        ADD.L  #EASY_DECREASE, BRUTE_X
     ENDI
     ; move enemies left
     SUB.L   #4,         ENEMY_X
@@ -179,6 +180,7 @@ MOVE_ENEMY_L4:
     cmp.b   #easyDiff, DIFFICULTY
     IF <EQ> THEN 
         ; add 1 to the x to push them back
+        ADD.L  #EASY_DECREASE, FLYINGENEMY_X
         ADD.L  #EASY_DECREASE, FLYINGENEMY_X
         ADD.L  #EASY_DECREASE, ENEMY_X
     ENDI
