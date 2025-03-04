@@ -389,6 +389,8 @@ MENU_SONG_WAV   dc.B    'antopia-menu.wav',0
 ; STINGS
 LOSS_STING_WAV  DC.b    'antopia-loss-sting.wav',0
 WIN_STING_WAV   DC.B    'antopia-win-sting.wav',0
+ACHIEVE_STING_WAV dc.b  'antopia-ach-sting.wav',0
+
 wordOrder dc.b 0
 
 *-----------------------------------------------------------

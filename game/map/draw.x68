@@ -62,6 +62,7 @@ draw:
     
     jsr drawPlayer
     jsr drawText
+    jsr drawAchievement
     jsr drawPause
     rts
 

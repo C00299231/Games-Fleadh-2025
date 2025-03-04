@@ -28,8 +28,6 @@ testinput:
     
     ; AT THIS POINT, CURRENT KEY CONTAINS THE CURRENT/LAST KEY PRESSED,
     ; AND D1 CONTAINS WHETHER OR NOT IT IS STILL PRESSED
-    
-    
 
     ; test if no input
     cmpi.b #0, d1
@@ -129,10 +127,8 @@ mapinput:
     cmpi.l #zKey, currentkey
     beq zPressed
 
-    ; only move player if correct time
-    ;move.w playerTime, d5
-    ;jsr checkIncrement
-    ;bne endInput
+    cmpi.l #pKey, currentKey
+    beq testKeyPressed
 
     ; only when not paused
 
@@ -192,6 +188,18 @@ escapePressed:
 escapeJustPressed:
     jsr togglePause
     rts
+
+testKeyPressed:
+
+    cmpi.b #0, achTest
+    
+    if <eq> then
+        lea achTestMsg, a2
+        ;move.b #$FF, achTest
+        jsr getAchievement
+    endi
+    rts
+
 enterPressed:
     move.l currentKey, d2
     cmp.l lastKey, d2

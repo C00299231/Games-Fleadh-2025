@@ -161,6 +161,13 @@ WIN_STING_LOAD:
     TRAP    #15                     ; Trap (Perform action)
     RTS                             ; Return to subroutine
 
+ACHIEVE_STING_LOAD:
+    LEA     ACHIEVE_STING_WAV,   A1          ; Load Wav File into A1
+    MOVE    #STING_INDEX,D1          ; Assign it INDEX
+    MOVE    #74,        D0          ; Load into memory
+    TRAP    #15                     ; Trap (Perform action)
+    RTS                             ; Return to subroutine
+
 ; special function to play song in song index
 PLAY_SONG:
     MOVE    #SONG_INDEX,D1          ; Load Sound INDEX

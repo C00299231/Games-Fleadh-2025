@@ -163,6 +163,7 @@ titleBgStartPos dc.l 320
  
  include "score.x68"
  include "asciiArt.x68"
+ include "achievements.x68"
 
 	end start
 
