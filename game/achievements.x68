@@ -46,7 +46,7 @@ achJumpTrue dc.b 0
 achJumpMsg dc.b 'Went for a hop!',0
 
 ach20jumpsTrue dc.b 0
-ach20jumpsMsg dc.b '20 hops!'0
+ach20jumpsMsg dc.b '20 hops!',0
 ach20jumpsCount dc.b 0
 
 achPerfectDefTrue dc.b 0
@@ -237,6 +237,7 @@ drawAchievement:
 decayAchievement:
     add #1, achievementDecay
     rts
+
 
 
 
