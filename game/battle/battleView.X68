@@ -413,7 +413,7 @@ ATTACK_WIDTH         EQU     35
 
 ENEMIES_DEFEATED    DC.B     00
 enemiesPassed       DC.b     00
-enemiesToDefeat     DC.B     10
+enemiesToDefeat     DC.B     00
 firstWaveTutAmt     DC.b     00
 showThrowMSG        dc.B     00
 ; all timers and cooldowns

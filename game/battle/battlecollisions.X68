@@ -383,15 +383,22 @@ ATTACK_COLLISION:
     BSR     PLAY_HIT
     MOVE.L  #400, ENEMY_Y
     MOVE.B  #01,  ENEMY_HIT
+    ; test the amount of ground enemies killed
     tst.b   firstWaveTutAmt
-    IF <NE> THEN
+    ; if its not equal to 0 then decrease the number
+    IF <NE> THEN    
         subi.b #1, firstWaveTutAmt
     ENDI
-    ;tst.b   firstWaveTutAmt
-    ;IF <EQ> THEN
-    ;    move.b  #1, showThrowMSG
-    ;ENDI
+    ; If a subtract causes the end value to equal 0 then the Z flag is activated
+    ; Branch to set throw message to show up after the first 3 ground enemies are cleared
+    BEQ     setThrowMsg
+
     BSR     CHECK_ENEMIES_CLEARED
+    RTS
+
+setThrowMsg:
+    move.b #1, showThrowMSG
+    BRA     CHECK_ENEMIES_CLEARED
     RTS
 
 ATTACK_FLY_COLLISION:
