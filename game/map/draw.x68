@@ -191,15 +191,15 @@ drawBattlePrompts:
     lea jumpKeyMsg, a1
     jsr printNoCRLF
 
-    addq #1, d1
-    jsr setCursor
-    lea atkKeyMsg1, a1
-    jsr printNoCRLF
-
-    addq #1, d1
-    jsr setCursor
-    lea atkKeyMsg2, a1
-    jsr printNoCRLF
+    ;addq #1, d1
+    ;jsr setCursor
+    ;lea atkKeyMsg1, a1
+    ;jsr printNoCRLF
+;
+    ;addq #1, d1
+    ;jsr setCursor
+    ;lea atkKeyMsg2, a1
+    ;jsr printNoCRLF
 
 
     ; reset cursor

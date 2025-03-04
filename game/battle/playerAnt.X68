@@ -162,8 +162,13 @@ DRAW_PLAYER:
         ; sub 1 from the timer
         subi.b #1, tutorialMeleeTimer
         
+        
+        clr.l   d2
+        move.l  #deepgreen,d1
+        move.B  #tcFont, d0
+        trap    #15
         ; Set Pixel Colors
-        MOVE.L  #WHITE,     D1          ; Set Background color
+        MOVE.L  #color5,     D1          ; Set Background color
         MOVE.B  #81,        D0          ; Task for Background Color
         TRAP    #15                     ; Trap (Perform action)
 
@@ -185,8 +190,12 @@ DRAW_PLAYER:
             ; sub 1 from the timer
             subi.b #1, tutorialThrowTimer
             
+            clr.l   d2
+            move.l  #deepgreen,d1
+            move.B  #tcFont, d0
+            trap    #15
             ; Set Pixel Colors
-            MOVE.L  #WHITE,     D1          ; Set Background color
+            MOVE.L  #color5,     D1          ; Set Background color
             MOVE.B  #81,        D0          ; Task for Background Color
             TRAP    #15                     ; Trap (Perform action)
 
@@ -460,6 +469,7 @@ PLAYER_SCORE    DS.L    01  ; Reserve Space for Player Score
 PLYR_VELOCITY   DS.L    01  ; Reserve Space for Player Velocity
 PLYR_GRAVITY    DS.L    01  ; Reserve Space for Player Gravity
 PLYR_ON_GND     DS.L    01  ; Reserve Space for Player on Ground
+
 
 
 *~Font name~Courier New~

@@ -88,7 +88,7 @@ ach30killsCheck:
     if <eq> then
         ; got 30 kills achievement.
         move.b #$FF, ach10killsTrue
-        lea ach10killsMsg, A2
+        lea ach30killsMsg, A2
         jsr getAchievement
     endi
     rts

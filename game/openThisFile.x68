@@ -4,7 +4,8 @@
 	org $1000
 start:
     jsr loadAllSounds
-
+    move.b  #50, d0
+    trap       #15
     bra nextInit
     
 nextInit:
@@ -76,19 +77,20 @@ title:
     move.l #deepgreen, d1
     jsr setFillColour
 
+    ; move the cursor to the bottom
     move.w #$1f1E,D1
     jsr setCursor
-    bsr getHighScore
-    move.l  highscore,d1
-    lea highscoremsg, a1
+    bsr getHighScore    ; branch to get the highscore
+    move.l  highscore,d1    ; load the new highscore into d1
+    lea highscoremsg, a1    ; load the message and then print
     jsr printWithNum
 
     bra titleLoop
     
 titleLoop:    
-    jsr testInput
+    jsr testInput       ; test for input
     
-    bra titleLoop
+    bra titleLoop       ; branch back to loop
 
 move2difficulty:
     jsr enableDoubleBuffer
@@ -155,40 +157,25 @@ drawTitleBg:
     rts
 
 getHighScore:
-    ; close
-    ;move.b  #50, d0
-    ;trap       #15
-    
-    ;open 
+
+    ;open the file
     move.b  #51,d0
-    lea     txt,a1
-    trap    #15
-    move.l  d1,fileId
+    lea     txt,a1      ; load the file into a1
+    trap    #15         
+    move.l  d1,fileId   ; save the id of the file
     
-    ; read 
-    move.l  fileId,d1
-    move.b  #53,d0
-    lea     highscoreFile,a1
-    move.b  #4,d2
-    trap    #15
+    ; read the file
+    move.l  fileId,d1       ; get the file id
+    move.b  #53,d0  
+    lea     highscoreFile,a1        ; load the memory address that the file points to.
+    move.b  #4,d2                   ; load the amount of bytes to read, 
+    trap    #15                     ;  so 4 bytes for 1 long of score.
     
-    
-    ;; position file
-    ;move.l  fileId,d1
-    ;move.b  #55, d0
-    ;move.l  #0, d2
-    ;trap    #15
-    ;
-    ;; write 
-    ;move.b  #54,d0
-    ;move.l  #4,d2
-    ;trap    #15
-    move.l  (a1),highscore
-    ; close
-    ;move.b  #56, d0
-    ;trap       #15
+    move.l  (a1),highscore          ; move the score from the file into highscore to display it
     
     rts
+
+
 title1Msg dc.b '- ANT-TOPIA -',0
 
 title2msg dc.b 'Press "enter/(A)" to start...',0

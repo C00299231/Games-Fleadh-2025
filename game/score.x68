@@ -181,52 +181,54 @@ scoreScreenInbetween:
     rts
 
 writeScore:
-     ; close
+     ; close all files 
     move.b  #50, d0
     trap       #15
     
-    ;open 
+    ;open the file
     move.b  #51,d0
     lea     txt,a1
     trap    #15
     move.l    d1,fileId
     
-    ; read 
+    ; read the file 
     move.l  fileId,d1
-    move.b  #53,d0
-    lea     highscoreFile,a1
+    move.b  #53,d0  
+    lea     highscoreFile,a1    ; load the buffer for the file
     move.b  #4,d2
     trap    #15
     
     
-    ; position file
+    ; position file to write to it 
     move.l  fileId,d1
     move.b  #55, d0
-    move.l  #0, d2
+    move.l  #0, d2      ; file starts at 0 so position to 0 to write to the start
     trap    #15
 
-    ; write 
-    ; compare
+    ; write to the file 
+    ; compare the current highscore with the new score
     move.l  highscore,d1
     move.l  score,d2
     cmp.l   d2,d1
-    bgt     skipWrite
-    move.l  score,(a1)
-    move.b  #54,d0
-    move.l  fileId,d1
-    move.l  #4,d2
-    trap    #15
+    bgt     skipWrite       ; if the new score is smaller then skip the write
+    move.l  score,(a1)      ; move the score into the first four bytes of the file buffer
+    move.b  #54,d0          
+    move.l  fileId,d1       ; get the file id into d1
+    move.l  #4,d2           ; load 4 into d2 to write just 4 bytes into the file
+    trap    #15             ; trap code
 
 skipWrite:
-    ; close
+    ; close the file specified
+    ; the write operation only now occurs at this stage
     move.b  #56, d0
     trap       #15
     
-     ; close
+     ; close all files now. Good practice to avoid errors
     move.b  #50, d0
     trap       #15
     rts
 
+; check for enter key
 getEnter:
 
     move.l currentKey, lastKey
@@ -261,6 +263,7 @@ noEnter:
     move.l #0, currentKey
     bra getEnter
 
+; messages 
 finalScoreMsg dc.b '- FINAL SCORE -',0
     
 scoreKillMsg dc.b 'Enemies Vanquished: ',0
