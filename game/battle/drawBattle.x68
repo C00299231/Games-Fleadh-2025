@@ -355,7 +355,7 @@ DRAW_HEALTHPACK:
     
     ; Set Pixel Colors
     MOVE.L  #BROWN,       D1          ; Set Background color
-    MOVE.B  #80,        D0          ; Task for Background Color
+    MOVE.B  #80,        D0          ; Task for pen Color
     TRAP    #15                     ; Trap (Perform action)
 
     ; Reset Pixel Colors

@@ -383,6 +383,14 @@ ATTACK_COLLISION:
     BSR     PLAY_HIT
     MOVE.L  #400, ENEMY_Y
     MOVE.B  #01,  ENEMY_HIT
+    tst.b   firstWaveTutAmt
+    IF <NE> THEN
+        subi.b #1, firstWaveTutAmt
+    ENDI
+    ;tst.b   firstWaveTutAmt
+    ;IF <EQ> THEN
+    ;    move.b  #1, showThrowMSG
+    ;ENDI
     BSR     CHECK_ENEMIES_CLEARED
     RTS
 

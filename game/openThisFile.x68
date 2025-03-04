@@ -16,15 +16,20 @@ nextInit:
     jsr MENU_SONG_LOAD
     jsr play_song
 
+    ; reset values 
     move.b  #0,enemiesToDefeat
     lea     hillHPArray,a1
     move.l  #$64646464, (a1)
     clr.l   perfectDefenceAmount
     clr.l   totalKills
-    move.b  #5,antsRemaining
-    move.B  #0,totalHillsDefended
-
-	move.w #0, lvlType
+    move.b  #5,     antsRemaining
+    move.B  #0,     totalHillsDefended
+    move.b  #3,     firstWaveTutAmt
+    move.b  #10,    enemiesToDefeat
+	move.w  #0,     lvlType
+    move.b  #$FF,   tutorialMeleeTimer
+    move.b  #$FF,   tutorialThrowTimer
+    move.b  #0,     showThrowMSG
     
     MOVE.B  #tcScreen, D0           ; access screen information
     MOVE.L  #tcScreenSize, D1       ; placing 0 in D1 triggers loading screen size information
@@ -166,19 +171,3 @@ titleBgStartPos dc.l 320
  include "achievements.x68"
 
 	end start
-
-
-
-
-
-
-
-
-
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~

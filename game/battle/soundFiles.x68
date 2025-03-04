@@ -15,7 +15,7 @@ HILLHURT_INDEX  EQU              07          ; hill dmg sound
 SONG_INDEX      equ              08          ; index for the current song
 STING_INDEX     EQU              09          ; sound for end of round
 
-byte_align dc.b 0
+;byte_align dc.b 0
 
 loadAllSounds:
     ; Initialise Sounds

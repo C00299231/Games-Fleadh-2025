@@ -103,8 +103,13 @@ MOVE_ENEMIES:
     ENDI
 
     ; move the enemies left
-    SUB.L   #03,        FLYINGENEMY_X
-    SUB.L   #02,        ENEMY_X     ; Move enemy by X Value
+    ; first test if 3 ground enemies were defeated first
+    tst.b  firstWaveTutAmt
+    IF <EQ> THEN
+        SUB.L   #02,        FLYINGENEMY_X
+    ENDI
+
+    SUB.L   #03,        ENEMY_X     ; Move enemy by X Value
     ; if hardcore is active then increase the speed
     CMP.b   #5,         DIFFICULTY
     IF <EQ> THEN

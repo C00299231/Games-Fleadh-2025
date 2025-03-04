@@ -3,7 +3,7 @@
 ; first init for map
 mapInit:
     move.w #1, lvlType
-    move.w #3, lvlIndex
+    move.w #0, lvlIndex
 
     jsr enableDoubleBuffer
 
