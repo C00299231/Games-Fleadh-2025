@@ -75,6 +75,8 @@ tallyScore:
     add.l d2, score
     move.l d2, finalPerfectDef
 
+    ;move.l  #110000,score
+    bsr     writeScore
 
 
 scoreScreen:
@@ -175,6 +177,53 @@ scoreScreenInbetween:
     jsr PLAY_HIT
     move.l #scoreLineDelay, d3
     jsr newDelay
+    rts
+
+writeScore:
+     ; close
+    move.b  #50, d0
+    trap       #15
+    
+    ;open 
+    move.b  #51,d0
+    lea     txt,a1
+    trap    #15
+    move.l    d1,fileId
+    
+    ; read 
+    move.l  fileId,d1
+    move.b  #53,d0
+    lea     highscoreFile,a1
+    move.b  #4,d2
+    trap    #15
+    
+    
+    ; position file
+    move.l  fileId,d1
+    move.b  #55, d0
+    move.l  #0, d2
+    trap    #15
+
+    ; write 
+    ; compare
+    move.l  highscore,d1
+    move.l  score,d2
+    cmp.l   d2,d1
+    bgt     skipWrite
+    move.l  score,(a1)
+    move.b  #54,d0
+    move.l  fileId,d1
+    move.l  #4,d2
+    trap    #15
+
+skipWrite:
+    ; close
+    move.b  #56, d0
+    trap       #15
+    
+     ; close
+    move.b  #50, d0
+    trap       #15
     rts
 
 getEnter:

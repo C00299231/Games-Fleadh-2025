@@ -25,7 +25,6 @@ nextInit:
     move.b  #5,     antsRemaining
     move.B  #0,     totalHillsDefended
     move.b  #3,     firstWaveTutAmt
-    move.b  #10,    enemiesToDefeat
 	move.w  #0,     lvlType
     move.b  #$FF,   tutorialMeleeTimer
     move.b  #$FF,   tutorialThrowTimer
@@ -68,6 +67,19 @@ title:
     lea title2msg, a1
     jsr print
     
+    clr.l d2
+    move.l #color5, d1
+    jsr setFontColour
+    move.l #deepgreen, d1
+    jsr setFillColour
+
+    move.w #$1f1E,D1
+    jsr setCursor
+    bsr getHighScore
+    move.l  highscore,d1
+    lea highscoremsg, a1
+    jsr printWithNum
+
     bra titleLoop
     
 titleLoop:    
@@ -139,10 +151,51 @@ drawTitleBg:
     jsr drawUiRect
     rts
 
-
+getHighScore:
+    ; close
+    ;move.b  #50, d0
+    ;trap       #15
+    
+    ;open 
+    move.b  #51,d0
+    lea     txt,a1
+    trap    #15
+    move.l  d1,fileId
+    
+    ; read 
+    move.l  fileId,d1
+    move.b  #53,d0
+    lea     highscoreFile,a1
+    move.b  #4,d2
+    trap    #15
+    
+    
+    ;; position file
+    ;move.l  fileId,d1
+    ;move.b  #55, d0
+    ;move.l  #0, d2
+    ;trap    #15
+    ;
+    ;; write 
+    ;move.b  #54,d0
+    ;move.l  #4,d2
+    ;trap    #15
+    move.l  (a1),highscore
+    ; close
+    ;move.b  #56, d0
+    ;trap       #15
+    
+    rts
 title1Msg dc.b '- ANT-TOPIA -',0
 
 title2msg dc.b 'Press "enter/(A)" to start...',0
+
+highscoremsg dc.w 'Highscore: ',0
+
+highscore   dc.l   0
+txt     dc.b        'highscore.txt',0
+fileId  dc.l        0
+highscoreFile   dc.l    0
 
 titleBgStartPos dc.l 320
 
@@ -171,3 +224,8 @@ titleBgStartPos dc.l 320
  include "achievements.x68"
 
 	end start
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~

@@ -1,5 +1,6 @@
 DIFFICULTY_SELECT: 
-    move.b #tcdbl,d0
+    clr.l   d2
+    move.b #TC_DBL_BUF,d0
     move.b #17, d1
     trap    #15
 

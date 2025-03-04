@@ -462,11 +462,17 @@ antKilled:
     MOVE.B    #3, antHealth
     SUBQ.b    #1, antsRemaining
     TST.b     antsRemaining
-    BEQ       GAME_OVER
+    BEQ       goToGameOver
     BSR     PLAY_HITHURT               ; Play Opps Wav
     BSR     DRAW_RESPAWN
     RTS
 
+goToGameOver:
+    clr.l   d3
+    move.b  ENEMIES_DEFEATED, d3
+    add.l   d3,totalKills
+    bra     GAME_OVER
+    rts
 HEALTH_COLLISION:
     ; skip if still collided
     CMP.B     #$01, IN_HPACK

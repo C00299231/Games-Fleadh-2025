@@ -181,7 +181,7 @@ DRAW_PLAYER:
             ; print the message above the player
             MOVE.L  (a1),   D1          ; X
             MOVE.L  (a2),   D2 
-            sub.l #100, d1
+            sub.l #125, d1
             sub.l #60, d2
             lea     tutorialThrowMSG,a1
             move.b  #95, d0
