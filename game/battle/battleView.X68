@@ -77,6 +77,7 @@ INITRUN:
     ADD.B   #enemyPerWave,         enemiesToDefeat
     MOVE.B  #0,         ENEMIES_DEFEATED
     MOVE.B  #0,         enemiesPassed
+    MOVE.B  #0,         hillHurtTimer
     MOVE.B  #4,         backToMapCount
     
     ; move the current hill no. hp into this hill hp
@@ -304,13 +305,6 @@ CHECK_COLLISIONS:
 ENEMIESDEAD_MSG         DC.B    'Enemies Defeated:', 0                  ; enemies defeated message
 ENEMYCOUNT_MSG          DC.B    'Wave enemy count:', 0                  ; wave enemies message
 
-HILLLOST_MSG            DC.B    'ANT HILL HAS BEEN OVERRUN!', 0         ; ant hill lost message
-WIN_MSG                 DC.B    'THE ENEMY ARMY HAS BEEN DEFEATED!', 0  ; win message  
-HILLDEFENDED_MSG        DC.B    'WAVE COMPLETE!', 0                     ; hill defended message
-FALLENKINGDOM_MSG       DC.B    'YOUR ANT KINGDOM HAS FALLEN', 0        ; game over message
-GAMEOVER_MSG            DC.B    'GAME OVER!', 0                         ; game over  
-BACK_TO_MAP_MSG         DC.B    'Returning to map in ...', 0            ; return to map counter message
-
 antHealth_MSG           DC.B    'Health : ',0                           ; health message
 antsRem_MSG             DC.B    'Ants Remaining : ',0                   ; ants remaining message
 hillHP_MSG              DC.B    'Hill Health: ',0                       ; hill health message
@@ -343,17 +337,17 @@ LAST_KEY        DS.W    01  ; Reserve Space for Current Key Pressed
 * Description   : Player and Enemy Position Memory Locations
 *-----------------------------------------------------------
 
-ENEMY_X         DS.L    01  ; Reserve Space for Enemy X Position
-ENEMY_Y         DS.L    01  ; Reserve Space for Enemy Y Position
+ENEMY_X          DS.L    01  ; Reserve Space for Enemy X Position
+ENEMY_Y          DS.L    01  ; Reserve Space for Enemy Y Position
 
 HEALTH_X         DS.L    01  ; Reserve Space for Health+ X Position
 HEALTH_Y         DS.L    01  ; Reserve Space for Health Y Position
 
-FLYINGENEMY_X         DS.L    01  ; Reserve Space for Flying Enemy X Position
-FLYINGENEMY_Y         DS.L    01  ; Reserve Space for Flying Enemy Y Position
+FLYINGENEMY_X    DS.L    01  ; Reserve Space for Flying Enemy X Position
+FLYINGENEMY_Y    DS.L    01  ; Reserve Space for Flying Enemy Y Position
 
-BRUTE_X          DS.L        01
-BRUTE_Y          DS.L        01
+BRUTE_X          DS.L    01
+BRUTE_Y          DS.L    01
 
 ENMY_W_INIT      EQU         27          ; Enemy initial Width
 ENMY_H_INIT      EQU         13          ; Enemy initial Height
@@ -414,16 +408,15 @@ ATTACK_Y             DC.L    00
 ATTACK_HEIGHT        EQU     20
 ATTACK_WIDTH         EQU     35 
 
-ENEMIES_DEFEATED    DC.B    00
-enemiesPassed       DC.b    00
-enemiesToDefeat     DC.B    00
+ENEMIES_DEFEATED    DC.B     00
+enemiesPassed       DC.b     00
+enemiesToDefeat     DC.B     00
 
 ; all timers and cooldowns
 respawnTime             dc.W        0
 backToMapCount          dc.b        3
 healthCooldown          DC.W        0
 hillHurtTimer           dc.b        0
-timer                   DC.L        0
 healthCooldownOver      DC.B        0
 
 *---------- END---------------*
